@@ -58,7 +58,41 @@ Query View shows the most in detail view of one alignment. Here the user can see
 
 ![alt text](https://github.com/FadyMohareb/mapoptics/blob/master/UserGuide/Fig3.png "Query View")
 
+(A)	The display generated for Query View is not as interactive as Reference View. By default, the query contig is oriented positively and positioned to match the leftmost alignment. The display settings match those set in Reference View (e.g. label style).
 
+(B)	This table allows the user to navigate and highlight the labels on the query contig. This table contains information of the label’s position, coverage, occurrence, chimeric quality and standard deviation.
+
+(C)	This additional table shows if the query contig has been aligned to other references in addition to the one displayed. These can be navigated through and all the equivalent views will be updated to match this reference (including Summary View and Reference View).
+
+(D)	In this view, the user can search for any reference or query to be displayed (a message will be displayed of there is no alignment found between the two). There is also the option to zoom into a region of choice in either the reference or query contig. This can be of use when using a small screen, working with very long contigs or when FASTA file information is loaded and you would like to explore the position of the gaps in more detail.
+
+----
+
+# Other Functionalities
+There are also some additional functionalities to the application to further enhance the functionality of MapOptics within your hybrid scaffolding research. 
+
+## Available quick-tools
+Some quick tools are available under Tools in the top toolbar.
+
+|Function|Action|
+| ------------- |:-------------:|
+| Tools > Orientate all contigs     | Orientates the display of all contigs to be positive. |
+| Tools > Save view of all contigs      | Saves any changes performed in Reference View to Summary View.      |
+| Tools >  Swap query and reference | Swaps the two datasets so the query dataset becomes the reference dataset and the reference dataset becomes the query dataset.      |
+
+# Loading a FASTA file
+To explore the alignment of the maps in more detail, a FASTA file can be loaded to display the gaps in the sequence in Query View- this can help you recognise if what appear to be misalignments are actually caused by regions of unknown sequence.
+
+
+FASTA and Key files can be loaded under File > Load FASTA and Key files. Here you must upload two files:
+(1)	The FASTA file of the original assembly that you’re hybrid scaffolding.
+(2)	The key file (with the extension _key.txt). This contains all the names of the FASTA contigs and the IDs that were given to them during hybrid scaffolding.
+
+## Where to find the key file
+*If you are using Bionano’s HybridScaffold pipeline from the IrysSolve package to generate super-scaffolds, the output directory fa2cmap/ stores all the files outputted when the FASTA is converted into a CMAP format. The key file can be found within this directory.
+
+Both must be loaded for any gap information to be displayed.
+Finally, the user must select which dataset the FASTA file is in regards to, the “reference” or “query” to ensure it is visualised properly. If this is incorrectly selected, the program won’t necessarily give an error, but the gaps will be visualised incorrectly leading to incorrect conclusions in an analysis. 
 
 
 
