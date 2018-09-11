@@ -1,6 +1,19 @@
 # MapOptics
 MapOptics is a lightweight cross-platform tool that enables the user to visualise and interact with the alignment of Bionano optical mapping data and can be used for in depth exploration of hybrid scaffolding alignments.
 
+# How to install MapOptics
+#### 1. Through the Java JAR executable:
+The easiest way to get started is to download the stable release here. Uncompres the zipped file and run the JAR executable directly.
+
+Alternatively, you can clone the git repository:
+
+```
+git clone https://github.com/FadyMohareb/mapoptics
+cd mapoptics/dist/
+java -jar MapOptics.jar
+```
+
+
 # Loading maps
 Maps can be loaded under File > Load Maps. Here, the program asks for an “XMAP file”, “Reference CMAP file” and “Query CMAP file”. These files are outputted at various stages of hybrid scaffolding to store information about alignment. As long as the three maps are within the same dataset, they should be visualised with ease. This could be for the display of alignment between your assembly to optical maps, or your assembly to hybrid scaffolds for example. 
 
