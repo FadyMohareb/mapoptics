@@ -3,7 +3,7 @@ MapOptics is a lightweight cross-platform tool that enables the user to visualis
 
 # How to install MapOptics
 #### 1. Through the Java JAR executable:
-The easiest way to get started is to download the stable release here. Uncompres the zipped file and run the JAR executable directly.
+The easiest way to get started is to download the stable release [here](https://github.com/FadyMohareb/mapoptics/releases). Uncompres the zipped file and run the JAR executable directly.
 
 Alternatively, you can clone the git repository:
 
