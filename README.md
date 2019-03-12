@@ -108,7 +108,7 @@ Both must be loaded for any gap information to be displayed.
 Finally, the user must select which dataset the FASTA file is in regards to, the “reference” or “query” to ensure it is visualised properly. If this is incorrectly selected, the program won’t necessarily give an error, but the gaps will be visualised incorrectly leading to incorrect conclusions in an analysis. 
 
 ## How to Cite MapOptics:
-Burgin, J., Molitor, C., and Mohareb, F. (2018), 'MapOptics: A light-weight, cross-platform visualisation tool for optical mapping alignment', Bioinformatics.
+Burgin, J., Molitor, C., and Mohareb, F. (2018), ['MapOptics: A light-weight, cross-platform visualisation tool for optical mapping alignment'](https://academic.oup.com/bioinformatics/advance-article-abstract/doi/10.1093/bioinformatics/bty1013/5232997?redirectedFrom=fulltext), Bioinformatics.
 
 
 
