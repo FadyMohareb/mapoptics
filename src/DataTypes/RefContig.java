@@ -8,11 +8,37 @@ import java.util.ArrayList;
  */
 public class RefContig {
 
-    private Rectangle2D rectangle;
-    private Rectangle2D[] labels;
-    private String[] connections;
-    private String sequence;
-    private String name;
+    public RefContig(Rectangle2D rectangle, Rectangle2D[] labels, String[] connections) {
+        this.rectangle = rectangle;
+        this.labels = labels;
+        this.connections = connections;
+    }
+
+    public RefContig() {
+    }
+
+    public RefContig copy() {
+        RefContig ref1 = this;
+        RefContig ref2 = new RefContig();
+        ArrayList<Rectangle2D> labelRects = new ArrayList();
+
+        // add variables that won't change
+        ref2.setConnections(ref1.getConnections());
+        ref2.setName(ref1.getName());
+        ref2.setSequence(ref1.getSequence());
+
+        // scale query rectangle
+        ref2.setRectangle(ref1.getRectangle().getBounds2D());
+
+        // scale all query rectangle labels
+        for (Rectangle2D label : ref1.getLabels()) {
+            labelRects.add(label.getBounds2D());
+        }
+        ref2.setLabels(labelRects.toArray(new Rectangle2D[labelRects.size()]));
+        labelRects.clear();
+
+        return ref2;
+    }
 
     public Rectangle2D getRectangle() {
         return rectangle;
@@ -54,35 +80,9 @@ public class RefContig {
         this.name = name;
     }
 
-    public RefContig(Rectangle2D rectangle, Rectangle2D[] labels, String[] connections) {
-        this.rectangle = rectangle;
-        this.labels = labels;
-        this.connections = connections;
-    }
-
-    public RefContig() {
-    }
-    
-    public RefContig copy() {
-        RefContig ref1 = this;
-        RefContig ref2 = new RefContig();
-        ArrayList<Rectangle2D> labelRects = new ArrayList();
-
-        // add variables that won't change
-        ref2.setConnections(ref1.getConnections());
-        ref2.setName(ref1.getName());
-        ref2.setSequence(ref1.getSequence());
-
-        // scale query rectangle
-        ref2.setRectangle(ref1.getRectangle().getBounds2D());
-
-        // scale all query rectangle labels
-        for (Rectangle2D label : ref1.getLabels()) {
-            labelRects.add(label.getBounds2D());
-        }
-        ref2.setLabels(labelRects.toArray(new Rectangle2D[labelRects.size()]));
-        labelRects.clear();
-
-        return ref2;
-    }
+    private Rectangle2D rectangle;
+    private Rectangle2D[] labels;
+    private String[] connections;
+    private String sequence;
+    private String name;
 }

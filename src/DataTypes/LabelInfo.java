@@ -4,12 +4,14 @@ package DataTypes;
  * @author Josie
  */
 public class LabelInfo {
-    private String labelChannel ;
-    private String labelPos ;
-    private String stdDev ;
-    private String coverage ;
-    private String occurance ;
-    private String chimQuality;
+
+    public LabelInfo(String labelChannel, String labelPos, String stdDev, String coverage, String occurance) {
+        this.labelChannel = labelChannel;
+        this.labelPos = labelPos;
+        this.stdDev = stdDev;
+        this.coverage = coverage;
+        this.occurance = occurance;
+    }
 
     public String getLabelChannel() {
         return labelChannel;
@@ -21,10 +23,6 @@ public class LabelInfo {
 
     public String getLabelPos() {
         return labelPos;
-    }
-
-    public void setLabelPos(String labelPos) {
-        this.labelPos = labelPos;
     }
 
     public String getStdDev() {
@@ -47,10 +45,6 @@ public class LabelInfo {
         return occurance;
     }
 
-    public void setOccurance(String occurance) {
-        this.occurance = occurance;
-    }
-
     public String getChimQuality() {
         return chimQuality;
     }
@@ -59,11 +53,20 @@ public class LabelInfo {
         this.chimQuality = chimQuality;
     }
 
-    public LabelInfo(String labelChannel, String labelPos, String stdDev, String coverage, String occurance) {
-        this.labelChannel = labelChannel;
+   /*
+    public void setLabelPos(String labelPos) {
         this.labelPos = labelPos;
-        this.stdDev = stdDev;
-        this.coverage = coverage;
+    }
+
+     public void setOccurance(String occurance) {
         this.occurance = occurance;
     }
+    */
+
+    private String labelChannel ;
+    private String labelPos ;
+    private String stdDev ;
+    private String coverage ;
+    private String occurance ;
+    private String chimQuality;
 }
