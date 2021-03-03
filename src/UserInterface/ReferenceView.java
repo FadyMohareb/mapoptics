@@ -615,7 +615,7 @@ public class ReferenceView extends JPanel {
                     qry.setAlignments(UserRefData.getQueries(draggedShapeId).getAlignments());
 
                     UserRefData.getQueries().put(draggedShapeId, qry);
-                } else {
+                } else if (!chosenRef.isEmpty()){
                     // move everything
                     // move reference
                     RefContig ref = UserRefData.getReferences(chosenRef);
