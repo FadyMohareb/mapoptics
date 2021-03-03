@@ -23,42 +23,6 @@ public class UserQryData {
         UserQryData.qryConnections = new LinkedHashMap();
     }
 
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static void setQueries(LinkedHashMap<String, QryContig> queries) {
-        UserQryData.queries = queries;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static RefContig getReferences(String refqryId) {
-        return references.get(refqryId);
-    }
-
-    public static void setReferences(LinkedHashMap<String, RefContig> references) {
-        UserQryData.references = references;
-    }
-
-    public static LinkedHashMap<String, String[]> getQryConnections() {
-        return qryConnections;
-    }
-
-    public static String[] getQryConnections(String qryId) {
-        return qryConnections.get(qryId);
-    }
-
-    public static void setQryConnections(LinkedHashMap<String, String[]> qryConnections) {
-        UserQryData.qryConnections = qryConnections;
-    }
-
     public static void setData() {
         // set all references from default dataset
         for (String refqryId : QueryViewData.getReferences().keySet()) {
@@ -154,4 +118,33 @@ public class UserQryData {
             }
         }
     }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static void setQueries(LinkedHashMap<String, QryContig> queries) {
+        UserQryData.queries = queries;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static RefContig getReferences(String refqryId) {
+        return references.get(refqryId);
+    }
+
+    public static void setReferences(LinkedHashMap<String, RefContig> references) {
+        UserQryData.references = references;
+    }
+
+    public static String[] getQryConnections(String qryId) {
+        return qryConnections.get(qryId);
+    }
+
 }
