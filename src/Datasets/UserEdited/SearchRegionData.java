@@ -20,14 +20,6 @@ public class SearchRegionData {
         SearchRegionData.qry = new QryContig();
     }
 
-    public static QryContig getQry() {
-        return qry;
-    }
-
-    public static RefContig getRef() {
-        return ref;
-    }
-
     public static void setRegion(double shift, double zoom) {
         AffineTransform at = AffineTransform.getTranslateInstance(-shift, 0);
         AffineTransform at2 = AffineTransform.getScaleInstance(zoom, 1);
@@ -71,5 +63,13 @@ public class SearchRegionData {
     private static Rectangle2D resize(Rectangle2D rect) {
         rect.setRect(rect.getMinX(), rect.getMinY(), 1, rect.getHeight());
         return rect;
+    }
+
+    public static QryContig getQry() {
+        return qry;
+    }
+
+    public static RefContig getRef() {
+        return ref;
     }
 }
