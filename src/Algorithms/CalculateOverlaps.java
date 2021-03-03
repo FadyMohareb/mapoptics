@@ -9,13 +9,14 @@ import java.util.*;
  */
 public class CalculateOverlaps {
 
-    public static LinkedHashMap<String, Integer> countAllOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries) {
-        ArrayList done = new ArrayList();
+    public static LinkedHashMap<String, Integer> countAllOverlaps(LinkedHashMap<String, RefContig> references,
+                                                                  LinkedHashMap<String, QryContig> queries) {
+        ArrayList<String> done = new ArrayList<>();
         int count;
         RefContig ref;
         QryContig qry1;
         QryContig qry2;
-        LinkedHashMap<String, Integer> numOverlaps = new LinkedHashMap();
+        LinkedHashMap<String, Integer> numOverlaps = new LinkedHashMap<>();
 
         for (String refId : references.keySet()) {
             count = 0;
@@ -43,9 +44,10 @@ public class CalculateOverlaps {
         return numOverlaps;
     }
 
-    public static LinkedHashMap<String, Rectangle2D[]> calculateRefOverlap(String refId, RefContig ref, LinkedHashMap<String, QryContig> queries) {
-        LinkedHashMap<String, Rectangle2D[]> overlapRegions = new LinkedHashMap();
-        ArrayList done = new ArrayList();
+    public static LinkedHashMap<String, Rectangle2D[]> calculateRefOverlap(String refId, RefContig ref,
+                                                                           LinkedHashMap<String, QryContig> queries) {
+        LinkedHashMap<String, Rectangle2D[]> overlapRegions = new LinkedHashMap<>();
+        ArrayList<String> done = new ArrayList<>();
         QryContig qry1;
         QryContig qry2;
         for (String qryId1 : ref.getConnections()) {
@@ -81,19 +83,38 @@ public class CalculateOverlaps {
         Rectangle2D refRegionOverlap = new Rectangle2D.Double();
         if ((qry1start <= qry2start) && (qry2end <= qry1end)) {
             // calculate region overlapping in reference
-            refRegionOverlap = new Rectangle2D.Double(ref.getRectangle().getMinX() + qry2start, ref.getRectangle().getMinY(), qry2end - qry2start, ref.getRectangle().getHeight());
+            refRegionOverlap = new Rectangle2D.Double(
+                    ref.getRectangle().getMinX() + qry2start,
+                    ref.getRectangle().getMinY(),
+                    qry2end - qry2start,
+                    ref.getRectangle().getHeight());
             regionOverlaps[0] = refRegionOverlap;
         } else if ((qry2start <= qry1start) && (qry1end <= qry2end)) {
             // calculate region overlapping in reference
-            refRegionOverlap = new Rectangle2D.Double(ref.getRectangle().getMinX() + qry1start, ref.getRectangle().getMinY(), qry1end - qry1start, ref.getRectangle().getHeight());
+            refRegionOverlap = new Rectangle2D.Double(
+                    ref.getRectangle().getMinX() + qry1start,
+                    ref.getRectangle().getMinY(),
+                    qry1end - qry1start,
+                    ref.getRectangle().getHeight());
             regionOverlaps[0] = refRegionOverlap;
-        } else if ((qry1.getRefAlignStart() <= qry2.getRefAlignStart()) && (qry1.getRefAlignEnd() >= qry2.getRefAlignStart()) && (qry2.getRefAlignEnd() >= qry1.getRefAlignEnd())) {
+        } else if ((qry1.getRefAlignStart() <= qry2.getRefAlignStart())
+                && (qry1.getRefAlignEnd() >= qry2.getRefAlignStart())
+                && (qry2.getRefAlignEnd() >= qry1.getRefAlignEnd())) {
             // calculate region overlapping in reference
-            refRegionOverlap = new Rectangle2D.Double(ref.getRectangle().getMinX() + qry2start, ref.getRectangle().getMinY(), qry1end - qry2start, ref.getRectangle().getHeight());
+            refRegionOverlap = new Rectangle2D.Double(
+                    ref.getRectangle().getMinX() + qry2start,
+                    ref.getRectangle().getMinY(),
+                    qry1end - qry2start,
+                    ref.getRectangle().getHeight());
             regionOverlaps[0] = refRegionOverlap;
-        } else if ((qry2.getRefAlignStart() <= qry1.getRefAlignStart()) && (qry2end >= qry1.getRefAlignStart()) && (qry1.getRefAlignEnd() >= qry2.getRefAlignEnd())) {
+        } else if ((qry2.getRefAlignStart() <= qry1.getRefAlignStart()) && (qry2end >= qry1.getRefAlignStart())
+                && (qry1.getRefAlignEnd() >= qry2.getRefAlignEnd())) {
             // calculate region overlapping in reference
-            refRegionOverlap = new Rectangle2D.Double(ref.getRectangle().getMinX() + qry1start, ref.getRectangle().getMinY(), qry2end - qry1start, ref.getRectangle().getHeight());
+            refRegionOverlap = new Rectangle2D.Double(
+                    ref.getRectangle().getMinX() + qry1start,
+                    ref.getRectangle().getMinY(),
+                    qry2end - qry1start,
+                    ref.getRectangle().getHeight());
             regionOverlaps[0] = refRegionOverlap;
         }
 
@@ -111,7 +132,7 @@ public class CalculateOverlaps {
         Rectangle2D overlap ;
 
         // loop through labels and work out which labels are within the ref region of overlap
-        ArrayList<Integer> allOverlappingRefLabels = new ArrayList();
+        ArrayList<Integer> allOverlappingRefLabels = new ArrayList<>();
         int[] refLabelIndexes = new int[2];
         for (int i = 0; i < ref.getLabels().length; i++) {
             double labelpos = ref.getLabels()[i].getMinX();
@@ -125,7 +146,7 @@ public class CalculateOverlaps {
             refLabelIndexes[1] = Collections.max(allOverlappingRefLabels);
 
             // loop through alignments and work out which regions are within the ref region of overlap
-            ArrayList<Integer> allOverlappingQryLabels = new ArrayList();
+            ArrayList<Integer> allOverlappingQryLabels = new ArrayList<>();
             int[] qryLabelIndexes = new int[2];
             for (String[] alignment : qry.getAlignments()) {
                 int reflabel = Integer.parseInt(alignment[0]) - 1;
@@ -144,7 +165,11 @@ public class CalculateOverlaps {
             double minX = qry.getLabels()[qryLabelIndexes[0]].getMinX();
             double maxX = qry.getLabels()[qryLabelIndexes[1]].getMinX();
 
-            overlap = new Rectangle2D.Double(minX, qry.getRectangle().getMinY(), maxX - minX, qry.getRectangle().getHeight());
+            overlap = new Rectangle2D.Double(
+                    minX,
+                    qry.getRectangle().getMinY(),
+                    maxX - minX,
+                    qry.getRectangle().getHeight());
 
         } else {
             overlap = new Rectangle2D.Double(0, 0, 0, 0);
