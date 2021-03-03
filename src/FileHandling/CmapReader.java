@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
  */
 public class CmapReader {
 
-    static public LinkedHashMap cmapToHashMap(String filename) {
+    public static LinkedHashMap cmapToHashMap(String filename) {
         String line;
         String fields[];
         String lastCmapId = "";
