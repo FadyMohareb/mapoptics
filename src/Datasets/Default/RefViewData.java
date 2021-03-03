@@ -29,30 +29,6 @@ public class RefViewData {
         RefViewData.queries = new LinkedHashMap();
     }
 
-    public static void setPanelLength(double panelLength) {
-        RefViewData.panelLength = panelLength;
-    }
-
-    public static void setPanelHeight(double panelHeight) {
-        RefViewData.panelHeight = panelHeight;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static RefContig getReferences(String refId) {
-        return references.get(refId);
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
     public static void setData() {
         // get data from overlap algorithm so queries don't overlap
         LinkedHashMap<String, Rectangle2D> sortedRects = SortOverlap.getSortedRects();
@@ -152,5 +128,29 @@ public class RefViewData {
         double newH = rect.getHeight() * vScale;
         rect.setRect(newX, newY, newW, newH);
         return rect;
+    }
+
+    public static void setPanelLength(double panelLength) {
+        RefViewData.panelLength = panelLength;
+    }
+
+    public static void setPanelHeight(double panelHeight) {
+        RefViewData.panelHeight = panelHeight;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static RefContig getReferences(String refId) {
+        return references.get(refId);
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
     }
 }
