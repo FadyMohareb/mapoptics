@@ -62,40 +62,8 @@ public class RawFileData {
         RawFileData.refContigs = refContigs;
     }
 
-    public static LinkedHashMap<String, AlignmentInfo> getAlignmentInfo() {
-        return alignmentInfo;
-    }
-
     public static void setAlignmentInfo(LinkedHashMap<String, AlignmentInfo> alignmentInfo) {
         RawFileData.alignmentInfo = alignmentInfo;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static ContigInfo getQryContigs(String qryId) {
-        return qryContigs.get(qryId);
-    }
-
-    public static ContigInfo getRefContigs(String refId) {
-        return refContigs.get(refId);
-    }
-
-    public static AlignmentInfo getAlignmentInfo(String refqryId) {
-        return alignmentInfo.get(refqryId);
-    }
-
-    public static RefContig getReferences(String refId) {
-        return references.get(refId);
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
     }
 
     public static void setData() {
@@ -146,10 +114,9 @@ public class RawFileData {
             label = new Rectangle2D.Double(refRect.getMinX() + refLabelPos, refRect.getMinY(), 1, refRect.getHeight());
             labels.add(label);
         }
-        RefContig refContig = new RefContig(refRect,
+        return new RefContig(refRect,
                 labels.toArray(new Rectangle2D[labels.size()]),
                 qryList);
-        return refContig;
     }
 
     private static QryContig setQryData(String refId, String qryId) {
@@ -192,7 +159,7 @@ public class RawFileData {
             label = new Rectangle2D.Double(qryRect.getMinX() + labelPos, qryRect.getMinY(), 1, qryRect.getHeight());
             labels.add(label);
         }
-        QryContig qryContig = new QryContig(qryRect,
+        return new QryContig(qryRect,
                 labels.toArray(new Rectangle2D[labels.size()]),
                 alignments.toArray(new String[alignments.size()][]),
                 qryStart,
@@ -200,6 +167,33 @@ public class RawFileData {
                 refStart,
                 refEnd,
                 alignInfo.getOrientation());
-        return qryContig;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static ContigInfo getQryContigs(String qryId) {
+        return qryContigs.get(qryId);
+    }
+
+    public static ContigInfo getRefContigs(String refId) {
+        return refContigs.get(refId);
+    }
+
+    public static AlignmentInfo getAlignmentInfo(String refqryId) {
+        return alignmentInfo.get(refqryId);
+    }
+
+    public static RefContig getReferences(String refId) {
+        return references.get(refId);
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
     }
 }
