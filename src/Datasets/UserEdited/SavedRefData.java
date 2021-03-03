@@ -26,34 +26,6 @@ public class SavedRefData {
         SavedRefData.queries = new LinkedHashMap();
     }
 
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static RefContig getReferences(String refId) {
-        return references.get(refId);
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static void setQueries(LinkedHashMap<String, QryContig> usrRefQueries) {
-        SavedRefData.queries = usrRefQueries;
-    }
-
-    public static void setHorZoom(double horZoom) {
-        SavedRefData.horZoom = horZoom;
-    }
-
-    public static void setVertZoom(double vertZoom) {
-        SavedRefData.vertZoom = vertZoom;
-    }
-
     public static void setData() {
         // set all references
         for (String refId : SummaryViewData.getReferences().keySet()) {
@@ -106,5 +78,33 @@ public class SavedRefData {
         AffineTransform at2 = AffineTransform.getScaleInstance(horZoom, vertZoom);
         rect = at2.createTransformedShape(rect).getBounds2D();
         return rect;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static RefContig getReferences(String refId) {
+        return references.get(refId);
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static void setQueries(LinkedHashMap<String, QryContig> usrRefQueries) {
+        SavedRefData.queries = usrRefQueries;
+    }
+
+    public static void setHorZoom(double horZoom) {
+        SavedRefData.horZoom = horZoom;
+    }
+
+    public static void setVertZoom(double vertZoom) {
+        SavedRefData.vertZoom = vertZoom;
     }
 }
