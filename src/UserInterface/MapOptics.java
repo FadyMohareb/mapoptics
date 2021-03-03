@@ -1,34 +1,81 @@
 package UserInterface;
 
-import UserInterface.ModelsAndRenderers.*;
-import FileHandling.*;
-import Algorithms.*;
+import Algorithms.CalculateOverlaps;
+import Algorithms.DeleteConflicts;
+import Algorithms.SortOrientation;
+import Algorithms.SortOverlap;
+import DataTypes.LabelInfo;
+import DataTypes.QryContig;
+import Datasets.Default.QueryViewData;
+import Datasets.Default.RawFileData;
+import Datasets.Default.RefViewData;
+import Datasets.Default.SummaryViewData;
 import Datasets.UserEdited.*;
-import Datasets.Default.*;
-import DataTypes.*;
+import FileHandling.*;
+import UserInterface.ModelsAndRenderers.EditableHeaderRenderer;
+import UserInterface.ModelsAndRenderers.MyChartRenderer;
+import UserInterface.ModelsAndRenderers.TableModels;
 import com.qoppa.pdfWriter.PDFDocument;
 import com.qoppa.pdfWriter.PDFPage;
+import org.apache.commons.io.FilenameUtils;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.*;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.ui.RectangleAnchor;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.awt.image.BufferedImage;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
-import java.util.*;
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import org.jfree.chart.*;
-import org.jfree.chart.plot.*;
-import org.jfree.chart.renderer.category.*;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.ui.RectangleAnchor;
-import org.apache.commons.io.FilenameUtils;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Objects;
+
 /*
  * @author Josie
  */
 public class MapOptics extends JFrame {
+
+    private final JTable conflictsTable = new JTable();
+    private final JTable imageTable = new JTable();
+    private final JCheckBox selectAllImages = new JCheckBox();
+
+    private String xmapFilename = "";
+    private String refCmapFilename = "";
+    private String qryCmapFilename = "";
+
+    // set variables for panel widths and heights so when resized, drawing can be resized relatively
+    private double refViewHeight = 0.0;
+    private double refViewWidth = 0.0;
+    private double sumViewHeight = 0.0;
+    private double sumViewWidth = 0.0;
+
+    private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader;
+    private javax.swing.JCheckBox confidenceSetting;
+    private javax.swing.JButton exportQryButton, exportRefButton;
+    private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFile, qryIdSearch, refDataset,
+            refFile, refIdSearch, regionSearch, xmapFile;
+    private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
+    private javax.swing.JPanel labelDensityGraph, referencesGraph;
+    private javax.swing.JTable labelTable, qryContigTable, qryViewRefTable, refContigTable;
+    private javax.swing.JCheckBox overlapSetting;
+    private javax.swing.JComboBox<String> refOrQry, regionType;
+    private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch;
+    private javax.swing.JTabbedPane tabPaneFiles;
+
+    private UserInterface.QueryView queryView;
+    private UserInterface.ReferenceView referenceView;
+    private UserInterface.SummaryView summaryView;
+
 
     public MapOptics() {
         System.setProperty("sun.java2d.opengl", "true");
@@ -85,19 +132,16 @@ public class MapOptics extends JFrame {
         });
 
         selectAllImages.setText("Select all images  ");
-        selectAllImages.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                // select all images
-                if (selectAllImages.isSelected()) {
-                    for (int i = 0; i < imageTable.getRowCount(); i++) {
-                        imageTable.setValueAt(true, i, 1);
-                    }
+        selectAllImages.addActionListener(evt -> {
+            // select all images
+            if (selectAllImages.isSelected()) {
+                for (int i = 0; i < imageTable.getRowCount(); i++) {
+                    imageTable.setValueAt(true, i, 1);
                 }
-                if (!selectAllImages.isSelected()) {
-                    for (int i = 0; i < imageTable.getRowCount(); i++) {
-                        imageTable.setValueAt(false, i, 1);
-                    }
+            }
+            if (!selectAllImages.isSelected()) {
+                for (int i = 0; i < imageTable.getRowCount(); i++) {
+                    imageTable.setValueAt(false, i, 1);
                 }
             }
         });
@@ -115,182 +159,162 @@ public class MapOptics extends JFrame {
         repaint();
     }
 
-    private JTable conflictsTable = new JTable();
-    private JTable imageTable = new JTable();
-    private JCheckBox selectAllImages = new JCheckBox();
-
-    private String xmapFilename = "";
-    private String refCmapFilename = "";
-    private String qryCmapFilename = "";
-    private String refCmapDataset = "";
-    private String qryCmapDataset = "";
-
-    // set variables for panel widths and heights so when resized, drawing can be resized relatively
-    private double refViewHeight = 0.0;
-    private double refViewWidth = 0.0;
-    private double sumViewHeight = 0.0;
-    private double sumViewWidth = 0.0;
-    private double qryViewHeight = 0.0;
-    private double qryViewWidth = 0.0;
-
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         fileLoader = new javax.swing.JDialog();
-        jPanel4 = new javax.swing.JPanel();
+        JPanel jPanel4 = new JPanel();
         xmapFile = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        browseXmap = new javax.swing.JButton();
-        browseRef = new javax.swing.JButton();
-        jLabel6 = new javax.swing.JLabel();
+        JLabel jLabel2 = new JLabel();
+        JButton browseXmap = new JButton();
+        JButton browseRef = new JButton();
+        JLabel jLabel6 = new JLabel();
         qryFile = new javax.swing.JTextField();
-        browseQry = new javax.swing.JButton();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        runAnalysis = new javax.swing.JButton();
+        JButton browseQry = new JButton();
+        JLabel jLabel8 = new JLabel();
+        JLabel jLabel7 = new JLabel();
+        JButton runAnalysis = new JButton();
         refFile = new javax.swing.JTextField();
         confidenceSettings = new javax.swing.JDialog();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
-        jLabel21 = new javax.swing.JLabel();
-        jLabel22 = new javax.swing.JLabel();
+        JPanel jPanel5 = new JPanel();
+        JLabel jLabel17 = new JLabel();
+        JLabel jLabel18 = new JLabel();
+        JLabel jLabel19 = new JLabel();
+        JLabel jLabel20 = new JLabel();
+        JLabel jLabel21 = new JLabel();
+        JLabel jLabel22 = new JLabel();
         lowConf = new javax.swing.JSpinner();
         highConf = new javax.swing.JSpinner();
-        saveConfThresholds = new javax.swing.JButton();
-        jLabel23 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        jLabel25 = new javax.swing.JLabel();
-        jLabel26 = new javax.swing.JLabel();
+        JButton saveConfThresholds = new JButton();
+        JLabel jLabel23 = new JLabel();
+        JLabel jLabel24 = new JLabel();
+        JLabel jLabel25 = new JLabel();
+        JLabel jLabel26 = new JLabel();
         coverageSettings = new javax.swing.JDialog();
-        jPanel8 = new javax.swing.JPanel();
-        jLabel47 = new javax.swing.JLabel();
-        jLabel48 = new javax.swing.JLabel();
-        jLabel49 = new javax.swing.JLabel();
-        jLabel50 = new javax.swing.JLabel();
-        jLabel51 = new javax.swing.JLabel();
-        jLabel52 = new javax.swing.JLabel();
+        JPanel jPanel8 = new JPanel();
+        JLabel jLabel47 = new JLabel();
+        JLabel jLabel48 = new JLabel();
+        JLabel jLabel49 = new JLabel();
+        JLabel jLabel50 = new JLabel();
+        JLabel jLabel51 = new JLabel();
+        JLabel jLabel52 = new JLabel();
         lowCov = new javax.swing.JSpinner();
         highCov = new javax.swing.JSpinner();
-        saveCovThresholds = new javax.swing.JButton();
-        jLabel53 = new javax.swing.JLabel();
-        jLabel54 = new javax.swing.JLabel();
-        jLabel55 = new javax.swing.JLabel();
-        jLabel56 = new javax.swing.JLabel();
+        JButton saveCovThresholds = new JButton();
+        JLabel jLabel53 = new JLabel();
+        JLabel jLabel54 = new JLabel();
+        JLabel jLabel55 = new JLabel();
+        JLabel jLabel56 = new JLabel();
         chimSettings = new javax.swing.JDialog();
-        jPanel9 = new javax.swing.JPanel();
-        jLabel57 = new javax.swing.JLabel();
-        jLabel58 = new javax.swing.JLabel();
-        jLabel59 = new javax.swing.JLabel();
-        jLabel60 = new javax.swing.JLabel();
-        jLabel61 = new javax.swing.JLabel();
-        jLabel62 = new javax.swing.JLabel();
+        JPanel jPanel9 = new JPanel();
+        JLabel jLabel57 = new JLabel();
+        JLabel jLabel58 = new JLabel();
+        JLabel jLabel59 = new JLabel();
+        JLabel jLabel60 = new JLabel();
+        JLabel jLabel61 = new JLabel();
+        JLabel jLabel62 = new JLabel();
         lowQual = new javax.swing.JSpinner();
         highQual = new javax.swing.JSpinner();
-        saveQualitySettings = new javax.swing.JButton();
-        jLabel63 = new javax.swing.JLabel();
-        jLabel64 = new javax.swing.JLabel();
-        jLabel65 = new javax.swing.JLabel();
-        jLabel66 = new javax.swing.JLabel();
+        JButton saveQualitySettings = new JButton();
+        JLabel jLabel63 = new JLabel();
+        JLabel jLabel64 = new JLabel();
+        JLabel jLabel65 = new JLabel();
+        JLabel jLabel66 = new JLabel();
         fastaLoader = new javax.swing.JDialog();
-        jPanel11 = new javax.swing.JPanel();
+        JPanel jPanel11 = new JPanel();
         keyFile = new javax.swing.JTextField();
-        jLabel29 = new javax.swing.JLabel();
-        browseKey = new javax.swing.JButton();
-        browseFasta = new javax.swing.JButton();
-        jLabel30 = new javax.swing.JLabel();
-        jLabel31 = new javax.swing.JLabel();
+        JLabel jLabel29 = new JLabel();
+        JButton browseKey = new JButton();
+        JButton browseFasta = new JButton();
+        JLabel jLabel30 = new JLabel();
+        JLabel jLabel31 = new JLabel();
         fastaFile = new javax.swing.JTextField();
-        loadFastaFile = new javax.swing.JButton();
-        jLabel32 = new javax.swing.JLabel();
+        JButton loadFastaFile = new JButton();
+        JLabel jLabel32 = new JLabel();
         refOrQry = new javax.swing.JComboBox<>();
-        tabPane = new javax.swing.JTabbedPane();
-        summaryPane = new javax.swing.JLayeredPane();
-        jSplitPane3 = new javax.swing.JSplitPane();
-        rightPanel = new javax.swing.JPanel();
-        alignmentNamePanel = new javax.swing.JPanel();
-        jLabel14 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
+        JTabbedPane tabPane = new JTabbedPane();
+        JLayeredPane summaryPane = new JLayeredPane();
+        JSplitPane jSplitPane3 = new JSplitPane();
+        JPanel rightPanel = new JPanel();
+        JPanel alignmentNamePanel = new JPanel();
+        JLabel jLabel14 = new JLabel();
+        JLabel jLabel15 = new JLabel();
         refDataset = new javax.swing.JTextField();
         qryDataset = new javax.swing.JTextField();
         summaryView = new UserInterface.SummaryView();
-        referenceGraphPanel = new javax.swing.JPanel();
+        JPanel referenceGraphPanel = new JPanel();
         referencesGraph = new javax.swing.JPanel();
         labelDensityGraph = new javax.swing.JPanel();
-        jLabel16 = new javax.swing.JLabel();
-        leftPanel = new javax.swing.JPanel();
-        refContigTableScroll = new javax.swing.JScrollPane();
+        JLabel jLabel16 = new JLabel();
+        JPanel leftPanel = new JPanel();
+        JScrollPane refContigTableScroll = new JScrollPane();
         refContigTable = new javax.swing.JTable();
-        refViewPane = new javax.swing.JLayeredPane();
-        jSplitPane2 = new javax.swing.JSplitPane();
-        jLayeredPane2 = new javax.swing.JLayeredPane();
+        JLayeredPane refViewPane = new JLayeredPane();
+        JSplitPane jSplitPane2 = new JSplitPane();
+        JLayeredPane jLayeredPane2 = new JLayeredPane();
         referenceView = new UserInterface.ReferenceView();
         exportRefButton = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        reCentre = new javax.swing.JButton();
-        zoomIn = new javax.swing.JButton();
-        zoomOut = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        JPanel jPanel3 = new JPanel();
+        JLabel jLabel4 = new JLabel();
+        JButton reCentre = new JButton();
+        JButton zoomIn = new JButton();
+        JButton zoomOut = new JButton();
+        JLabel jLabel1 = new JLabel();
         styleMatch = new javax.swing.JRadioButton();
         styleCoverage = new javax.swing.JRadioButton();
         styleChim = new javax.swing.JRadioButton();
-        jLabel5 = new javax.swing.JLabel();
+        JLabel jLabel5 = new JLabel();
         confidenceSetting = new javax.swing.JCheckBox();
         overlapSetting = new javax.swing.JCheckBox();
-        jSeparator1 = new javax.swing.JSeparator();
-        jLabel3 = new javax.swing.JLabel();
-        reOrientate = new javax.swing.JButton();
-        deleteContig = new javax.swing.JButton();
-        resetButton = new javax.swing.JButton();
-        alignLeft = new javax.swing.JButton();
-        alignRight = new javax.swing.JButton();
-        save = new javax.swing.JButton();
+        JSeparator jSeparator1 = new JSeparator();
+        JLabel jLabel3 = new JLabel();
+        JButton reOrientate = new JButton();
+        JButton deleteContig = new JButton();
+        JButton resetButton = new JButton();
+        JButton alignLeft = new JButton();
+        JButton alignRight = new JButton();
+        JButton save = new JButton();
         tabPaneFiles = new javax.swing.JTabbedPane();
-        refViewTableScroll = new javax.swing.JScrollPane();
+        JScrollPane refViewTableScroll = new JScrollPane();
         qryContigTable = new javax.swing.JTable();
-        queryViewPane = new javax.swing.JLayeredPane();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jLayeredPane1 = new javax.swing.JLayeredPane();
+        JLayeredPane queryViewPane = new JLayeredPane();
+        JSplitPane jSplitPane1 = new JSplitPane();
+        JLayeredPane jLayeredPane1 = new JLayeredPane();
         queryView = new UserInterface.QueryView();
         exportQryButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        JPanel jPanel1 = new JPanel();
         qryIdSearch = new javax.swing.JTextField();
         refIdSearch = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        search = new javax.swing.JButton();
-        jLabel12 = new javax.swing.JLabel();
+        JLabel jLabel9 = new JLabel();
+        JLabel jLabel10 = new JLabel();
+        JLabel jLabel11 = new JLabel();
+        JButton search = new JButton();
+        JLabel jLabel12 = new JLabel();
         regionSearch = new javax.swing.JTextField();
-        jLabel13 = new javax.swing.JLabel();
+        JLabel jLabel13 = new JLabel();
         regionType = new javax.swing.JComboBox<>();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        JScrollPane jScrollPane1 = new JScrollPane();
         qryViewRefTable = new javax.swing.JTable();
-        queryViewTableScroll = new javax.swing.JScrollPane();
+        JScrollPane queryViewTableScroll = new JScrollPane();
         labelTable = new javax.swing.JTable();
-        menuBar = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        loadMaps = new javax.swing.JMenuItem();
-        fastaLoad = new javax.swing.JMenuItem();
-        jMenu5 = new javax.swing.JMenu();
-        manualConflict = new javax.swing.JMenuItem();
-        saveConflictFile = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        chooseImages = new javax.swing.JMenuItem();
-        exportImages = new javax.swing.JMenuItem();
-        close = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
-        swapContigs = new javax.swing.JMenuItem();
-        orientateContigs = new javax.swing.JMenuItem();
-        saveAllContigs = new javax.swing.JMenuItem();
-        jMenu4 = new javax.swing.JMenu();
-        confidenceSet = new javax.swing.JMenuItem();
-        coverageSet = new javax.swing.JMenuItem();
-        chimqualSet = new javax.swing.JMenuItem();
+        JMenuBar menuBar = new JMenuBar();
+        JMenu jMenu1 = new JMenu();
+        JMenuItem loadMaps = new JMenuItem();
+        JMenuItem fastaLoad = new JMenuItem();
+        JMenu jMenu5 = new JMenu();
+        JMenuItem manualConflict = new JMenuItem();
+        JMenuItem saveConflictFile = new JMenuItem();
+        JMenu jMenu2 = new JMenu();
+        JMenuItem chooseImages = new JMenuItem();
+        JMenuItem exportImages = new JMenuItem();
+        JMenuItem close = new JMenuItem();
+        JMenu jMenu3 = new JMenu();
+        JMenuItem swapContigs = new JMenuItem();
+        JMenuItem orientateContigs = new JMenuItem();
+        JMenuItem saveAllContigs = new JMenuItem();
+        JMenu jMenu4 = new JMenu();
+        JMenuItem confidenceSet = new JMenuItem();
+        JMenuItem coverageSet = new JMenuItem();
+        JMenuItem chimqualSet = new JMenuItem();
 
         fileLoader.setTitle("Load Maps");
         fileLoader.setLocation(new java.awt.Point(100, 100));
@@ -300,40 +324,24 @@ public class MapOptics extends JFrame {
         jLabel2.setText("XMAP:");
 
         browseXmap.setText("Browse...");
-        browseXmap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseXmapActionPerformed(evt);
-            }
-        });
+        browseXmap.addActionListener(this::browseXmapActionPerformed);
 
         browseRef.setText("Browse...");
-        browseRef.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseRefActionPerformed(evt);
-            }
-        });
+        browseRef.addActionListener(this::browseRefActionPerformed);
 
         jLabel6.setText("Reference CMAP:");
 
         browseQry.setText("Browse...");
-        browseQry.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseQryActionPerformed(evt);
-            }
-        });
+        browseQry.addActionListener(this::browseQryActionPerformed);
 
-        jLabel8.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel8.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel8.setText("Load XMAP file and corresponding CMAP files");
 
         jLabel7.setText("Query CMAP:");
 
-        runAnalysis.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        runAnalysis.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         runAnalysis.setText("Run");
-        runAnalysis.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runAnalysisActionPerformed(evt);
-            }
-        });
+        runAnalysis.addActionListener(this::runAnalysisActionPerformed);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -420,7 +428,7 @@ public class MapOptics extends JFrame {
         confidenceSettings.setTitle("Confidence Threshold Settings");
         confidenceSettings.setLocation(new java.awt.Point(100, 100));
 
-        jLabel17.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel17.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel17.setText("Change thresholds of the confidence alignment view:");
 
         jLabel18.setText("Low Confidence");
@@ -440,15 +448,11 @@ public class MapOptics extends JFrame {
         highConf.setPreferredSize(new java.awt.Dimension(60, 25));
         highConf.setValue(40);
 
-        saveConfThresholds.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        saveConfThresholds.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         saveConfThresholds.setText("Save Changes");
-        saveConfThresholds.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveConfThresholdsActionPerformed(evt);
-            }
-        });
+        saveConfThresholds.addActionListener(this::saveConfThresholdsActionPerformed);
 
-        jLabel23.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel23.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel23.setText("Default thresholds are set to :");
 
         jLabel24.setText("Low Confidence  < 20");
@@ -544,17 +548,12 @@ public class MapOptics extends JFrame {
         coverageSettings.setTitle("Coverage Threshold Settings");
         coverageSettings.setLocation(new java.awt.Point(100, 100));
 
-        jLabel47.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel47.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel47.setText("Change thresholds of the confidence alignment view:");
-
         jLabel48.setText("Low Coverage");
-
         jLabel49.setText("Medium Coverage");
-
         jLabel50.setText("High Coverage");
-
         jLabel51.setText("<");
-
         jLabel52.setText("<");
 
         lowCov.setPreferredSize(new java.awt.Dimension(60, 25));
@@ -564,15 +563,11 @@ public class MapOptics extends JFrame {
         highCov.setPreferredSize(new java.awt.Dimension(60, 25));
         highCov.setValue(50);
 
-        saveCovThresholds.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        saveCovThresholds.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         saveCovThresholds.setText("Save Changes");
-        saveCovThresholds.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveCovThresholdsActionPerformed(evt);
-            }
-        });
+        saveCovThresholds.addActionListener(this::saveCovThresholdsActionPerformed);
 
-        jLabel53.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel53.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel53.setText("Default thresholds are set to :");
 
         jLabel54.setText("Low Coverage  < 20");
@@ -666,17 +661,12 @@ public class MapOptics extends JFrame {
         chimSettings.setTitle("Chimeric Quality Threshold Settings");
         chimSettings.setLocation(new java.awt.Point(100, 100));
 
-        jLabel57.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel57.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel57.setText("Change thresholds of the label chimeric quality view:");
-
         jLabel58.setText("Low Quality");
-
         jLabel59.setText("Medium Quality");
-
         jLabel60.setText("High Quality");
-
         jLabel61.setText("<");
-
         jLabel62.setText("<");
 
         lowQual.setPreferredSize(new java.awt.Dimension(60, 25));
@@ -686,21 +676,14 @@ public class MapOptics extends JFrame {
         highQual.setPreferredSize(new java.awt.Dimension(60, 25));
         highQual.setValue(90);
 
-        saveQualitySettings.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        saveQualitySettings.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         saveQualitySettings.setText("Save Changes");
-        saveQualitySettings.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveQualitySettingsActionPerformed(evt);
-            }
-        });
+        saveQualitySettings.addActionListener(this::saveQualitySettingsActionPerformed);
 
-        jLabel63.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel63.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel63.setText("Default thresholds are set to :");
-
         jLabel64.setText("Low Quality  < 20");
-
         jLabel65.setText("20 <= Medium Quality <= 90 ");
-
         jLabel66.setText(" High Quality > 90");
 
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
@@ -796,31 +779,19 @@ public class MapOptics extends JFrame {
         jLabel29.setText("KEY file:");
 
         browseKey.setText("Browse...");
-        browseKey.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseKeyActionPerformed(evt);
-            }
-        });
+        browseKey.addActionListener(this::browseKeyActionPerformed);
 
         browseFasta.setText("Browse...");
-        browseFasta.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseFastaActionPerformed(evt);
-            }
-        });
+        browseFasta.addActionListener(this::browseFastaActionPerformed);
 
         jLabel30.setText("FASTA file:");
 
-        jLabel31.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel31.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel31.setText("Load FASTA file and corresponding KEY file");
 
-        loadFastaFile.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        loadFastaFile.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         loadFastaFile.setText("Load");
-        loadFastaFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadFastaFileActionPerformed(evt);
-            }
-        });
+        loadFastaFile.addActionListener(this::loadFastaFileActionPerformed);
 
         jLabel32.setText("Which contig is the fasta relative to?");
 
@@ -914,10 +885,10 @@ public class MapOptics extends JFrame {
         alignmentNamePanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         alignmentNamePanel.setPreferredSize(new java.awt.Dimension(145, 130));
 
-        jLabel14.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel14.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         jLabel14.setText("Reference Dataset:");
 
-        jLabel15.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel15.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         jLabel15.setText("Query Dataset:");
 
         javax.swing.GroupLayout alignmentNamePanelLayout = new javax.swing.GroupLayout(alignmentNamePanel);
@@ -952,7 +923,7 @@ public class MapOptics extends JFrame {
         summaryView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         summaryView.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
-                summaryViewComponentResized(evt);
+                summaryViewComponentResized();
             }
         });
 
@@ -976,7 +947,7 @@ public class MapOptics extends JFrame {
         labelDensityGraph.setBackground(new java.awt.Color(255, 255, 255));
         labelDensityGraph.setLayout(new javax.swing.BoxLayout(labelDensityGraph, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel16.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel16.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         jLabel16.setText("Reference Graphs:");
 
         javax.swing.GroupLayout referenceGraphPanelLayout = new javax.swing.GroupLayout(referenceGraphPanel);
@@ -1043,7 +1014,7 @@ public class MapOptics extends JFrame {
         refContigTable.setShowGrid(false);
         refContigTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                refContigTableMouseClicked(evt);
+                refContigTableMouseClicked();
             }
         });
         refContigTableScroll.setViewportView(refContigTable);
@@ -1096,17 +1067,13 @@ public class MapOptics extends JFrame {
         });
         referenceView.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
-                referenceViewComponentResized(evt);
+                referenceViewComponentResized();
             }
         });
 
-        exportRefButton.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        exportRefButton.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 10)); // NOI18N
         exportRefButton.setText("Export Image");
-        exportRefButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportRefButtonActionPerformed(evt);
-            }
-        });
+        exportRefButton.addActionListener(this::exportRefButtonActionPerformed);
 
         javax.swing.GroupLayout referenceViewLayout = new javax.swing.GroupLayout(referenceView);
         referenceView.setLayout(referenceViewLayout);
@@ -1127,116 +1094,60 @@ public class MapOptics extends JFrame {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel4.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         jLabel4.setText("Display tools:");
 
         reCentre.setText("reCentre");
-        reCentre.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reCentreActionPerformed(evt);
-            }
-        });
+        reCentre.addActionListener(this::reCentreActionPerformed);
 
         zoomIn.setText("+");
-        zoomIn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                zoomInActionPerformed(evt);
-            }
-        });
+        zoomIn.addActionListener(this::zoomInActionPerformed);
 
         zoomOut.setText("-");
-        zoomOut.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                zoomOutActionPerformed(evt);
-            }
-        });
+        zoomOut.addActionListener(this::zoomOutActionPerformed);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel1.setText("Label style:");
 
         styleMatch.setSelected(true);
         styleMatch.setText("Matches");
-        styleMatch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                styleMatchActionPerformed(evt);
-            }
-        });
+        styleMatch.addActionListener(this::styleMatchActionPerformed);
 
         styleCoverage.setText("Coverage");
-        styleCoverage.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                styleCoverageActionPerformed(evt);
-            }
-        });
+        styleCoverage.addActionListener(this::styleCoverageActionPerformed);
 
         styleChim.setText("Chim Quality");
-        styleChim.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                styleChimActionPerformed(evt);
-            }
-        });
+        styleChim.addActionListener(this::styleChimActionPerformed);
 
-        jLabel5.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel5.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel5.setText("View:");
 
         confidenceSetting.setText("Confidence");
-        confidenceSetting.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confidenceSettingActionPerformed(evt);
-            }
-        });
+        confidenceSetting.addActionListener(this::confidenceSettingActionPerformed);
 
         overlapSetting.setText("Overlap");
-        overlapSetting.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                overlapSettingActionPerformed(evt);
-            }
-        });
+        overlapSetting.addActionListener(this::overlapSettingActionPerformed);
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel3.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         jLabel3.setText("Contig tools:");
 
         reOrientate.setText("reOrientate");
-        reOrientate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reOrientateActionPerformed(evt);
-            }
-        });
+        reOrientate.addActionListener(this::reOrientateActionPerformed);
 
         deleteContig.setText("delete");
-        deleteContig.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteContigActionPerformed(evt);
-            }
-        });
+        deleteContig.addActionListener(this::deleteContigActionPerformed);
 
         resetButton.setText("RESET");
-        resetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resetButtonActionPerformed(evt);
-            }
-        });
+        resetButton.addActionListener(this::resetButtonActionPerformed);
 
         alignLeft.setText("<");
-        alignLeft.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                alignLeftActionPerformed(evt);
-            }
-        });
+        alignLeft.addActionListener(this::alignLeftActionPerformed);
 
         alignRight.setText(">");
-        alignRight.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                alignRightActionPerformed(evt);
-            }
-        });
+        alignRight.addActionListener(this::alignRightActionPerformed);
 
         save.setText("SAVE");
-        save.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveActionPerformed(evt);
-            }
-        });
+        save.addActionListener(this::saveActionPerformed);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -1352,7 +1263,7 @@ public class MapOptics extends JFrame {
         qryContigTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         qryContigTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                qryContigTableMouseClicked(evt);
+                qryContigTableMouseClicked();
             }
         });
         refViewTableScroll.setViewportView(qryContigTable);
@@ -1387,13 +1298,9 @@ public class MapOptics extends JFrame {
             }
         });
 
-        exportQryButton.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        exportQryButton.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 10)); // NOI18N
         exportQryButton.setText("Export Image");
-        exportQryButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportQryButtonActionPerformed(evt);
-            }
-        });
+        exportQryButton.addActionListener(this::exportQryButtonActionPerformed);
 
         javax.swing.GroupLayout queryViewLayout = new javax.swing.GroupLayout(queryView);
         queryView.setLayout(queryViewLayout);
@@ -1415,24 +1322,20 @@ public class MapOptics extends JFrame {
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel1.setPreferredSize(new java.awt.Dimension(254, 235));
 
-        jLabel9.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel9.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         jLabel9.setText("Search");
 
         jLabel10.setText("Reference ID :");
 
         jLabel11.setText("Query ID :");
 
-        search.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        search.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         search.setText("Search");
-        search.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchActionPerformed(evt);
-            }
-        });
+        search.addActionListener(this::searchActionPerformed);
 
         jLabel12.setText("Region :");
 
-        jLabel13.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        jLabel13.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         jLabel13.setText("Format region search as start-end in bp e.g. 20-200");
 
         regionType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Reference", "Query" }));
@@ -1517,7 +1420,7 @@ public class MapOptics extends JFrame {
         qryViewRefTable.setSize(new java.awt.Dimension(254, 0));
         qryViewRefTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                qryViewRefTableMouseClicked(evt);
+                qryViewRefTableMouseClicked();
             }
         });
         jScrollPane1.setViewportView(qryViewRefTable);
@@ -1568,7 +1471,7 @@ public class MapOptics extends JFrame {
         labelTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         labelTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                labelTableMouseClicked(evt);
+                labelTableMouseClicked();
             }
         });
         queryViewTableScroll.setViewportView(labelTable);
@@ -1598,37 +1501,21 @@ public class MapOptics extends JFrame {
 
         loadMaps.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         loadMaps.setText("Load Maps");
-        loadMaps.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadMapsActionPerformed(evt);
-            }
-        });
+        loadMaps.addActionListener(this::loadMapsActionPerformed);
         jMenu1.add(loadMaps);
 
         fastaLoad.setText("Load FASTA File");
-        fastaLoad.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fastaLoadActionPerformed(evt);
-            }
-        });
+        fastaLoad.addActionListener(this::fastaLoadActionPerformed);
         jMenu1.add(fastaLoad);
 
         jMenu5.setText("Manual Conflict Resolution");
 
         manualConflict.setText("Load conflicts_cut_status file");
-        manualConflict.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manualConflictActionPerformed(evt);
-            }
-        });
+        manualConflict.addActionListener(this::manualConflictActionPerformed);
         jMenu5.add(manualConflict);
 
         saveConflictFile.setText("Save manual conflict resolution file");
-        saveConflictFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveConflictFileActionPerformed(evt);
-            }
-        });
+        saveConflictFile.addActionListener(this::saveConflictFileActionPerformed);
         jMenu5.add(saveConflictFile);
 
         jMenu1.add(jMenu5);
@@ -1636,30 +1523,18 @@ public class MapOptics extends JFrame {
         jMenu2.setText("Export images");
 
         chooseImages.setText("Choose images to export");
-        chooseImages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chooseImagesActionPerformed(evt);
-            }
-        });
+        chooseImages.addActionListener(this::chooseImagesActionPerformed);
         jMenu2.add(chooseImages);
 
         exportImages.setText("Export chosen images");
-        exportImages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportImagesActionPerformed(evt);
-            }
-        });
+        exportImages.addActionListener(this::exportImagesActionPerformed);
         jMenu2.add(exportImages);
 
         jMenu1.add(jMenu2);
 
         close.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.ALT_MASK));
         close.setText("Close");
-        close.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeActionPerformed(evt);
-            }
-        });
+        close.addActionListener(this::closeActionPerformed);
         jMenu1.add(close);
 
         menuBar.add(jMenu1);
@@ -1667,29 +1542,17 @@ public class MapOptics extends JFrame {
         jMenu3.setText("Quick-tools");
 
         swapContigs.setText("Swap reference and query");
-        swapContigs.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                swapContigsActionPerformed(evt);
-            }
-        });
+        swapContigs.addActionListener(this::swapContigsActionPerformed);
         jMenu3.add(swapContigs);
 
         orientateContigs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         orientateContigs.setText("Orientate all contigs");
-        orientateContigs.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                orientateContigsActionPerformed(evt);
-            }
-        });
+        orientateContigs.addActionListener(this::orientateContigsActionPerformed);
         jMenu3.add(orientateContigs);
 
         saveAllContigs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveAllContigs.setText("Save view for all contigs");
-        saveAllContigs.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveAllContigsActionPerformed(evt);
-            }
-        });
+        saveAllContigs.addActionListener(this::saveAllContigsActionPerformed);
         jMenu3.add(saveAllContigs);
 
         menuBar.add(jMenu3);
@@ -1697,27 +1560,15 @@ public class MapOptics extends JFrame {
         jMenu4.setText("Settings");
 
         confidenceSet.setText("Confidence thresholds");
-        confidenceSet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confidenceSetActionPerformed(evt);
-            }
-        });
+        confidenceSet.addActionListener(this::confidenceSetActionPerformed);
         jMenu4.add(confidenceSet);
 
         coverageSet.setText("Coverage thresholds");
-        coverageSet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                coverageSetActionPerformed(evt);
-            }
-        });
+        coverageSet.addActionListener(this::coverageSetActionPerformed);
         jMenu4.add(coverageSet);
 
         chimqualSet.setText("Chimeric quality thresholds");
-        chimqualSet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chimqualSetActionPerformed(evt);
-            }
-        });
+        chimqualSet.addActionListener(this::chimqualSetActionPerformed);
         jMenu4.add(chimqualSet);
 
         menuBar.add(jMenu4);
@@ -1736,17 +1587,18 @@ public class MapOptics extends JFrame {
         );
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
-    private void qryContigTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_qryContigTableMouseClicked
+
+    private void qryContigTableMouseClicked() {
         // get selected contig from query table
         if (qryContigTable.getRowCount() != 0) {
             String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
             changeQry(chosenQry);
         }
-    }//GEN-LAST:event_qryContigTableMouseClicked
+    }
 
-    private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orientateContigsActionPerformed
+    private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // orientates all query contigs that are negatively oriented
         UserRefData.setQueries(SortOrientation.sortAllOrientation(UserRefData.getReferences(), UserRefData.getQueries()));
         UserRefData.setPanelLength(refViewWidth);
@@ -1755,9 +1607,9 @@ public class MapOptics extends JFrame {
             UserRefData.reCentreView(refId);
         }
         referenceView.repaint();
-    }//GEN-LAST:event_orientateContigsActionPerformed
+    }
 
-    private void browseXmapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseXmapActionPerformed
+    private void browseXmapActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for xmap file
         // Opens a dialog box for user to choose directory of file
         FileDialog fileBox;
@@ -1770,9 +1622,9 @@ public class MapOptics extends JFrame {
             // set text field to display name
             xmapFile.setText(filename);
         }
-    }//GEN-LAST:event_browseXmapActionPerformed
+    }
 
-    private void browseRefActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseRefActionPerformed
+    private void browseRefActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for ref cmap file
         // Opens a dialog box for user to choose directory of file
         FileDialog fileBox;
@@ -1785,9 +1637,9 @@ public class MapOptics extends JFrame {
             // set text field to display name
             refFile.setText(filename);
         }
-    }//GEN-LAST:event_browseRefActionPerformed
+    }
 
-    private void browseQryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseQryActionPerformed
+    private void browseQryActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for qry cmap file
         // Opens a dialog box for user to choose directory of file
         FileDialog fileBox;
@@ -1800,9 +1652,9 @@ public class MapOptics extends JFrame {
             // set text field to display name
             qryFile.setText(filename);
         }
-    }//GEN-LAST:event_browseQryActionPerformed
+    }
 
-    private void runAnalysisActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runAnalysisActionPerformed
+    private void runAnalysisActionPerformed(java.awt.event.ActionEvent evt) {
         fileLoader.setVisible(false);
         // reset all data
         resetData();
@@ -1813,12 +1665,10 @@ public class MapOptics extends JFrame {
             refCmapFilename = refFile.getText();
             qryCmapFilename = qryFile.getText();
 
-            //refCmapDataset = refFile.getText().substring(refFile.getText().lastIndexOf("\\") + 1);
-            //qryCmapDataset = qryFile.getText().substring(refFile.getText().lastIndexOf("\\") + 1);
             refDataset.setVisible(true);
             qryDataset.setVisible(true);
-            refCmapDataset =FilenameUtils.getName(refFile.getText());
-            qryCmapDataset =FilenameUtils.getName(qryFile.getText()); 
+            String refCmapDataset = FilenameUtils.getName(refFile.getText());
+            String qryCmapDataset = FilenameUtils.getName(qryFile.getText());
 
 
             // extract data from files
@@ -1837,14 +1687,14 @@ public class MapOptics extends JFrame {
             JOptionPane.showMessageDialog(null, "Not all files have been declared", "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
 
-    }//GEN-LAST:event_runAnalysisActionPerformed
+    }
 
-    private void loadMapsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadMapsActionPerformed
+    private void loadMapsActionPerformed(java.awt.event.ActionEvent evt) {
         // displays menu
         fileLoader.setVisible(true);
-    }//GEN-LAST:event_loadMapsActionPerformed
+    }
 
-    private void swapContigsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_swapContigsActionPerformed
+    private void swapContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // swap the query and the reference around
         if (!qryCmapFilename.equals("") && !xmapFilename.equals("") && !refCmapFilename.equals("")) {
             int swap = JOptionPane.showConfirmDialog(null, "Are you sure you would like to swap the query and the reference dataset? The data will reset to default", "Swap Contigs", JOptionPane.YES_NO_OPTION);
@@ -1882,27 +1732,27 @@ public class MapOptics extends JFrame {
             JOptionPane.showMessageDialog(null, "Not all files have been declared - load files first", "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
 
-    }//GEN-LAST:event_swapContigsActionPerformed
+    }
 
-    private void qryViewRefTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_qryViewRefTableMouseClicked
+    private void qryViewRefTableMouseClicked() {
         // get selected contig
         if (qryViewRefTable.getRowCount() != 0) {
             String chosenRef = qryViewRefTable.getValueAt(qryViewRefTable.getSelectedRow(), 0).toString();
             changeRef(chosenRef);
             repaint();
         }
-    }//GEN-LAST:event_qryViewRefTableMouseClicked
+    }
 
-    private void labelTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labelTableMouseClicked
+    private void labelTableMouseClicked() {
         // set label and draw on diagram
         if (labelTable.getRowCount() != 0) {
             String chosenLabel = labelTable.getValueAt(labelTable.getSelectedRow(), 0).toString();
             QueryView.setChosenLabel(chosenLabel);
             repaint();
         }
-    }//GEN-LAST:event_labelTableMouseClicked
+    }
 
-    private void referenceViewComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_referenceViewComponentResized
+    private void referenceViewComponentResized() {
         // when panel resized resize image
         double newHeight = referenceView.getHeight();
         double newWidth = referenceView.getWidth();
@@ -1912,9 +1762,9 @@ public class MapOptics extends JFrame {
         refViewHeight = newHeight;
         refViewWidth = newWidth;
         repaint();
-    }//GEN-LAST:event_referenceViewComponentResized
+    }
 
-    private void referenceViewMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_referenceViewMouseClicked
+    private void referenceViewMouseClicked(java.awt.event.MouseEvent evt) {
         // Set clicked contig
         Rectangle2D qry;
         boolean qryMatch = false;
@@ -1932,60 +1782,60 @@ public class MapOptics extends JFrame {
             }
             repaint();
         }
-    }//GEN-LAST:event_referenceViewMouseClicked
+    }
 
-    private void zoomInActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomInActionPerformed
+    private void zoomInActionPerformed(java.awt.event.ActionEvent evt) {
         // zoom in reference view
         if (!ReferenceView.getChosenRef().equals("")) {
             ReferenceView.zoom(1.2, referenceView.getWidth());
             referenceView.repaint();
         }
-    }//GEN-LAST:event_zoomInActionPerformed
+    }
 
-    private void zoomOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomOutActionPerformed
+    private void zoomOutActionPerformed(java.awt.event.ActionEvent evt) {
         // zoom out reference view
         if (!ReferenceView.getChosenRef().equals("")) {
             ReferenceView.zoom(0.8, referenceView.getWidth());
             referenceView.repaint();
         }
-    }//GEN-LAST:event_zoomOutActionPerformed
+    }
 
-    private void styleMatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_styleMatchActionPerformed
+    private void styleMatchActionPerformed(java.awt.event.ActionEvent evt) {
         // when button clicked set style in reference view
         if (styleMatch.isSelected()) {
             ReferenceView.setStyle("match");
             QueryView.setStyle("match");
             repaint();
         }
-    }//GEN-LAST:event_styleMatchActionPerformed
+    }
 
-    private void styleCoverageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_styleCoverageActionPerformed
+    private void styleCoverageActionPerformed(java.awt.event.ActionEvent evt) {
         // when button clicked set style in reference view
         if (styleCoverage.isSelected()) {
             ReferenceView.setStyle("coverage");
             QueryView.setStyle("coverage");
             repaint();
         }
-    }//GEN-LAST:event_styleCoverageActionPerformed
+    }
 
-    private void styleChimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_styleChimActionPerformed
+    private void styleChimActionPerformed(java.awt.event.ActionEvent evt) {
         // set style to chimeric quality values
         if (styleChim.isSelected()) {
             ReferenceView.setStyle("chimQual");
             QueryView.setStyle("chimQual");
             repaint();
         }
-    }//GEN-LAST:event_styleChimActionPerformed
+    }
 
-    private void confidenceSettingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confidenceSettingActionPerformed
+    private void confidenceSettingActionPerformed(java.awt.event.ActionEvent evt) {
         // when check box ticked, colour query contigs by confidence score
         boolean checked = confidenceSetting.isSelected();
         QueryView.setConfidenceView(checked);
         ReferenceView.setConfidenceView(checked);
         repaint();
-    }//GEN-LAST:event_confidenceSettingActionPerformed
+    }
 
-    private void reOrientateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reOrientateActionPerformed
+    private void reOrientateActionPerformed(java.awt.event.ActionEvent evt) {
         // reorientate chosen contig
         if (!ReferenceView.getChosenRef().equals("") && !ReferenceView.getChosenQry().equals("")) {
             String refqryId = ReferenceView.getChosenRef() + "-" + ReferenceView.getChosenQry();
@@ -1993,9 +1843,9 @@ public class MapOptics extends JFrame {
             UserRefData.getQueries().put(refqryId, sortedContig);
             repaint();
         }
-    }//GEN-LAST:event_reOrientateActionPerformed
+    }
 
-    private void deleteContigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteContigActionPerformed
+    private void deleteContigActionPerformed(java.awt.event.ActionEvent evt) {
         if (!ReferenceView.getChosenRef().equals("") && !ReferenceView.getChosenQry().equals("")) {
             int delete = JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete this query contig?", "Delete", JOptionPane.YES_NO_OPTION);
             if (delete == JOptionPane.YES_OPTION) {
@@ -2003,9 +1853,9 @@ public class MapOptics extends JFrame {
                 repaint();
             }
         }
-    }//GEN-LAST:event_deleteContigActionPerformed
+    }
 
-    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // check the user would really like to reset
         if (!ReferenceView.getChosenRef().equals("")) {
             Object[] choices = {"Default", "Last saved", "Cancel"};
@@ -2037,9 +1887,9 @@ public class MapOptics extends JFrame {
             }
             repaint();
         }
-    }//GEN-LAST:event_resetButtonActionPerformed
+    }
 
-    private void alignLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alignLeftActionPerformed
+    private void alignLeftActionPerformed(java.awt.event.ActionEvent evt) {
         // align contig to left
         if (!ReferenceView.getChosenRef().equals("") && !ReferenceView.getChosenQry().equals("")) {
             String refId = ReferenceView.getChosenRef();
@@ -2047,9 +1897,9 @@ public class MapOptics extends JFrame {
             UserRefData.align(refId, qryId, true);
             repaint();
         }
-    }//GEN-LAST:event_alignLeftActionPerformed
+    }
 
-    private void alignRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alignRightActionPerformed
+    private void alignRightActionPerformed(java.awt.event.ActionEvent evt) {
         // align contig to right
         if (!ReferenceView.getChosenRef().equals("") && !ReferenceView.getChosenQry().equals("")) {
             String refId = ReferenceView.getChosenRef();
@@ -2057,9 +1907,9 @@ public class MapOptics extends JFrame {
             UserRefData.align(refId, qryId, false);
             repaint();
         }
-    }//GEN-LAST:event_alignRightActionPerformed
+    }
 
-    private void saveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveActionPerformed
+    private void saveActionPerformed(java.awt.event.ActionEvent evt) {
         // data is saved to summary view
         if (!ReferenceView.getChosenRef().equals("")) {
             int save = JOptionPane.showConfirmDialog(null, "Would you like to save changes and update Summary View?", "Save Changes", JOptionPane.YES_NO_OPTION);
@@ -2071,9 +1921,9 @@ public class MapOptics extends JFrame {
                 repaint();
             }
         }
-    }//GEN-LAST:event_saveActionPerformed
+    }
 
-    private void reCentreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reCentreActionPerformed
+    private void reCentreActionPerformed(java.awt.event.ActionEvent evt) {
         // recentre the view
         if (!ReferenceView.getChosenRef().equals("")) {
             UserRefData.setPanelLength(refViewWidth);
@@ -2082,9 +1932,9 @@ public class MapOptics extends JFrame {
             UserRefData.reCentreView(chosenRef);
             referenceView.repaint();
         }
-    }//GEN-LAST:event_reCentreActionPerformed
+    }
 
-    private void searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchActionPerformed
+    private void searchActionPerformed(java.awt.event.ActionEvent evt) {
         // set IDs of reference and query to that searched
         boolean refMatch = false;
         boolean qryMatch = false;
@@ -2092,7 +1942,7 @@ public class MapOptics extends JFrame {
         String refSearch = refIdSearch.getText();
         String qrySearch = qryIdSearch.getText();
         String region = regionSearch.getText();
-        String type = regionType.getSelectedItem().toString();
+        String type = Objects.requireNonNull(regionType.getSelectedItem()).toString();
 
         // check if qry Id or ref Id exist otherwise give error message
         if (!refSearch.equals("")) {
@@ -2163,9 +2013,9 @@ public class MapOptics extends JFrame {
             JOptionPane.showMessageDialog(null, "Region out of bounds", "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
 
-    }//GEN-LAST:event_searchActionPerformed
+    }
 
-    private void referenceViewMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_referenceViewMouseMoved
+    private void referenceViewMouseMoved(java.awt.event.MouseEvent evt) {
         // when mouse is hovered over, display the position
         if (!ReferenceView.getChosenRef().equals("")) {
             double positionScale;
@@ -2193,9 +2043,9 @@ public class MapOptics extends JFrame {
 
             referenceView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
         }
-    }//GEN-LAST:event_referenceViewMouseMoved
+    }
 
-    private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_queryViewMouseMoved
+    private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {
         // when mouse is hovered over, display the position
         if (!QueryView.getChosenRef().equals("") && !QueryView.getChosenQry().equals("")) {
             double positionScale;
@@ -2229,48 +2079,48 @@ public class MapOptics extends JFrame {
 
             queryView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
         }
-    }//GEN-LAST:event_queryViewMouseMoved
+    }
 
-    private void confidenceSetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confidenceSetActionPerformed
+    private void confidenceSetActionPerformed(java.awt.event.ActionEvent evt) {
         // show confidence settings
         confidenceSettings.setVisible(true);
-    }//GEN-LAST:event_confidenceSetActionPerformed
+    }
 
-    private void coverageSetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_coverageSetActionPerformed
+    private void coverageSetActionPerformed(java.awt.event.ActionEvent evt) {
         // show coverage settings
         coverageSettings.setVisible(true);
-    }//GEN-LAST:event_coverageSetActionPerformed
+    }
 
-    private void chimqualSetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chimqualSetActionPerformed
+    private void chimqualSetActionPerformed(java.awt.event.ActionEvent evt) {
         // show chimeric quality settings
         chimSettings.setVisible(true);
-    }//GEN-LAST:event_chimqualSetActionPerformed
+    }
 
-    private void saveConfThresholdsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfThresholdsActionPerformed
+    private void saveConfThresholdsActionPerformed(java.awt.event.ActionEvent evt) {
         // save all thresholds set in confidence settings
         ReferenceView.setLowConf((int) lowConf.getValue());
         ReferenceView.setHighConf((int) highConf.getValue());
         confidenceSettings.setVisible(false);
         repaint();
-    }//GEN-LAST:event_saveConfThresholdsActionPerformed
+    }
 
-    private void saveCovThresholdsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveCovThresholdsActionPerformed
+    private void saveCovThresholdsActionPerformed(java.awt.event.ActionEvent evt) {
         // save all thresholds in coverage settings
         ReferenceView.setLowCov((int) lowCov.getValue());
         ReferenceView.setHighCov((int) highCov.getValue());
         coverageSettings.setVisible(false);
         repaint();
-    }//GEN-LAST:event_saveCovThresholdsActionPerformed
+    }
 
-    private void saveQualitySettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveQualitySettingsActionPerformed
+    private void saveQualitySettingsActionPerformed(java.awt.event.ActionEvent evt) {
         // save all thresholds in chim quality settings
         ReferenceView.setLowQual((int) lowQual.getValue());
         ReferenceView.setHighQual((int) highQual.getValue());
         chimSettings.setVisible(false);
         repaint();
-    }//GEN-LAST:event_saveQualitySettingsActionPerformed
+    }
 
-    private void saveAllContigsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAllContigsActionPerformed
+    private void saveAllContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // save the view of all contigs
         if (!RawFileData.getRefContigs().isEmpty()) {
             int saveAll = JOptionPane.showConfirmDialog(null, "Are you sure you would like to save the view of all contigs?", "Save All Contigs", JOptionPane.YES_NO_OPTION);
@@ -2284,16 +2134,16 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "No files loaded", "Invalid input", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_saveAllContigsActionPerformed
+    }
 
-    private void overlapSettingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overlapSettingActionPerformed
+    private void overlapSettingActionPerformed(java.awt.event.ActionEvent evt) {
         // when check box ticked, colour regions of overlap
         boolean checked = overlapSetting.isSelected();
         ReferenceView.setOverlapView(checked);
         repaint();
-    }//GEN-LAST:event_overlapSettingActionPerformed
+    }
 
-    private void chooseImagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseImagesActionPerformed
+    private void chooseImagesActionPerformed(java.awt.event.ActionEvent evt) {
         if (tabPaneFiles.indexOfTab("Choose Images") == -1) {
             fillImageTable();
             JScrollPane scrollPane = new JScrollPane();
@@ -2304,9 +2154,9 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "Choose Images tab exists already in Reference View - use this to choose images to export", "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_chooseImagesActionPerformed
+    }
 
-    private void exportQryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportQryButtonActionPerformed
+    private void exportQryButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // export chosen image into chosen directory
         // Opens a dialog box for user to choose directory of file
         FileDialog fileBox;
@@ -2344,9 +2194,9 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "No filename given", "Invalid input", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_exportQryButtonActionPerformed
+    }
 
-    private void exportRefButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportRefButtonActionPerformed
+    private void exportRefButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // export chosen image into chosen directory
         // Opens a dialog box for user to choose directory of file
         FileDialog fileBox;
@@ -2385,9 +2235,9 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "No filename given", "Invalid input", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_exportRefButtonActionPerformed
+    }
 
-    private void manualConflictActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualConflictActionPerformed
+    private void manualConflictActionPerformed(java.awt.event.ActionEvent evt) {
         // Opens a dialog box for user to choose directory of file
         if (tabPaneFiles.indexOfTab("Conflict Resolution") == -1) {
             FileDialog fileBox;
@@ -2408,19 +2258,19 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "Conflict resolution file already open", "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_manualConflictActionPerformed
+    }
 
-    private void fastaLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fastaLoadActionPerformed
+    private void fastaLoadActionPerformed(java.awt.event.ActionEvent evt) {
         // Open dialog for fasta loading
         fastaLoader.setVisible(true);
-    }//GEN-LAST:event_fastaLoadActionPerformed
+    }
 
-    private void closeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeActionPerformed
+    private void closeActionPerformed(java.awt.event.ActionEvent evt) {
         // close program
         System.exit(0);
-    }//GEN-LAST:event_closeActionPerformed
+    }
 
-    private void browseKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseKeyActionPerformed
+    private void browseKeyActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for key file
         // Opens a dialog box for user to choose directory of file
         FileDialog fileBox;
@@ -2434,9 +2284,9 @@ public class MapOptics extends JFrame {
 
             keyFile.setText(filename);
         }
-    }//GEN-LAST:event_browseKeyActionPerformed
+    }
 
-    private void browseFastaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseFastaActionPerformed
+    private void browseFastaActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for fasta file
         // Opens a dialog box for user to choose directory of file
         FileDialog fileBox;
@@ -2450,14 +2300,14 @@ public class MapOptics extends JFrame {
 
             fastaFile.setText(filename);
         }
-    }//GEN-LAST:event_browseFastaActionPerformed
+    }
 
-    private void loadFastaFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadFastaFileActionPerformed
+    private void loadFastaFileActionPerformed(java.awt.event.ActionEvent evt) {
         // load both files into the program
         if (!fastaFile.getText().equals("")) {
             fastaLoader.setVisible(false);
 
-            String refQry = refOrQry.getSelectedItem().toString();
+            String refQry = Objects.requireNonNull(refOrQry.getSelectedItem()).toString();
 
             if (refQry.equals("Reference")) {
                 ArrayList<String> refIds = new ArrayList<>(RawFileData.getReferences().keySet());
@@ -2469,7 +2319,7 @@ public class MapOptics extends JFrame {
                 UserQryData.addSequences(names, sequences, "ref");
 
             } else if (refQry.equals("Query")) {
-                ArrayList<String> qryIds = new ArrayList();
+                ArrayList<String> qryIds = new ArrayList<>();
                 for (String refqryId : RawFileData.getQueries().keySet()) {
                     String qryId = refqryId.split("-")[1];
                     if (!qryIds.contains(qryId)) {
@@ -2487,9 +2337,9 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "No FASTA file has be chosen", "Invalid input", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_loadFastaFileActionPerformed
+    }
 
-    private void saveConflictFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConflictFileActionPerformed
+    private void saveConflictFileActionPerformed(java.awt.event.ActionEvent evt) {
         // save conflict file with changes if tab is open
         if (tabPaneFiles.indexOfTab("Conflict Resolution") != -1) {
             // Opens a dialog box for user to save file
@@ -2513,9 +2363,9 @@ public class MapOptics extends JFrame {
             JOptionPane.showMessageDialog(null, "No conflict resolution file is loaded", "No file found", JOptionPane.ERROR_MESSAGE);
         }
 
-    }//GEN-LAST:event_saveConflictFileActionPerformed
+    }
 
-    private void exportImagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportImagesActionPerformed
+    private void exportImagesActionPerformed(java.awt.event.ActionEvent evt) {
          // export chosen images into chosen directory
         if (tabPaneFiles.indexOfTab("Choose Images") != -1) {
             // Opens a dialog box for user to choose directory of file
@@ -2582,52 +2432,14 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "No images chosen - choose images before exporting", "No images chosen", JOptionPane.ERROR_MESSAGE);
         }
+    }
 
-
-
-    }//GEN-LAST:event_exportImagesActionPerformed
-
-    private void refContigTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_refContigTableMouseClicked
-        // TODO add your handling code here:
+    private void refContigTableMouseClicked() {
         String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
         changeRef(chosenRef);
-    }//GEN-LAST:event_refContigTableMouseClicked
+    }
 
-    private void summaryViewComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_summaryViewComponentResized
-        // TODO add your handling code here:
-    }//GEN-LAST:event_summaryViewComponentResized
-
-    public static void main(String args[]) {
-        // Set the look and feel
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MapOptics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MapOptics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MapOptics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MapOptics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        // Create and display the form
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MapOptics().setVisible(true);
-            }
-        });
+    private void summaryViewComponentResized() {
     }
 
     private void setRefContigTable() {
@@ -2671,7 +2483,6 @@ public class MapOptics extends JFrame {
                 repaint();
             }
         });
-
     }
 
     private void setQryContigTable() {
@@ -2715,7 +2526,6 @@ public class MapOptics extends JFrame {
                 repaint();
             }
         });
-
     }
 
     private void setQryViewRefTable() {
@@ -2880,7 +2690,7 @@ public class MapOptics extends JFrame {
         });
     }
 
-    private ChartPanel makeLengthChartPanel(ArrayList<Double> lengths, String refId, boolean ref) {
+    private ChartPanel makeLengthChartPanel(ArrayList<Double> lengths, String refId) {
         // Create dataset with sorted length array
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i = 0; i < lengths.size(); i++) {
@@ -2915,11 +2725,10 @@ public class MapOptics extends JFrame {
 
         }
         // Create panel for this chart
-        ChartPanel chartPanel = new ChartPanel(chart);
-        return chartPanel;
+        return new ChartPanel(chart);
     }
 
-    private ChartPanel makeDensityChartPanel(ArrayList<Double> densities, String refId, boolean ref) {
+    private ChartPanel makeDensityChartPanel(ArrayList<Double> densities, String refId) {
         // Create dataset with sorted length array
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i = 0; i < densities.size(); i++) {
@@ -2952,8 +2761,7 @@ public class MapOptics extends JFrame {
             plot.addRangeMarker(line);
         }
         // Create panel for this chart
-        ChartPanel chartPanel = new ChartPanel(chart);
-        return chartPanel;
+        return new ChartPanel(chart);
     }
 
     private void fillQryTable(String refId) {
@@ -2969,8 +2777,8 @@ public class MapOptics extends JFrame {
                     RawFileData.getAlignmentInfo(refId + "-" + qryId).getOrientation(),
                     Double.parseDouble(RawFileData.getAlignmentInfo(refId + "-" + qryId).getConfidence()),
                     RawFileData.getAlignmentInfo(refId + "-" + qryId).getHitEnum(),
-                    (int) RawFileData.getQryContigs(qryId).getLabelInfo().length - 1,
-                    (int) RawFileData.getQueries(refId + "-" + qryId).getAlignments().length
+                    RawFileData.getQryContigs(qryId).getLabelInfo().length - 1,
+                        RawFileData.getQueries(refId + "-" + qryId).getAlignments().length
                 });
             }
         }
@@ -2986,10 +2794,10 @@ public class MapOptics extends JFrame {
             tmRefContigs.addRow(new Object[]{
                 refId,
                 (int) RawFileData.getRefContigs(refId).getContigLen(),
-                (int) RawFileData.getRefContigs(refId).getLabelInfo().length - 1,
-                (double) ((RawFileData.getRefContigs(refId).getLabelInfo().length - 1) / RawFileData.getRefContigs(refId).getContigLen()) * 100000,
-                (int) RawFileData.getReferences(refId).getConnections().length,
-                (int) numOverlaps.get(refId)
+                RawFileData.getRefContigs(refId).getLabelInfo().length - 1,
+                ((RawFileData.getRefContigs(refId).getLabelInfo().length - 1) / RawFileData.getRefContigs(refId).getContigLen()) * 100000,
+                    RawFileData.getReferences(refId).getConnections().length,
+                    numOverlaps.get(refId)
             });
         }
     }
@@ -3032,7 +2840,7 @@ public class MapOptics extends JFrame {
         // Add rows to table
         if (!qryId.equals("")) {
             for (int i = 0; i < RawFileData.getQryContigs(qryId).getLabelInfo().length - 1; i++) {
-                Double chimQual;
+                double chimQual;
                 LabelInfo label = RawFileData.getQryContigs(qryId).getLabelInfo()[i];
                 if (label.getChimQuality() == null) {
                     chimQual = 0.0;
@@ -3050,164 +2858,6 @@ public class MapOptics extends JFrame {
             }
         }
     }
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton alignLeft;
-    private javax.swing.JButton alignRight;
-    private javax.swing.JPanel alignmentNamePanel;
-    private javax.swing.JButton browseFasta;
-    private javax.swing.JButton browseKey;
-    private javax.swing.JButton browseQry;
-    private javax.swing.JButton browseRef;
-    private javax.swing.JButton browseXmap;
-    private javax.swing.JDialog chimSettings;
-    private javax.swing.JMenuItem chimqualSet;
-    private javax.swing.JMenuItem chooseImages;
-    private javax.swing.JMenuItem close;
-    private javax.swing.JMenuItem confidenceSet;
-    private javax.swing.JCheckBox confidenceSetting;
-    private javax.swing.JDialog confidenceSettings;
-    private javax.swing.JMenuItem coverageSet;
-    private javax.swing.JDialog coverageSettings;
-    private javax.swing.JButton deleteContig;
-    private javax.swing.JMenuItem exportImages;
-    private javax.swing.JButton exportQryButton;
-    private javax.swing.JButton exportRefButton;
-    private javax.swing.JTextField fastaFile;
-    private javax.swing.JMenuItem fastaLoad;
-    private javax.swing.JDialog fastaLoader;
-    private javax.swing.JDialog fileLoader;
-    private javax.swing.JSpinner highConf;
-    private javax.swing.JSpinner highCov;
-    private javax.swing.JSpinner highQual;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
-    private javax.swing.JLabel jLabel26;
-    private javax.swing.JLabel jLabel29;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel30;
-    private javax.swing.JLabel jLabel31;
-    private javax.swing.JLabel jLabel32;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel47;
-    private javax.swing.JLabel jLabel48;
-    private javax.swing.JLabel jLabel49;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel50;
-    private javax.swing.JLabel jLabel51;
-    private javax.swing.JLabel jLabel52;
-    private javax.swing.JLabel jLabel53;
-    private javax.swing.JLabel jLabel54;
-    private javax.swing.JLabel jLabel55;
-    private javax.swing.JLabel jLabel56;
-    private javax.swing.JLabel jLabel57;
-    private javax.swing.JLabel jLabel58;
-    private javax.swing.JLabel jLabel59;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel60;
-    private javax.swing.JLabel jLabel61;
-    private javax.swing.JLabel jLabel62;
-    private javax.swing.JLabel jLabel63;
-    private javax.swing.JLabel jLabel64;
-    private javax.swing.JLabel jLabel65;
-    private javax.swing.JLabel jLabel66;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JLayeredPane jLayeredPane1;
-    private javax.swing.JLayeredPane jLayeredPane2;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
-    private javax.swing.JMenu jMenu5;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel11;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel8;
-    private javax.swing.JPanel jPanel9;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane2;
-    private javax.swing.JSplitPane jSplitPane3;
-    private javax.swing.JTextField keyFile;
-    private javax.swing.JPanel labelDensityGraph;
-    private javax.swing.JTable labelTable;
-    private javax.swing.JPanel leftPanel;
-    private javax.swing.JButton loadFastaFile;
-    private javax.swing.JMenuItem loadMaps;
-    private javax.swing.JSpinner lowConf;
-    private javax.swing.JSpinner lowCov;
-    private javax.swing.JSpinner lowQual;
-    private javax.swing.JMenuItem manualConflict;
-    private javax.swing.JMenuBar menuBar;
-    private javax.swing.JMenuItem orientateContigs;
-    private javax.swing.JCheckBox overlapSetting;
-    private javax.swing.JTable qryContigTable;
-    private javax.swing.JTextField qryDataset;
-    private javax.swing.JTextField qryFile;
-    private javax.swing.JTextField qryIdSearch;
-    private javax.swing.JTable qryViewRefTable;
-    private UserInterface.QueryView queryView;
-    private javax.swing.JLayeredPane queryViewPane;
-    private javax.swing.JScrollPane queryViewTableScroll;
-    private javax.swing.JButton reCentre;
-    private javax.swing.JButton reOrientate;
-    private javax.swing.JTable refContigTable;
-    private javax.swing.JScrollPane refContigTableScroll;
-    private javax.swing.JTextField refDataset;
-    private javax.swing.JTextField refFile;
-    private javax.swing.JTextField refIdSearch;
-    private javax.swing.JComboBox<String> refOrQry;
-    private javax.swing.JLayeredPane refViewPane;
-    private javax.swing.JScrollPane refViewTableScroll;
-    private javax.swing.JPanel referenceGraphPanel;
-    private UserInterface.ReferenceView referenceView;
-    private javax.swing.JPanel referencesGraph;
-    private javax.swing.JTextField regionSearch;
-    private javax.swing.JComboBox<String> regionType;
-    private javax.swing.JButton resetButton;
-    private javax.swing.JPanel rightPanel;
-    private javax.swing.JButton runAnalysis;
-    private javax.swing.JButton save;
-    private javax.swing.JMenuItem saveAllContigs;
-    private javax.swing.JButton saveConfThresholds;
-    private javax.swing.JMenuItem saveConflictFile;
-    private javax.swing.JButton saveCovThresholds;
-    private javax.swing.JButton saveQualitySettings;
-    private javax.swing.JButton search;
-    private javax.swing.JRadioButton styleChim;
-    private javax.swing.JRadioButton styleCoverage;
-    private javax.swing.JRadioButton styleMatch;
-    private javax.swing.JLayeredPane summaryPane;
-    private UserInterface.SummaryView summaryView;
-    private javax.swing.JMenuItem swapContigs;
-    private javax.swing.JTabbedPane tabPane;
-    private javax.swing.JTabbedPane tabPaneFiles;
-    private javax.swing.JTextField xmapFile;
-    private javax.swing.JButton zoomIn;
-    private javax.swing.JButton zoomOut;
-    // End of variables declaration//GEN-END:variables
 
     private void setAllData() {
 
@@ -3231,8 +2881,8 @@ public class MapOptics extends JFrame {
         SummaryViewData.setData();
 
         // set query view data
-        qryViewHeight = queryView.getHeight();
-        qryViewWidth = queryView.getWidth();
+        double qryViewHeight = queryView.getHeight();
+        double qryViewWidth = queryView.getWidth();
         QueryViewData.setPanelLength(qryViewWidth);
         QueryViewData.setPanelHeight(qryViewHeight);
         QueryViewData.setData();
@@ -3249,13 +2899,13 @@ public class MapOptics extends JFrame {
 
         // Displays graph of reference contigs
         referencesGraph.removeAll();
-        ChartPanel refChartPanel = makeLengthChartPanel(RawFileData.getRefLengths(), ReferenceView.getChosenRef(), true);
+        ChartPanel refChartPanel = makeLengthChartPanel(RawFileData.getRefLengths(), ReferenceView.getChosenRef());
         referencesGraph.add(refChartPanel, BorderLayout.CENTER);
         referencesGraph.setVisible(true);
 
         // Displays graph of query contigs
         labelDensityGraph.removeAll();
-        ChartPanel labDenseChartPanel = makeDensityChartPanel(RawFileData.getRefDensity(), ReferenceView.getChosenRef(), false);
+        ChartPanel labDenseChartPanel = makeDensityChartPanel(RawFileData.getRefDensity(), ReferenceView.getChosenRef());
         labelDensityGraph.add(labDenseChartPanel, BorderLayout.CENTER);
         labelDensityGraph.setVisible(true);
     }
@@ -3290,12 +2940,12 @@ public class MapOptics extends JFrame {
         SearchRegionData.resetData();
         // Redraw the graph with contig marked
         referencesGraph.removeAll();
-        ChartPanel chartPanel1 = makeLengthChartPanel(RawFileData.getRefLengths(), refId, true);
+        ChartPanel chartPanel1 = makeLengthChartPanel(RawFileData.getRefLengths(), refId);
         referencesGraph.add(chartPanel1, BorderLayout.CENTER);
         referencesGraph.setVisible(true);
         // Redraw the graph with contig marked
         labelDensityGraph.removeAll();
-        ChartPanel chartPanel2 = makeDensityChartPanel(RawFileData.getRefDensity(), refId, true);
+        ChartPanel chartPanel2 = makeDensityChartPanel(RawFileData.getRefDensity(), refId);
         labelDensityGraph.add(chartPanel2, BorderLayout.CENTER);
         labelDensityGraph.setVisible(true);
         refIdSearch.setText(refId);
@@ -3314,5 +2964,31 @@ public class MapOptics extends JFrame {
         fillQryViewRefTable(qryId);
         qryIdSearch.setText(qryId);
         repaint();
+    }
+
+    public static void main(String[] args) {
+        // Set the look and feel
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException |
+                IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(
+                    MapOptics.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+
+        // Create and display the form
+        java.awt.EventQueue.invokeLater(() -> new MapOptics().setVisible(true));
     }
 }

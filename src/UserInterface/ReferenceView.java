@@ -1,20 +1,26 @@
 package UserInterface;
 
 import Algorithms.CalculateOverlaps;
-import DataTypes.*;
-import Datasets.Default.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
+import DataTypes.LabelInfo;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
+import Datasets.Default.RawFileData;
+import Datasets.Default.RefViewData;
 import Datasets.UserEdited.UserRefData;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.util.LinkedHashMap;
-import javax.swing.JPanel;
 
 
 /*
  * @author Josie
  */
-@SuppressWarnings("serial")
 public class ReferenceView extends JPanel {
 
     private static String draggedShapeId = "";
@@ -115,91 +121,7 @@ public class ReferenceView extends JPanel {
         initComponents();
     }
 
-    class MyMouseAdapter extends MouseAdapter {
 
-        private boolean pressed = false;
-        private Point point;
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            if (e.getButton() != MouseEvent.BUTTON1) {
-                return;
-            }
-            position = "";
-            pressed = true;
-            draggedShapeId = "";
-            this.point = e.getPoint();
-            Rectangle2D rect;
-            if (!"".equals(chosenRef)) {
-                RefContig ref = UserRefData.getReferences().get(chosenRef);
-                // loop through draggable queries and set dragged shape
-                for (String qryId : ref.getConnections()) {
-                    rect = UserRefData.getQueries(chosenRef + "-" + qryId).getRectangle();
-                    if (rect.contains(e.getPoint())) {
-                        draggedShapeId = chosenRef + "-" + qryId;
-                    }
-
-                }
-            }
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            if (pressed) {
-                setCursor(new Cursor(Cursor.MOVE_CURSOR));
-                int deltaX = e.getX() - point.x;
-                int deltaY = e.getY() - point.y;
-                AffineTransform at = AffineTransform.getTranslateInstance(deltaX, deltaY);
-
-                if (!draggedShapeId.equals("")) {
-
-                    QryContig qry = UserRefData.getQueries(draggedShapeId);
-
-                    Rectangle2D[] draggedShapes = new Rectangle2D[qry.getLabels().length];
-                    for (int i = 0; i < qry.getLabels().length; i++) {
-                        draggedShapes[i] = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
-                    }
-                    qry.setLabels(draggedShapes);
-                    qry.setRectangle(at.createTransformedShape(qry.getRectangle()).getBounds2D());
-                    qry.setAlignments(UserRefData.getQueries(draggedShapeId).getAlignments());
-
-                    UserRefData.getQueries().put(draggedShapeId, qry);
-                    point = e.getPoint();
-                    repaint();
-                } else {
-                    // move everything
-                    // move reference
-                    RefContig ref = UserRefData.getReferences(chosenRef);
-                    ref.setRectangle(at.createTransformedShape(ref.getRectangle()).getBounds2D());
-                    Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
-                    for (int i = 0; i < ref.getLabels().length; i++) {
-                        labels[i] = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
-                    }
-                    ref.setLabels(labels);
-                    // move all queries
-                    for (String qryId : ref.getConnections()) {
-                        QryContig qry = UserRefData.getQueries(chosenRef + "-" + qryId);
-                        qry.setRectangle(at.createTransformedShape(qry.getRectangle()).getBounds2D());
-                        labels = new Rectangle2D[qry.getLabels().length];
-                        for (int i = 0; i < qry.getLabels().length; i++) {
-                            labels[i] = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
-                        }
-                        qry.setLabels(labels);
-                    }
-
-                    point = e.getPoint();
-                    repaint();
-                }
-            }
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            pressed = false;
-            draggedShapeId = "";
-            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
-    }
 
     public void zoomPanel(double horZoom, double vertZoom) {
         AffineTransform at2 = AffineTransform.getScaleInstance(horZoom, vertZoom);
@@ -270,7 +192,6 @@ public class ReferenceView extends JPanel {
                 qry.setLabels(labels);
             }
         }
-
     }
 
     public static void zoom(double zoom, double panelWidth) {
@@ -321,9 +242,7 @@ public class ReferenceView extends JPanel {
         return rect;
     }
 
-    ///////////////////////////////////////////////////////
-    // METHODS TO DO WITH REPAINTING THE PAINT COMPONENT //
-    ///////////////////////////////////////////////////////
+    // METHODS TO DO WITH REPAINTING THE PAINT COMPONENT
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -347,7 +266,7 @@ public class ReferenceView extends JPanel {
                 g2d.setFont(defaultFont);
                 g2d.drawString(refDataset, refStringLen + 20, 20);
                 g2d.drawString(qryDataset, qryStringLen + 20, 40);
-                String refqryId = chosenRef + "-" + chosenQry;
+                //String refqryId = chosenRef + "-" + chosenQry;
 
                 RefContig ref = UserRefData.getReferences(chosenRef);
 
@@ -479,7 +398,7 @@ public class ReferenceView extends JPanel {
                     QryContig qry2 = RawFileData.getQueries(chosenRef + "-" + chosenQry);
                     if (qry != null) {
                         g2d.draw(qry.getRectangle());
-                    } else if (qry == null && qry2 != null) {
+                    } else if (qry2 != null) {
                         Font fontI = new Font("Tahoma", Font.ITALIC, 12);
                         g2d.setFont(fontI);
                         g2d.setColor(new Color(204, 0, 0));
@@ -532,9 +451,9 @@ public class ReferenceView extends JPanel {
             }
         } else {
             g2d.drawLine((int) (refRect.getMinX()), (int) refRect.getMinY() - 50, (int) (refRect.getMinX()), (int) refRect.getMinY() - 40);
-            g2d.drawString(String.format("%.2f", (double) 0.0) + " kb", (int) (refRect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) 0.0) + " kb") / 2), (int) refRect.getMinY() - 55);
+            g2d.drawString(String.format("%.2f", 0.0) + " kb", (int) (refRect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", 0.0) + " kb") / 2), (int) refRect.getMinY() - 55);
             g2d.drawLine((int) (refRect.getMinX() + refRect.getWidth()), (int) refRect.getMinY() - 50, (int) (refRect.getMinX() + refRect.getWidth()), (int) refRect.getMinY() - 40);
-            g2d.drawString(String.format("%.2f", (double) length / 1000) + " kb", (int) (refRect.getMinX() + refRect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) length / 1000) + " kb") / 2), (int) refRect.getMinY() - 55);
+            g2d.drawString(String.format("%.2f", length / 1000) + " kb", (int) (refRect.getMinX() + refRect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", length / 1000) + " kb") / 2), (int) refRect.getMinY() - 55);
 
         }
     }
@@ -631,12 +550,9 @@ public class ReferenceView extends JPanel {
                 alignment.closePath();
                 g2d.fill(alignment);
             }
-
         }
     }
 
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -649,7 +565,88 @@ public class ReferenceView extends JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 300, Short.MAX_VALUE)
         );
-    }// </editor-fold>//GEN-END:initComponents
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+    }
+
+    class MyMouseAdapter extends MouseAdapter {
+
+        private boolean pressed = false;
+        private Point point;
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1) {
+                return;
+            }
+            position = "";
+            pressed = true;
+            draggedShapeId = "";
+            this.point = e.getPoint();
+            Rectangle2D rect;
+            if (!"".equals(chosenRef)) {
+                RefContig ref = UserRefData.getReferences().get(chosenRef);
+                // loop through draggable queries and set dragged shape
+                for (String qryId : ref.getConnections()) {
+                    rect = UserRefData.getQueries(chosenRef + "-" + qryId).getRectangle();
+                    if (rect.contains(e.getPoint())) {
+                        draggedShapeId = chosenRef + "-" + qryId;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (pressed) {
+                setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                int deltaX = e.getX() - point.x;
+                int deltaY = e.getY() - point.y;
+                AffineTransform at = AffineTransform.getTranslateInstance(deltaX, deltaY);
+
+                if (!draggedShapeId.equals("")) {
+
+                    QryContig qry = UserRefData.getQueries(draggedShapeId);
+
+                    Rectangle2D[] draggedShapes = new Rectangle2D[qry.getLabels().length];
+                    for (int i = 0; i < qry.getLabels().length; i++) {
+                        draggedShapes[i] = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
+                    }
+                    qry.setLabels(draggedShapes);
+                    qry.setRectangle(at.createTransformedShape(qry.getRectangle()).getBounds2D());
+                    qry.setAlignments(UserRefData.getQueries(draggedShapeId).getAlignments());
+
+                    UserRefData.getQueries().put(draggedShapeId, qry);
+                } else {
+                    // move everything
+                    // move reference
+                    RefContig ref = UserRefData.getReferences(chosenRef);
+                    ref.setRectangle(at.createTransformedShape(ref.getRectangle()).getBounds2D());
+                    Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
+                    for (int i = 0; i < ref.getLabels().length; i++) {
+                        labels[i] = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
+                    }
+                    ref.setLabels(labels);
+                    // move all queries
+                    for (String qryId : ref.getConnections()) {
+                        QryContig qry = UserRefData.getQueries(chosenRef + "-" + qryId);
+                        qry.setRectangle(at.createTransformedShape(qry.getRectangle()).getBounds2D());
+                        labels = new Rectangle2D[qry.getLabels().length];
+                        for (int i = 0; i < qry.getLabels().length; i++) {
+                            labels[i] = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
+                        }
+                        qry.setLabels(labels);
+                    }
+                }
+
+                point = e.getPoint();
+                repaint();
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            pressed = false;
+            draggedShapeId = "";
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
 }

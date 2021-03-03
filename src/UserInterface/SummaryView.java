@@ -1,18 +1,18 @@
 package UserInterface;
 
-import DataTypes.*;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
 import Datasets.Default.RawFileData;
 import Datasets.UserEdited.SavedRefData;
+
+import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import javax.swing.JPanel;
 
 
 /*
  * @author Josie
  */
-@SuppressWarnings("serial")
 public class SummaryView extends JPanel {
 
     private static String chosenRef = "";
@@ -20,49 +20,53 @@ public class SummaryView extends JPanel {
     public static void setChosenRef(String chosenRef) {
         SummaryView.chosenRef = chosenRef;
     }
-    public static String getChosenRef() {
-        return chosenRef;
-    }
+
+//    public static String getChosenRef() {
+//        return chosenRef;
+//    }
 
     public SummaryView() {
         initComponents();
     }
 
-    public void zoomPanel(double horZoom, double vertZoom) {
-        AffineTransform at2 = AffineTransform.getScaleInstance(horZoom, vertZoom);
-        // move everything
-        // move and resize reference
-        for (String refId : SavedRefData.getReferences().keySet()) {
-            Rectangle2D rect;
-            RefContig ref = SavedRefData.getReferences(refId);
-            rect = at2.createTransformedShape(ref.getRectangle()).getBounds2D();
-            ref.setRectangle(rect);
-            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
-            for (int i = 0; i < ref.getLabels().length; i++) {
-                rect = at2.createTransformedShape(ref.getLabels()[i]).getBounds2D();
-                labels[i] = resize(rect);
-
-            }
-            ref.setLabels(labels);
-            // move all queries
-            for (String qryId : ref.getConnections()) {
-                QryContig qry = SavedRefData.getQueries(refId + "-" + qryId);
-                rect = at2.createTransformedShape(qry.getRectangle()).getBounds2D();
-                qry.setRectangle(rect);
-                labels = new Rectangle2D[qry.getLabels().length];
-                for (int i = 0; i < qry.getLabels().length; i++) {
-                    rect = at2.createTransformedShape(qry.getLabels()[i]).getBounds2D();
-                    labels[i] = resize(rect);
-                }
-                qry.setLabels(labels);
-            }
-        }
-    }
-
-    private Rectangle2D resize(Rectangle2D rect) {
-        rect.setRect(rect.getMinX(), rect.getMinY(), 1, rect.getHeight());
-        return rect;
-    }
+    /*
+    This method is currently unused. Commented out in case it becomes useful.
+     */
+//    public void zoomPanel(double horZoom, double vertZoom) {
+//        AffineTransform at2 = AffineTransform.getScaleInstance(horZoom, vertZoom);
+//        // move everything
+//        // move and resize reference
+//        for (String refId : SavedRefData.getReferences().keySet()) {
+//            Rectangle2D rect;
+//            RefContig ref = SavedRefData.getReferences(refId);
+//            rect = at2.createTransformedShape(ref.getRectangle()).getBounds2D();
+//            ref.setRectangle(rect);
+//            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
+//            for (int i = 0; i < ref.getLabels().length; i++) {
+//                rect = at2.createTransformedShape(ref.getLabels()[i]).getBounds2D();
+//                labels[i] = resize(rect);
+//
+//            }
+//            ref.setLabels(labels);
+//            // move all queries
+//            for (String qryId : ref.getConnections()) {
+//                QryContig qry = SavedRefData.getQueries(refId + "-" + qryId);
+//                rect = at2.createTransformedShape(qry.getRectangle()).getBounds2D();
+//                qry.setRectangle(rect);
+//                labels = new Rectangle2D[qry.getLabels().length];
+//                for (int i = 0; i < qry.getLabels().length; i++) {
+//                    rect = at2.createTransformedShape(qry.getLabels()[i]).getBounds2D();
+//                    labels[i] = resize(rect);
+//                }
+//                qry.setLabels(labels);
+//            }
+//        }
+//    }
+//
+//    private Rectangle2D resize(Rectangle2D rect) {
+//        rect.setRect(rect.getMinX(), rect.getMinY(), 1, rect.getHeight());
+//        return rect;
+//    }
 
     @Override
     public void paintComponent(Graphics g) {
@@ -94,7 +98,7 @@ public class SummaryView extends JPanel {
                     g2d.drawLine((int) (10 + (scaleWidth / 5 * i)), 5, (int) (10 + (scaleWidth / 5 * i)), 15);
                 }
 
-                g2d.drawString("500 000 bp", (int) 15, (int) 28);
+                g2d.drawString("500 000 bp", 15, 28);
 
                 Rectangle2D qryRect;
                 QryContig qry;
@@ -167,13 +171,10 @@ public class SummaryView extends JPanel {
             }
 
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
-
     }
 
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -186,7 +187,5 @@ public class SummaryView extends JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 300, Short.MAX_VALUE)
         );
-    }// </editor-fold>//GEN-END:initComponents
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+    }
 }

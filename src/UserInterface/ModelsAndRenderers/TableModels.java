@@ -13,20 +13,14 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TableModels {
 
-    private static DefaultTableModel labelModel = new DefaultTableModel() {
+    private static final DefaultTableModel LABEL_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
             switch (column) {
-                case 0:
-                    return String.class;
                 case 1:
-                    return Double.class;
                 case 2:
-                    return Double.class;
                 case 3:
-                    return Double.class;
                 case 4:
-                    return Double.class;
                 case 5:
                     return Double.class;
                 default:
@@ -42,22 +36,16 @@ public class TableModels {
     };
 
     public static DefaultTableModel getLabelModel() {
-        return labelModel;
+        return LABEL_MODEL;
     }
 
-    private static DefaultTableModel qryViewRefModel = new DefaultTableModel() {
+    private static final DefaultTableModel QRY_VIEW_REF_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
-            switch (column) {
-                case 0:
-                    return String.class;
-                case 1:
-                    return String.class;
-                case 2:
-                    return Double.class;
-                default:
-                    return String.class;
+            if (column == 2) {
+                return Double.class;
             }
+            return String.class;
         }
 
         @Override
@@ -67,27 +55,19 @@ public class TableModels {
     };
 
     public static DefaultTableModel getQryViewRefModel() {
-        return qryViewRefModel;
+        return QRY_VIEW_REF_MODEL;
     }
 
-    private static DefaultTableModel qryModel = new DefaultTableModel() {
+    private static final DefaultTableModel QRY_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
             switch (column) {
-                case 0:
-                    return String.class;
                 case 1:
-                    return Integer.class;
-                case 2:
-                    return String.class;
-                case 3:
-                    return Double.class;
-                case 4:
-                    return String.class;
                 case 5:
-                    return Integer.class;
                 case 6:
                     return Integer.class;
+                case 3:
+                    return Double.class;
                 default:
                     return String.class;
             }
@@ -100,25 +80,20 @@ public class TableModels {
     };
 
     public static DefaultTableModel getQryModel() {
-        return qryModel;
+        return QRY_MODEL;
     }
 
-    private static DefaultTableModel refModel = new DefaultTableModel() {
+    private static final DefaultTableModel REF_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
             switch (column) {
-                case 0:
-                    return String.class;
                 case 1:
-                    return Integer.class;
                 case 2:
+                case 4:
+                case 5:
                     return Integer.class;
                 case 3:
                     return Double.class;
-                case 4:
-                    return Integer.class;
-                case 5:
-                    return Integer.class;
                 default:
                     return String.class;
             }
@@ -131,20 +106,16 @@ public class TableModels {
     };
 
     public static DefaultTableModel getRefModel() {
-        return refModel;
+        return REF_MODEL;
     }
 
-    private static DefaultTableModel imageModel = new DefaultTableModel() {
+    private static final DefaultTableModel IMAGE_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
-            switch (column) {
-                case 0:
-                    return String.class;
-                case 1:
-                    return Boolean.class;
-                default:
-                    return String.class;
+            if (column == 1) {
+                return Boolean.class;
             }
+            return String.class;
         }
 
         @Override
@@ -155,6 +126,6 @@ public class TableModels {
     };
 
     public static DefaultTableModel getImageModel() {
-        return imageModel;
+        return IMAGE_MODEL;
     }
 }

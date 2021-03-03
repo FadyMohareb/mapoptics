@@ -1,12 +1,16 @@
 package UserInterface;
 
 import Algorithms.SortSequence;
-import DataTypes.*;
-import Datasets.Default.*;
-import Datasets.UserEdited.*;
+import DataTypes.LabelInfo;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
+import Datasets.Default.RawFileData;
+import Datasets.UserEdited.SearchRegionData;
+import Datasets.UserEdited.UserQryData;
+
+import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.*;
-import javax.swing.JPanel;
+import java.awt.geom.Rectangle2D;
 
 /*
  * @author Josie
@@ -31,12 +35,6 @@ public class QueryView extends JPanel {
     private static String position = "";
     private static int mouseX = 0;
     private static int mouseY = 0;
-    private static int lowConf = 20;
-    private static int highConf = 40;
-    private static int lowCov = 20;
-    private static int highCov = 50;
-    private static int lowQual = 20;
-    private static int highQual = 90;
 
     public static void setChosenRef(String chosenRef) {
         QueryView.chosenRef = chosenRef;
@@ -56,10 +54,6 @@ public class QueryView extends JPanel {
 
     public static String getChosenRef() {
         return chosenRef;
-    }
-
-    public static String getChosenLabel() {
-        return chosenLabel;
     }
 
     public static void setStyle(String style) {
@@ -98,118 +92,97 @@ public class QueryView extends JPanel {
         return regionView;
     }
 
-    public static void setLowConf(int lowConf) {
-        QueryView.lowConf = lowConf;
-    }
-
-    public static void setHighConf(int highConf) {
-        QueryView.highConf = highConf;
-    }
-
-    public static void setLowCov(int lowCov) {
-        QueryView.lowCov = lowCov;
-    }
-
-    public static void setHighCov(int highCov) {
-        QueryView.highCov = highCov;
-    }
-
-    public static void setLowQual(int lowQual) {
-        QueryView.lowQual = lowQual;
-    }
-
-    public static void setHighQual(int highQual) {
-        QueryView.highQual = highQual;
-    }
-
-    public void zoomPanel(double horZoom, double vertZoom) {
-        AffineTransform at = AffineTransform.getScaleInstance(horZoom, vertZoom);
-        // move everything
-        // move and resize user data
-        for (String refqryId : UserQryData.getQueries().keySet()) {
-            Rectangle2D rect;
-            QryContig qry = UserQryData.getQueries(refqryId);
-            rect = at.createTransformedShape(qry.getRectangle()).getBounds2D();
-            qry.setRectangle(rect);
-
-            Rectangle2D[] labels = new Rectangle2D[qry.getLabels().length];
-            for (int i = 0; i < qry.getLabels().length; i++) {
-                rect = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
-                labels[i] = resize(rect);
-
-            }
-            qry.setLabels(labels);
-        }
-
-        for (String refqryId : UserQryData.getReferences().keySet()) {
-            Rectangle2D rect;
-            RefContig ref = UserQryData.getReferences(refqryId);
-            rect = at.createTransformedShape(ref.getRectangle()).getBounds2D();
-            ref.setRectangle(rect);
-            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
-            for (int i = 0; i < ref.getLabels().length; i++) {
-                rect = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
-                labels[i] = resize(rect);
-
-            }
-            ref.setLabels(labels);
-        }
-
-        // move and resize default data
-        for (String refqryId : QueryViewData.getQueries().keySet()) {
-            Rectangle2D rect;
-            QryContig qry = QueryViewData.getQueries(refqryId);
-            rect = at.createTransformedShape(qry.getRectangle()).getBounds2D();
-            qry.setRectangle(rect);
-            Rectangle2D[] labels = new Rectangle2D[qry.getLabels().length];
-            for (int i = 0; i < qry.getLabels().length; i++) {
-                rect = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
-                labels[i] = resize(rect);
-            }
-            qry.setLabels(labels);
-        }
-        for (String refqryId : QueryViewData.getReferences().keySet()) {
-            Rectangle2D rect;
-            RefContig ref = QueryViewData.getReferences(refqryId);
-            rect = at.createTransformedShape(ref.getRectangle()).getBounds2D();
-            ref.setRectangle(rect);
-            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
-            for (int i = 0; i < ref.getLabels().length; i++) {
-                rect = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
-                labels[i] = resize(rect);
-            }
-            ref.setLabels(labels);
-        }
-        // move and resize search region data if present
-        Rectangle2D rect;
-        QryContig qry = SearchRegionData.getQry();
-        if (qry.getRectangle() != null) {
-            rect = at.createTransformedShape(qry.getRectangle()).getBounds2D();
-            qry.setRectangle(rect);
-            Rectangle2D[] labels = new Rectangle2D[qry.getLabels().length];
-            for (int i = 0; i < qry.getLabels().length; i++) {
-                rect = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
-                labels[i] = resize(rect);
-            }
-            qry.setLabels(labels);
-        }
-        RefContig ref = SearchRegionData.getRef();
-        if (ref.getRectangle() != null) {
-            rect = at.createTransformedShape(ref.getRectangle()).getBounds2D();
-            ref.setRectangle(rect);
-            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
-            for (int i = 0; i < ref.getLabels().length; i++) {
-                rect = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
-                labels[i] = resize(rect);
-            }
-            ref.setLabels(labels);
-        }
-    }
-
-    private static Rectangle2D resize(Rectangle2D rect) {
-        rect.setRect(rect.getMinX(), rect.getMinY(), 1, rect.getHeight());
-        return rect;
-    }
+    /*
+    This method is currently unused. Commented out in case it becomes useful.
+     */
+//    public void zoomPanel(double horZoom, double vertZoom) {
+//        AffineTransform at = AffineTransform.getScaleInstance(horZoom, vertZoom);
+//        // move everything
+//        // move and resize user data
+//        for (String refqryId : UserQryData.getQueries().keySet()) {
+//            Rectangle2D rect;
+//            QryContig qry = UserQryData.getQueries(refqryId);
+//            rect = at.createTransformedShape(qry.getRectangle()).getBounds2D();
+//            qry.setRectangle(rect);
+//
+//            Rectangle2D[] labels = new Rectangle2D[qry.getLabels().length];
+//            for (int i = 0; i < qry.getLabels().length; i++) {
+//                rect = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
+//                labels[i] = resize(rect);
+//
+//            }
+//            qry.setLabels(labels);
+//        }
+//
+//        for (String refqryId : UserQryData.getReferences().keySet()) {
+//            Rectangle2D rect;
+//            RefContig ref = UserQryData.getReferences(refqryId);
+//            rect = at.createTransformedShape(ref.getRectangle()).getBounds2D();
+//            ref.setRectangle(rect);
+//            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
+//            for (int i = 0; i < ref.getLabels().length; i++) {
+//                rect = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
+//                labels[i] = resize(rect);
+//
+//            }
+//            ref.setLabels(labels);
+//        }
+//
+//        // move and resize default data
+//        for (String refqryId : QueryViewData.getQueries().keySet()) {
+//            Rectangle2D rect;
+//            QryContig qry = QueryViewData.getQueries(refqryId);
+//            rect = at.createTransformedShape(qry.getRectangle()).getBounds2D();
+//            qry.setRectangle(rect);
+//            Rectangle2D[] labels = new Rectangle2D[qry.getLabels().length];
+//            for (int i = 0; i < qry.getLabels().length; i++) {
+//                rect = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
+//                labels[i] = resize(rect);
+//            }
+//            qry.setLabels(labels);
+//        }
+//        for (String refqryId : QueryViewData.getReferences().keySet()) {
+//            Rectangle2D rect;
+//            RefContig ref = QueryViewData.getReferences(refqryId);
+//            rect = at.createTransformedShape(ref.getRectangle()).getBounds2D();
+//            ref.setRectangle(rect);
+//            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
+//            for (int i = 0; i < ref.getLabels().length; i++) {
+//                rect = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
+//                labels[i] = resize(rect);
+//            }
+//            ref.setLabels(labels);
+//        }
+//        // move and resize search region data if present
+//        Rectangle2D rect;
+//        QryContig qry = SearchRegionData.getQry();
+//        if (qry.getRectangle() != null) {
+//            rect = at.createTransformedShape(qry.getRectangle()).getBounds2D();
+//            qry.setRectangle(rect);
+//            Rectangle2D[] labels = new Rectangle2D[qry.getLabels().length];
+//            for (int i = 0; i < qry.getLabels().length; i++) {
+//                rect = at.createTransformedShape(qry.getLabels()[i]).getBounds2D();
+//                labels[i] = resize(rect);
+//            }
+//            qry.setLabels(labels);
+//        }
+//        RefContig ref = SearchRegionData.getRef();
+//        if (ref.getRectangle() != null) {
+//            rect = at.createTransformedShape(ref.getRectangle()).getBounds2D();
+//            ref.setRectangle(rect);
+//            Rectangle2D[] labels = new Rectangle2D[ref.getLabels().length];
+//            for (int i = 0; i < ref.getLabels().length; i++) {
+//                rect = at.createTransformedShape(ref.getLabels()[i]).getBounds2D();
+//                labels[i] = resize(rect);
+//            }
+//            ref.setLabels(labels);
+//        }
+//    }
+//
+//    private static Rectangle2D resize(Rectangle2D rect) {
+//        rect.setRect(rect.getMinX(), rect.getMinY(), 1, rect.getHeight());
+//        return rect;
+//    }
 
     @Override
     public void paintComponent(Graphics g) {
@@ -256,11 +229,11 @@ public class QueryView extends JPanel {
                         // draw contigs with gaps visible
                         drawSequence(g2d, ref.getRectangle(), ref.getSequence(), RawFileData.getRefContigs(chosenRef).getContigLen());
                         // draw query contig
-                        drawContig(g2d, qryRect, chosenQry);
+                        drawContig(g2d, qryRect);
 
                     } else if (!refSequenceView && qrySequenceView) {
                         // draw ref contig
-                        drawContig(g2d, refRect, chosenRef);
+                        drawContig(g2d, refRect);
                         // draw contigs with gaps visible
                         drawSequence(g2d, qry.getRectangle(), qry.getSequence(), RawFileData.getQryContigs(chosenQry).getContigLen());
 
@@ -271,9 +244,9 @@ public class QueryView extends JPanel {
 
                     } else {
                         // draw reference contig
-                        drawContig(g2d, refRect, chosenRef);
+                        drawContig(g2d, refRect);
                         // draw query contig
-                        drawContig(g2d, qryRect, chosenQry);
+                        drawContig(g2d, qryRect);
 
                     }
 
@@ -426,9 +399,9 @@ public class QueryView extends JPanel {
                 }
             } else {
                 g2d.drawLine((int) (rect.getMinX()), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX()), (int) rect.getMinY() - this.getHeight() / 20);
-                g2d.drawString(String.format("%.2f", (double) 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) 0.0) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
+                g2d.drawString(String.format("%.2f", 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", 0.0) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
                 g2d.drawLine((int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 20);
-                g2d.drawString(String.format("%.2f", (double) length / 1000) + " kb", (int) (rect.getMinX() + rect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) length / 1000) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
+                g2d.drawString(String.format("%.2f", length / 1000) + " kb", (int) (rect.getMinX() + rect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", length / 1000) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
 
             }
         } else {
@@ -444,15 +417,14 @@ public class QueryView extends JPanel {
                 }
             } else {
                 g2d.drawLine((int) (rect.getMinX()), (int) rect.getMinY() + this.getHeight() / 25, (int) (rect.getMinX()), (int) rect.getMinY() + this.getHeight() / 20);
-                g2d.drawString(String.format("%.2f", (double) 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) 0.0) + " kb") / 2), (int) rect.getMinY() + +this.getHeight() / 20 + 14);
+                g2d.drawString(String.format("%.2f", 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", 0.0) + " kb") / 2), (int) rect.getMinY() + +this.getHeight() / 20 + 14);
                 g2d.drawLine((int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() + this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() + this.getHeight() / 20);
-                g2d.drawString(String.format("%.2f", (double) length / 1000) + " kb", (int) (rect.getMinX() + rect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) length / 1000) + " kb") / 2), (int) rect.getMinY() + this.getHeight() / 20 + 14);
+                g2d.drawString(String.format("%.2f", length / 1000) + " kb", (int) (rect.getMinX() + rect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", length / 1000) + " kb") / 2), (int) rect.getMinY() + this.getHeight() / 20 + 14);
             }
         }
-
     }
 
-    private void drawContig(Graphics2D g2d, Rectangle2D rect, String id) {
+    private void drawContig(Graphics2D g2d, Rectangle2D rect) {
         g2d.setColor(new Color(244, 244, 244));
         g2d.fill(rect);
         g2d.setColor(Color.lightGray);
@@ -488,6 +460,8 @@ public class QueryView extends JPanel {
         for (int i = 0; i < labelInfo.length - 1; i++) {
             double coverage = Double.parseDouble(labelInfo[i].getCoverage());
             Rectangle2D label = labels[i];
+            int lowCov = 20;
+            int highCov = 50;
             if (coverage < lowCov) {
                 g2d.setColor(new Color(204, 0, 0));
                 g2d.fill(label);
@@ -506,6 +480,8 @@ public class QueryView extends JPanel {
             Rectangle2D label = labels[i];
             if (labelInfo[i].getChimQuality() != null) {
                 double chimQuality = Double.parseDouble(labelInfo[i].getChimQuality());
+                int lowQual = 20;
+                int highQual = 90;
                 if (chimQuality < lowQual) {
                     g2d.setColor(new Color(204, 0, 0));
                     g2d.fill(label);
@@ -529,6 +505,8 @@ public class QueryView extends JPanel {
         Stroke dotted = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[]{1, 2}, 2);
         double confidence = Double.parseDouble(RawFileData.getAlignmentInfo(chosenRef + "-" + chosenQry).getConfidence());
         g2d.setColor(Color.black);
+        int lowConf = 20;
+        int highConf = 40;
         if (confidence < 20) {
             g2d.setStroke(dotted);
         } else if (confidence >= lowConf && confidence < highConf) {
@@ -538,8 +516,6 @@ public class QueryView extends JPanel {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         setPreferredSize(new java.awt.Dimension(0, 0));
@@ -554,9 +530,5 @@ public class QueryView extends JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 300, Short.MAX_VALUE)
         );
-    }// </editor-fold>//GEN-END:initComponents
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+    }
 }
