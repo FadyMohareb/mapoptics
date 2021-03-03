@@ -22,9 +22,9 @@ public class XmapReader {
         XmapReader.swap = swap;
     }
 
-    static public LinkedHashMap<String, AlignmentInfo> xmapToHashMap(String filename) {
+    public static LinkedHashMap<String, AlignmentInfo> xmapToHashMap(String filename) {
         String line;
-        String fields[];
+        String[] fields;
         String refId;
         String qryId;
 
