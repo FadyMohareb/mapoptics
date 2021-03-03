@@ -2047,7 +2047,7 @@ public class MapOptics extends JFrame {
 
     private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {
         // when mouse is hovered over, display the position
-        if (!QueryView.getChosenRef().equals("") && !QueryView.getChosenQry().equals("")) {
+        if (!QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
             double positionScale;
             String position = "";
             String refId = QueryView.getChosenRef();
