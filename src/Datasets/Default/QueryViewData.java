@@ -30,42 +30,6 @@ public class QueryViewData {
         QueryViewData.qryConnections = new LinkedHashMap();
     }
 
-    public static void setPanelLength(double panelLength) {
-        QueryViewData.panelLength = panelLength;
-    }
-
-    public static void setPanelHeight(double panelHeight) {
-        QueryViewData.panelHeight = panelHeight;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static RefContig getReferences(String refqryId) {
-        return references.get(refqryId);
-    }
-
-    public static LinkedHashMap<String, String[]> getQryConnections() {
-        return qryConnections;
-    }
-
-    public static String[] getQryConnections(String qryId) {
-        return qryConnections.get(qryId);
-    }
-
-    public static void setQryConnections(LinkedHashMap<String, String[]> qryConnections) {
-        QueryViewData.qryConnections = qryConnections;
-    }
-
     public static void setData() {
         ArrayList<Rectangle2D> labels = new ArrayList();
         ArrayList<String> qryIds = new ArrayList();
@@ -182,4 +146,37 @@ public class QueryViewData {
         rect.setRect(newX, newY, newW, newH);
         return rect;
     }
+
+    public static void setPanelLength(double panelLength) {
+        QueryViewData.panelLength = panelLength;
+    }
+
+    public static void setPanelHeight(double panelHeight) {
+        QueryViewData.panelHeight = panelHeight;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static RefContig getReferences(String refqryId) {
+        return references.get(refqryId);
+    }
+
+    public static LinkedHashMap<String, String[]> getQryConnections() {
+        return qryConnections;
+    }
+
+    public static String[] getQryConnections(String qryId) {
+        return qryConnections.get(qryId);
+    }
+
 }
