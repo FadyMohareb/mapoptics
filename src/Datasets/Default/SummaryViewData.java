@@ -24,30 +24,6 @@ public class SummaryViewData {
         SummaryViewData.queries = new LinkedHashMap();
     }
 
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static RefContig getReferences(String refId) {
-        return references.get(refId);
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static void setHorZoom(double horZoom) {
-        SummaryViewData.horZoom = horZoom;
-    }
-
-    public static void setVertZoom(double vertZoom) {
-        SummaryViewData.vertZoom = vertZoom;
-    }
-
     public static void setData() {
         
        // loop through reference view data and rescale to fit the summary view panel
@@ -81,6 +57,30 @@ public class SummaryViewData {
         AffineTransform at2 = AffineTransform.getScaleInstance(horZoom, vertZoom);
         rect = at2.createTransformedShape(rect).getBounds2D();
         return rect;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static RefContig getReferences(String refId) {
+        return references.get(refId);
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static void setHorZoom(double horZoom) {
+        SummaryViewData.horZoom = horZoom;
+    }
+
+    public static void setVertZoom(double vertZoom) {
+        SummaryViewData.vertZoom = vertZoom;
     }
 
 }
