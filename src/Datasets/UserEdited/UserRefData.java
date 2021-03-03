@@ -37,41 +37,6 @@ public class UserRefData {
         UserRefData.queries = new LinkedHashMap();
     }
 
-    public static void setPanelLength(double panelLength) {
-        UserRefData.panelLength = panelLength;
-    }
-
-    public static void setPanelHeight(double panelHeight) {
-        UserRefData.panelHeight = panelHeight;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static RefContig getReferences(String refId) {
-        return references.get(refId);
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static void setQueries(LinkedHashMap<String, QryContig> usrRefQueries) {
-        UserRefData.queries = usrRefQueries;
-    }
-
-    public static void setHorZoom(double horZoom) {
-        UserRefData.horZoom = horZoom;
-    }
-
-    public static void setVertZoom(double vertZoom) {
-        UserRefData.vertZoom = vertZoom;
-    }
 
     public static void setData() {
         // set all references to match default dataset
@@ -278,6 +243,42 @@ public class UserRefData {
         double newH = rect.getHeight();
         rect.setRect(newX, newY, newW, newH);
         return rect;
+    }
+
+    public static void setPanelLength(double panelLength) {
+        UserRefData.panelLength = panelLength;
+    }
+
+    public static void setPanelHeight(double panelHeight) {
+        UserRefData.panelHeight = panelHeight;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static RefContig getReferences(String refId) {
+        return references.get(refId);
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static void setQueries(LinkedHashMap<String, QryContig> usrRefQueries) {
+        UserRefData.queries = usrRefQueries;
+    }
+
+    public static void setHorZoom(double horZoom) {
+        UserRefData.horZoom = horZoom;
+    }
+
+    public static void setVertZoom(double vertZoom) {
+        UserRefData.vertZoom = vertZoom;
     }
 
 }
