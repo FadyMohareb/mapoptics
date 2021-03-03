@@ -5,6 +5,13 @@ package DataTypes;
  */
 public class LabelInfo {
 
+    private String labelChannel ;
+    private String labelPos ;
+    private String stdDev ;
+    private String coverage ;
+    private String occurance ;
+    private String chimQuality;
+
     public LabelInfo(String labelChannel, String labelPos, String stdDev, String coverage, String occurance) {
         this.labelChannel = labelChannel;
         this.labelPos = labelPos;
@@ -63,10 +70,4 @@ public class LabelInfo {
     }
     */
 
-    private String labelChannel ;
-    private String labelPos ;
-    private String stdDev ;
-    private String coverage ;
-    private String occurance ;
-    private String chimQuality;
 }

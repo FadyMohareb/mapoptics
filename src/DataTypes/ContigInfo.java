@@ -4,6 +4,8 @@ package DataTypes;
  * @author Josie
  */
 public class ContigInfo {
+    private final double contigLen ;
+    private final LabelInfo[] labelInfo;
 
     public ContigInfo(double contigLen, LabelInfo[] labelInfo) {
         this.contigLen = contigLen;
@@ -26,6 +28,5 @@ public class ContigInfo {
         this.contigLen = contigLen;
     }
     */
-    private final double contigLen ;
-    private final LabelInfo[] labelInfo;
+
 }

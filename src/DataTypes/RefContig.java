@@ -8,6 +8,12 @@ import java.util.ArrayList;
  */
 public class RefContig {
 
+    private Rectangle2D rectangle;
+    private Rectangle2D[] labels;
+    private String[] connections;
+    private String sequence;
+    private String name;
+
     public RefContig(Rectangle2D rectangle, Rectangle2D[] labels, String[] connections) {
         this.rectangle = rectangle;
         this.labels = labels;
@@ -80,9 +86,5 @@ public class RefContig {
         this.name = name;
     }
 
-    private Rectangle2D rectangle;
-    private Rectangle2D[] labels;
-    private String[] connections;
-    private String sequence;
-    private String name;
+
 }

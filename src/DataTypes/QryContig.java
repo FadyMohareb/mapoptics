@@ -8,6 +8,18 @@ import java.util.ArrayList;
  */
 public class QryContig {
 
+    private Rectangle2D rectangle;
+    private Rectangle2D[] labels;
+    private String[][] alignments;
+    private double qryAlignStart;
+    private double qryAlignEnd;
+    private double refAlignStart;
+    private double refAlignEnd;
+    private String orientation;
+    private boolean reOrientated = false;
+    private String sequence;
+    private String name;
+
     public QryContig(Rectangle2D rectangle, Rectangle2D[] labels, String[][] alignments, double qryAlignStart, double qryAlignEnd, double refAlignStart, double refAlignEnd, String orientation) {
         this.rectangle = rectangle;
         this.labels = labels;
@@ -164,15 +176,5 @@ public class QryContig {
      }
      */
 
-    private Rectangle2D rectangle;
-    private Rectangle2D[] labels;
-    private String[][] alignments;
-    private double qryAlignStart;
-    private double qryAlignEnd;
-    private double refAlignStart;
-    private double refAlignEnd;
-    private String orientation;
-    private boolean reOrientated = false;
-    private String sequence;
-    private String name;
+
 }

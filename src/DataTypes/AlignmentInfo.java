@@ -4,6 +4,15 @@ package DataTypes;
  * @author Josie
  */
 public class AlignmentInfo {
+    private final String qryAlignStart;
+    private final String qryAlignEnd ;
+    private final String refAlignStart ;
+    private final String refAlignEnd ;
+    private String orientation ;
+    private String confidence ;
+    private String hitEnum ;
+    private String labelChannel ;
+    private String alignment ;
 
     public AlignmentInfo(String qryAlignStart, String qryAlignEnd, String refAlignStart, String refAlignEnd, String orientation, String confidence, String hitEnum, String labelChannel, String alignment) {
         this.qryAlignStart = qryAlignStart;
@@ -90,13 +99,5 @@ public class AlignmentInfo {
 
     */
 
-    private final String qryAlignStart;
-    private final String qryAlignEnd ;
-    private final String refAlignStart ;
-    private final String refAlignEnd ;
-    private String orientation ;
-    private String confidence ;
-    private String hitEnum ;
-    private String labelChannel ;
-    private String alignment ;
+
 }
