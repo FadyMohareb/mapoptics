@@ -9,16 +9,32 @@ import java.util.LinkedHashMap;
 /*
  * @author Josie
  */
-public class SortOverlap {
 
-    private static Rectangle2D[] qryRects;
-    private static Rectangle2D[][] qryLabels;
+/* Glynn's edit starting 09MAR2021 - with adding comments to understand WTF is going on.
+
+ */
+public class SortOverlap {
+    /* GM: My understanding is that this class attempts to move all overlapping contigs (represented as rectangles,
+    parallel to the reference map) so that they no longer overlap and can be viewed by the user.
+    GM: the scale and movement of these query contigs is performed iteratively with up and down and/or left or right
+    movements within a while loop with fixed vector values to move.
+    GM: This process is currently very, very slow.
+     */
+
+    private static Rectangle2D[] qryRects; // Rect2D array
+    private static Rectangle2D[][] qryLabels; // Rect2D 2D array
     private static Double[] qryStarts;
     private static Double[] qryEnds;
 
-    private static final LinkedHashMap<String, Rectangle2D> sortedRects = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, Rectangle2D[]> sortedLabels = new LinkedHashMap<>();
+    /* A linked hashmap is a hashmap where the iteration order is maintained and not random like a normal hashmap
 
+     */
+    // New linked hashmap for sortedRects
+    private static LinkedHashMap<String, Rectangle2D> sortedRects = new LinkedHashMap();
+    // New linked hashmap for sortedLabels
+    private static LinkedHashMap<String, Rectangle2D[]> sortedLabels = new LinkedHashMap();
+
+    // Getters for LinkedHashMaps
     public static LinkedHashMap<String, Rectangle2D> getSortedRects() {
         return sortedRects;
     }
@@ -27,6 +43,7 @@ public class SortOverlap {
         return sortedLabels;
     }
 
+    //Getters for Rectangles
     public static Rectangle2D getSortedRects(String refqryId) {
         return sortedRects.get(refqryId);
     }
@@ -35,12 +52,14 @@ public class SortOverlap {
         return sortedLabels.get(refqryId);
     }
 
-    public static void sortOverlaps(LinkedHashMap<String, RefContig> references,
-                                    LinkedHashMap<String, QryContig> queries, int scale) {
+    public static void sortOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries, int scale) {
+    /* sortOverlaps receives input of two LinkedHashMaps: references and queries alongside an integer for the scale
 
+     */
+    // Clears current LinkedHashMaps
         sortedRects.clear();
         sortedLabels.clear();
-        String[] qryIds;
+        String[] qryIds; // Create string array for Query IDs
 
         for (String refId : references.keySet()) {
             qryIds = references.get(refId).getConnections();
@@ -48,16 +67,7 @@ public class SortOverlap {
         }
     }
 
-    public static boolean isOverLappingX(double rect1start, double rect1end, double rect2start, double rect2end) {
-        return (((rect1start <= rect2start) && (rect2end <= rect1end))
-                || ((rect2start <= rect1start) && (rect1end <= rect2end))
-                || ((rect1start <= rect2start) && (rect1end >= rect2start)
-                && (rect2end >= rect1end)) || ((rect2start <= rect1start)
-                && (rect2end >= rect1start) && (rect1end >= rect2end)));
-    }
-
-    private static void moveOverlappingContigs(String[] qryIds, String refId,
-                                               LinkedHashMap<String, QryContig> queries, int scale) {
+    private static void moveOverlappingContigs(String[] qryIds, String refId, LinkedHashMap<String, QryContig> queries, int scale) {
 
         setArrays(qryIds, refId, queries);
 
@@ -99,8 +109,8 @@ public class SortOverlap {
     private static void moveLeftandRight(int scale) {
         // Check for overlaps in alignment sections and move rectangles apart if they overlap
         boolean[][] overlap = new boolean[qryRects.length][qryRects.length];
-        for (boolean[] booleans : overlap) {
-            Arrays.fill(booleans, true);
+        for (int i = 0; i < overlap.length; i++) {
+            Arrays.fill(overlap[i], true);
         }
 
         boolean isLeftOf;
@@ -129,8 +139,7 @@ public class SortOverlap {
                         isOverLapping = isOverLappingX(alignS1, alignE1, alignS2, alignE2);
                         if (isOverLapping) {
                             overlap[i][j] = true;
-                            isLeftOf = isLeftOf(
-                                    rect1.getMinX() + qryStarts[i], rect2.getMinX() + qryStarts[j]);
+                            isLeftOf = isLeftOf(rect1.getMinX() + qryStarts[i], rect2.getMinX() + qryStarts[j]);
                             if (isLeftOf) {
                                 // move 1 left and 2 right
                                 moveAllLeft(rect1, i, scale);
@@ -154,8 +163,8 @@ public class SortOverlap {
     private static void moveUpandDown(int scale) {
         // Check for overlaps in overall contig size and move rectangles apart if they overlap
         boolean[][] overlap = new boolean[qryRects.length][qryRects.length];
-        for (boolean[] booleans : overlap) {
-            Arrays.fill(booleans, true);
+        for (int i = 0; i < overlap.length; i++) {
+            Arrays.fill(overlap[i], true);
         }
 
         boolean isLeftOf;
@@ -200,8 +209,7 @@ public class SortOverlap {
                         if (overlapsAlignment1 && overlapsAlignment2) {
                             overlap[i][j] = true;
                             // if they both overlap alignment regions, then move them further away
-                            isLeftOf = isLeftOf(
-                                    rect1.getMinX() + qryStarts[i], rect2.getMinX() + qryStarts[j]);
+                            isLeftOf = isLeftOf(rect1.getMinX() + qryStarts[i], rect2.getMinX() + qryStarts[j]);
                             if (isLeftOf) {
                                 // move 1 left and 2 right
                                 moveAllLeft(rect1, i, 0.1 * scale);
@@ -214,8 +222,7 @@ public class SortOverlap {
 
                         } else if (overlapsAlignment1) {
                             // check if the contigs overlap at all
-                            isOverLapping = isOverLappingX(start1, end1, start2, end2) &&
-                                    isOverLappingY(rect1.getMinY(), rect2.getMinY());
+                            isOverLapping = isOverLappingX(start1, end1, start2, end2) && isOverLappingY(rect1.getMinY(), rect2.getMinY());
                             if (isOverLapping) {
                                 overlap[i][j] = true;
                                 // if they only overlap one move the overlapping one below
@@ -226,8 +233,7 @@ public class SortOverlap {
 
                         } else if (overlapsAlignment2) {
                             // check if the contigs overlap at all
-                            isOverLapping = isOverLappingX(start1, end1, start2, end2) &&
-                                    isOverLappingY(rect1.getMinY(), rect2.getMinY());
+                            isOverLapping = isOverLappingX(start1, end1, start2, end2) && isOverLappingY(rect1.getMinY(), rect2.getMinY());
                             if (isOverLapping) {
                                 overlap[i][j] = true;
                                 // if they only overlap one move the overlapping one below
@@ -236,13 +242,10 @@ public class SortOverlap {
                                 overlap[i][j] = false;
                             }
                         } else {
-                            isOverLapping = isOverLappingX(start1, end1, start2, end2) &&
-                                    isOverLappingY(rect1.getMinY(), rect2.getMinY());
+                            isOverLapping = isOverLappingX(start1, end1, start2, end2) && isOverLappingY(rect1.getMinY(), rect2.getMinY());
                             if (isOverLapping) {
                                 overlap[i][j] = true;
-                                isLeftOf = isLeftOf(
-                                        rect1.getMinX() + qryStarts[i],
-                                        rect2.getMinX() + qryStarts[j]);
+                                isLeftOf = isLeftOf(rect1.getMinX() + qryStarts[i], rect2.getMinX() + qryStarts[j]);
                                 if (isLeftOf) {
                                     // move 1 left and 2 right
                                     moveAllLeft(rect1, i, 0.1 * scale);
@@ -264,6 +267,10 @@ public class SortOverlap {
         }
     }
 
+    public static boolean isOverLappingX(double rect1start, double rect1end, double rect2start, double rect2end) {
+        return (((rect1start <= rect2start) && (rect2end <= rect1end)) || ((rect2start <= rect1start) && (rect1end <= rect2end))
+                || ((rect1start <= rect2start) && (rect1end >= rect2start) && (rect2end >= rect1end)) || ((rect2start <= rect1start) && (rect2end >= rect1start) && (rect1end >= rect2end)));
+    }
 
     private static boolean isOverLappingY(double rect1top, double rect2top) {
         return (rect1top == rect2top);
@@ -274,8 +281,7 @@ public class SortOverlap {
     }
 
     private static Rectangle2D moveLeft(Rectangle2D rect, double amount) {
-        rect.setRect(
-                rect.getMinX() - amount, rect.getMinY(), rect.getWidth(), rect.getHeight());
+        rect.setRect(rect.getMinX() - amount, rect.getMinY(), rect.getWidth(), rect.getHeight());
         return rect;
     }
 
