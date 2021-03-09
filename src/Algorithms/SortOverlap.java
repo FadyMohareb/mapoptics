@@ -9,16 +9,32 @@ import java.util.LinkedHashMap;
 /*
  * @author Josie
  */
-public class SortOverlap {
 
-    private static Rectangle2D[] qryRects;
-    private static Rectangle2D[][] qryLabels;
+/* Glynn's edit starting 09MAR2021 - with adding comments to understand WTF is going on.
+
+ */
+public class SortOverlap {
+    /* GM: My understanding is that this class attempts to move all overlapping contigs (represented as rectangles,
+    parallel to the reference map) so that they no longer overlap and can be viewed by the user.
+    GM: the scale and movement of these query contigs is performed iteratively with up and down and/or left or right
+    movements within a while loop with fixed vector values to move.
+    GM: This process is currently very, very slow.
+     */
+
+    private static Rectangle2D[] qryRects; // Rect2D array
+    private static Rectangle2D[][] qryLabels; // Rect2D 2D array
     private static Double[] qryStarts;
     private static Double[] qryEnds;
 
+    /* A linked hashmap is a hashmap where the iteration order is maintained and not random like a normal hashmap
+
+     */
+    // New linked hashmap for sortedRects
     private static LinkedHashMap<String, Rectangle2D> sortedRects = new LinkedHashMap();
+    // New linked hashmap for sortedLabels
     private static LinkedHashMap<String, Rectangle2D[]> sortedLabels = new LinkedHashMap();
 
+    // Getters for LinkedHashMaps
     public static LinkedHashMap<String, Rectangle2D> getSortedRects() {
         return sortedRects;
     }
@@ -27,6 +43,7 @@ public class SortOverlap {
         return sortedLabels;
     }
 
+    //Getters for Rectangles
     public static Rectangle2D getSortedRects(String refqryId) {
         return sortedRects.get(refqryId);
     }
@@ -36,10 +53,13 @@ public class SortOverlap {
     }
 
     public static void sortOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries, int scale) {
+    /* sortOverlaps receives input of two LinkedHashMaps: references and queries alongside an integer for the scale
 
+     */
+    // Clears current LinkedHashMaps
         sortedRects.clear();
         sortedLabels.clear();
-        String[] qryIds;
+        String[] qryIds; // Create string array for Query IDs
 
         for (String refId : references.keySet()) {
             qryIds = references.get(refId).getConnections();
