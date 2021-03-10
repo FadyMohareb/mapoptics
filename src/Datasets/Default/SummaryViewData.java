@@ -30,13 +30,15 @@ public class SummaryViewData {
         SummaryViewData.queries = new LinkedHashMap();
     }
 
-    public static void setTableData(MapOpticsModel model) {
+    public static void setSummaryData(MapOpticsModel model) {
 
         Map<Integer, List<Integer>> overlapAndAlignments =
                 XmapReader.getSummaryData(model.getXmapFile(), model.isReversed());
 
         List<Integer> refIdList = new ArrayList<>(overlapAndAlignments.keySet());
         List<List<Object>> cmapData = CmapReader.getSummaryData(model.getRefFile(), refIdList);
+        List<Double> lengths = new ArrayList<>();
+        List<Double> densities = new ArrayList<>();
 
         List<Object[]> tableData = new ArrayList<>();
 
@@ -45,14 +47,17 @@ public class SummaryViewData {
             List<Integer> xmapData = overlapAndAlignments.get(id);
             Object[] data = {row.get(0), row.get(1), row.get(2), row.get(3), xmapData.get(0), xmapData.get(1)};
             tableData.add(data);
+
+            lengths.add((Double) row.get(1));
+            densities.add((Double) row.get(3));
         }
 
-        //TODO: Remove after debugging.
-        for (Object[] row : tableData) {
-            System.out.println(Arrays.toString(row));
-        }
+        Collections.sort(lengths);
+        Collections.sort(densities);
 
         model.setSummaryTableRows(tableData);
+        model.setLengths(lengths);
+        model.setDensities(densities);
     }
 
     public static void setData() {
