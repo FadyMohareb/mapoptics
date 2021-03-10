@@ -2864,7 +2864,7 @@ public class MapOptics extends JFrame {
         // generate raw data
         RawFileData.setData();
         // set overlap data from raw data
-        SortOverlap.sortOverlaps(RawFileData.getReferences(), RawFileData.getQueries(), 10000);
+        SortOverlap.sortOverlaps(RawFileData.getReferences(), RawFileData.getQueries(), 200000);
 
         // set reference view data
         refViewHeight = referenceView.getHeight();
