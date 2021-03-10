@@ -1,10 +1,18 @@
 package FileHandling;
 
+import Algorithms.CalculateOverlaps;
 import DataTypes.AlignmentInfo;
+
+import javax.swing.*;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
-import java.util.LinkedHashMap;
-import javax.swing.JOptionPane;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /*
@@ -20,6 +28,96 @@ public class XmapReader {
 
     public static void setSwap(boolean swap) {
         XmapReader.swap = swap;
+    }
+
+    public static boolean validateXmap (String filePath) {
+
+        if (filePath.endsWith(".xmap")) {
+            if (Files.exists(Paths.get(filePath))) {
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(filePath));
+                    String line;
+
+                    while ((line = br.readLine()) != null && line.startsWith("#")) {
+                        if (line.toLowerCase().contains("xmap file version")) {
+                            return true;
+                        }
+                    }
+
+                    //Show error message if wrong format
+                    JOptionPane.showMessageDialog(null,
+                            "Error loading XMAP file." +
+                                    "\n\nInvalid format!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                //Show error message if no file found
+                JOptionPane.showMessageDialog(null,
+                        "Error loading XMAP file." +
+                                "\n\nFile does not exist!",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            //Show error message if wrong file type
+            JOptionPane.showMessageDialog(null,
+                    "Error loading XMAP file." +
+                            "\n\nInvalid file type!",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+        return false;
+    }
+
+    public static Map<Integer, List<Integer>> getSummaryData(File xmapFile, boolean isReversed) {
+
+        Map<Integer, List<Integer>> summaryData = new HashMap<>();
+        Map<Integer, Integer> alignments = new HashMap<>();
+        Map<Integer, List<Double>> overlaps = new HashMap<>();
+
+        int refIndex = isReversed ? 1 : 2;
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(xmapFile));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("#")) {
+                   continue;
+                }
+
+                String[] data = line.split("\t");
+                int refId = Integer.parseInt(data[refIndex]);
+
+                // If not in alignments, will not be in overlaps either
+                if (!alignments.containsKey(refId)) {
+                    alignments.put(refId, 1);
+                    overlaps.put(refId, Arrays.asList(Double.parseDouble(data[(refIndex*2)+1]),
+                            Double.parseDouble(data[(refIndex*2)+2])));
+                } else {
+                    alignments.put(refId, alignments.get(refId) + 1);
+                    overlaps.put(refId, Stream.concat(overlaps.get(refId).stream(),
+                            Stream.of(Double.parseDouble(data[(refIndex*2)+1]),
+                                    Double.parseDouble(data[(refIndex*2)+2]))).collect(Collectors.toList()));
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Map<Integer, Integer> overlapsCount = CalculateOverlaps.countAllOverlaps(overlaps);
+
+        for (Integer refID : alignments.keySet()) {
+            summaryData.put(refID, Arrays.asList(alignments.get(refID), overlapsCount.get(refID)));
+        }
+
+        return summaryData;
     }
 
     public static LinkedHashMap<String, AlignmentInfo> xmapToHashMap(String filename) {
