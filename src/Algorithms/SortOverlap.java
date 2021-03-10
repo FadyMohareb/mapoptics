@@ -19,6 +19,7 @@ public class SortOverlap {
     GM: the scale and movement of these query contigs is performed iteratively with up and down and/or left or right
     movements within a while loop with fixed vector values to move.
     GM: This process is currently very, very slow.
+    GM: Look at placing timings to capture slowest parts
      */
 
     private static Rectangle2D[] qryRects; // Rect2D array
@@ -54,7 +55,7 @@ public class SortOverlap {
 
     public static void sortOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries, int scale) {
     /* sortOverlaps receives input of two LinkedHashMaps: references and queries alongside an integer for the scale
-
+    GM: was is the impact of scale on time to load rectangles, currently hard coded.
      */
     // Clears current LinkedHashMaps
         sortedRects.clear();
@@ -62,7 +63,10 @@ public class SortOverlap {
         String[] qryIds; // Create string array for Query IDs
 
         for (String refId : references.keySet()) {
+            // A for loop that takes a refID and gets value matching refID from references LinkedHashMap
+            //.getConnections() ? -Gets a connection to a database - connections of XMAP, ref CMAP and qry CMAP?
             qryIds = references.get(refId).getConnections();
+            // MoveOverlappingContigs method qryIDs related to refID, queries HashMap and scale parameter
             moveOverlappingContigs(qryIds, refId, queries, scale);
         }
     }
@@ -85,8 +89,13 @@ public class SortOverlap {
     }
 
     private static void setArrays(String[] qryIds, String refId, LinkedHashMap<String, QryContig> queries) {
+        /* Creating a number of arrays and making an array of rectangles that matches the given reference
+
+         */
 
         qryRects = new Rectangle2D[qryIds.length];
+        System.out.println("Query Rects = "+qryRects);
+
         qryStarts = new Double[qryIds.length];
         qryEnds = new Double[qryIds.length];
         qryLabels = new Rectangle2D[qryIds.length][];
@@ -107,12 +116,15 @@ public class SortOverlap {
     }
 
     private static void moveLeftandRight(int scale) {
+
+        long Start = System.currentTimeMillis();
         // Check for overlaps in alignment sections and move rectangles apart if they overlap
         boolean[][] overlap = new boolean[qryRects.length][qryRects.length];
         for (int i = 0; i < overlap.length; i++) {
             Arrays.fill(overlap[i], true);
         }
 
+        System.out.println("Length of query rects array = " +qryRects.length);
         boolean isLeftOf;
         boolean isOverLapping;
         double alignS1;
@@ -128,10 +140,16 @@ public class SortOverlap {
                     // If rectangles are not the same, check if they overlap in regions
                     if (i < j) {
                         rect1 = qryRects[i];
+                        System.out.println("-----------");
+                        System.out.println(rect1);
                         rect2 = qryRects[j];
 
                         // set variables for areas where there is alignment
                         alignS1 = rect1.getMinX() + qryStarts[i] - (3 * scale);
+                        // Print line check to understan what is happening here.
+                        System.out.println("Rect1 minX ="+rect1.getMinX());
+                        System.out.println("Query Start pos: "+ qryStarts[i]);
+                        System.out.println("alignS1 = " +alignS1 + " iteration i =" + i+ " iteration j = "+j);
                         alignE1 = rect1.getMinX() + qryEnds[i] + (3 * scale);
                         alignS2 = rect2.getMinX() + qryStarts[j] - (3 * scale);
                         alignE2 = rect2.getMinX() + qryEnds[j] + (3 * scale);
@@ -158,6 +176,9 @@ public class SortOverlap {
                 }
             }
         }
+        long end = System.currentTimeMillis();
+        long timeTaken = end - Start;
+        System.out.println("Time for MoveLeftRight = "+timeTaken + " with Scale: "+scale);
     }
 
     private static void moveUpandDown(int scale) {
