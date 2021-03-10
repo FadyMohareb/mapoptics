@@ -1,6 +1,7 @@
 package UserInterface.ModelsAndRenderers;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,15 +13,22 @@ public class MapOpticsModel {
     private String selectedRow;
     private List<Object[]> summaryTableRows;
     private boolean isReversed;
+    private List<Double> lengths;
+    private List<Double> densities;
 
     public MapOpticsModel() {
         isReversed = false;
+        selectedRow = "";
+        lengths = new ArrayList<>();
+        densities = new ArrayList<>();
     }
 
     public void swapRefQry() {
         File oldRef = refFile;
         refFile = qryFile;
         qryFile = oldRef;
+
+        setReversed(!isReversed);
     }
 
     public boolean isReversed() {
@@ -61,5 +69,29 @@ public class MapOpticsModel {
 
     public List<Object[]> getSummaryTableRows() {
         return summaryTableRows;
+    }
+
+    public void setLengths(List<Double> lengths) {
+        this.lengths = lengths;
+    }
+
+    public void setDensities(List<Double> densities) {
+        this.densities = densities;
+    }
+
+    public String getSelectedRow() {
+        return selectedRow;
+    }
+
+    public List<Double> getLengths() {
+        return lengths;
+    }
+
+    public void setSelectedRow(String selectedRow) {
+        this.selectedRow = selectedRow;
+    }
+
+    public List<Double> getDensities() {
+        return densities;
     }
 }
