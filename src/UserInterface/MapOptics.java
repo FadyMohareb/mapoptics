@@ -37,6 +37,7 @@ import java.awt.print.Paper;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 
 /*
@@ -1717,6 +1718,7 @@ public class MapOptics extends JFrame {
             if (swap == JOptionPane.YES_OPTION) {
                 // reset all data
                 resetData();
+                model.swapRefQry();
 
                 // reread the files but swapping the variables
                 if (XmapReader.isSwap()) {
@@ -2452,6 +2454,7 @@ public class MapOptics extends JFrame {
 
     private void refContigTableMouseClicked() {
         String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
+        model.setSelectedRow(chosenRef);
         changeRef(chosenRef);
     }
 
@@ -2523,6 +2526,7 @@ public class MapOptics extends JFrame {
                 }
                 // get selected contig
                 String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+//                model.setSelectedRow(chosenQry);
                 changeQry(chosenQry);
                 repaint();
             }
@@ -2538,6 +2542,7 @@ public class MapOptics extends JFrame {
                 }
                 // get selected contig
                 String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+//                model.setSelectedRow(chosenQry);
                 changeQry(chosenQry);
                 repaint();
             }
@@ -2706,7 +2711,7 @@ public class MapOptics extends JFrame {
         });
     }
 
-    private ChartPanel makeLengthChartPanel(ArrayList<Double> lengths, String refId) {
+    private ChartPanel makeLengthChartPanel(List<Double> lengths, String refId) {
         // Create dataset with sorted length array
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i = 0; i < lengths.size(); i++) {
@@ -2744,7 +2749,7 @@ public class MapOptics extends JFrame {
         return new ChartPanel(chart);
     }
 
-    private ChartPanel makeDensityChartPanel(ArrayList<Double> densities, String refId) {
+    private ChartPanel makeDensityChartPanel(List<Double> densities, String refId) {
         // Create dataset with sorted length array
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (int i = 0; i < densities.size(); i++) {
@@ -2889,7 +2894,7 @@ public class MapOptics extends JFrame {
 
     private void setAllData() {
 
-//         generate raw data
+//        // generate raw data
 //        RawFileData.setData();
 //        // set overlap data from raw data
 //        SortOverlap.sortOverlaps(RawFileData.getReferences(), RawFileData.getQueries(), 10000);
@@ -2925,21 +2930,24 @@ public class MapOptics extends JFrame {
 //
 //        fillRefTable(numOverlaps);
 
-        SummaryViewData.setTableData(model);
+        SummaryViewData.setSummaryData(model);
+
         fillRefTable();
 
 
         // Displays graph of reference contigs
-//        referencesGraph.removeAll();
-//        ChartPanel refChartPanel = makeLengthChartPanel(RawFileData.getRefLengths(), ReferenceView.getChosenRef());
-//        referencesGraph.add(refChartPanel, BorderLayout.CENTER);
-//        referencesGraph.setVisible(true);
-//
-//        // Displays graph of query contigs
-//        labelDensityGraph.removeAll();
-//        ChartPanel labDenseChartPanel = makeDensityChartPanel(RawFileData.getRefDensity(), ReferenceView.getChosenRef());
-//        labelDensityGraph.add(labDenseChartPanel, BorderLayout.CENTER);
-//        labelDensityGraph.setVisible(true);
+        String selectedRow = model.getSelectedRow();
+
+        referencesGraph.removeAll();
+        ChartPanel refChartPanel = makeLengthChartPanel(model.getLengths(), selectedRow);
+        referencesGraph.add(refChartPanel, BorderLayout.CENTER);
+        referencesGraph.setVisible(true);
+
+//      // Displays graph of query contigs
+        labelDensityGraph.removeAll();
+        ChartPanel labDenseChartPanel = makeDensityChartPanel(model.getDensities(), selectedRow);
+        labelDensityGraph.add(labDenseChartPanel, BorderLayout.CENTER);
+        labelDensityGraph.setVisible(true);
     }
 
     private void resetData() {
@@ -2961,23 +2969,26 @@ public class MapOptics extends JFrame {
     }
 
     private void changeRef(String refId) {
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
-        ReferenceView.setChosenRef(refId);
-        SummaryView.setChosenRef(refId);
-        QueryView.setChosenRef(refId);
-        fillQryTable(refId);
-        QueryView.setRegionView(false);
-        QueryView.setChosenLabel(EMPTY_STRING);
-        SearchRegionData.resetData();
+        model.setSelectedRow(refId);
+//        ReferenceView.setRefDataset(refDataset.getText());
+//        ReferenceView.setQryDataset(qryDataset.getText());
+//        ReferenceView.setChosenRef(refId);
+//        SummaryView.setChosenRef(refId);
+//        QueryView.setChosenRef(refId);
+//        fillQryTable(refId);
+//        QueryView.setRegionView(false);
+//        QueryView.setChosenLabel(EMPTY_STRING);
+//        SearchRegionData.resetData();
+
         // Redraw the graph with contig marked
         referencesGraph.removeAll();
-        ChartPanel chartPanel1 = makeLengthChartPanel(RawFileData.getRefLengths(), refId);
+        ChartPanel chartPanel1 = makeLengthChartPanel(model.getLengths(), refId);
         referencesGraph.add(chartPanel1, BorderLayout.CENTER);
         referencesGraph.setVisible(true);
+
         // Redraw the graph with contig marked
         labelDensityGraph.removeAll();
-        ChartPanel chartPanel2 = makeDensityChartPanel(RawFileData.getRefDensity(), refId);
+        ChartPanel chartPanel2 = makeDensityChartPanel(model.getDensities(), refId);
         labelDensityGraph.add(chartPanel2, BorderLayout.CENTER);
         labelDensityGraph.setVisible(true);
         refIdSearch.setText(refId);
