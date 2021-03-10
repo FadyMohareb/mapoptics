@@ -1,7 +1,13 @@
 package Datasets.Default;
 
-import DataTypes.*;
-import java.awt.geom.*;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
+import FileHandling.CmapReader;
+import FileHandling.XmapReader;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
+
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 
 /*
@@ -22,6 +28,31 @@ public class SummaryViewData {
     public static void resetData() {
         SummaryViewData.references = new LinkedHashMap();
         SummaryViewData.queries = new LinkedHashMap();
+    }
+
+    public static void setTableData(MapOpticsModel model) {
+
+        Map<Integer, List<Integer>> overlapAndAlignments =
+                XmapReader.getSummaryData(model.getXmapFile(), model.isReversed());
+
+        List<Integer> refIdList = new ArrayList<>(overlapAndAlignments.keySet());
+        List<List<Object>> cmapData = CmapReader.getSummaryData(model.getRefFile(), refIdList);
+
+        List<Object[]> tableData = new ArrayList<>();
+
+        for (List<Object> row : cmapData) {
+            int id = (Integer) row.get(0);
+            List<Integer> xmapData = overlapAndAlignments.get(id);
+            Object[] data = {row.get(0), row.get(1), row.get(2), row.get(3), xmapData.get(0), xmapData.get(1)};
+            tableData.add(data);
+        }
+
+        //TODO: Remove after debugging.
+        for (Object[] row : tableData) {
+            System.out.println(Arrays.toString(row));
+        }
+
+        model.setSummaryTableRows(tableData);
     }
 
     public static void setData() {
