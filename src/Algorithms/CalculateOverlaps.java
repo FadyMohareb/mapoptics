@@ -9,6 +9,31 @@ import java.util.*;
  */
 public class CalculateOverlaps {
 
+    public static Map<Integer, Integer> countAllOverlaps(Map<Integer, List<Double>> refMap) {
+
+        Map <Integer, Integer> counts = new HashMap<>();
+
+        for (int refId : refMap.keySet()) {
+            List<Double> regions = refMap.get(refId);
+            int overlaps = 0;
+            for (int i = 0; i < regions.size(); i += 2) {
+                double start = regions.get(i);
+                double stop = regions.get(i + 1);
+                List<Double> queries = regions.subList(i + 2, regions.size());
+                for (int j = 0; j < queries.size(); j += 2) {
+                    double query = queries.get(j);
+                    if (start <= query && query <= stop) {
+                        overlaps++;
+                    }
+                }
+            }
+
+            counts.put(refId, overlaps);
+        }
+
+        return counts;
+    }
+
     public static LinkedHashMap<String, Integer> countAllOverlaps(LinkedHashMap<String, RefContig> references,
                                                                   LinkedHashMap<String, QryContig> queries) {
         ArrayList<String> done = new ArrayList<>();
