@@ -36,6 +36,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -1600,7 +1601,11 @@ public class MapOptics extends JFrame {
 
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // orientates all query contigs that are negatively oriented
-        UserRefData.setQueries(SortOrientation.sortAllOrientation(UserRefData.getReferences(), UserRefData.getQueries()));
+        try {
+            UserRefData.setQueries(SortOrientation.sortAllOrientation(UserRefData.getReferences(), UserRefData.getQueries()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         UserRefData.setPanelLength(refViewWidth);
         UserRefData.setPanelHeight(refViewHeight);
         for (String refId : UserRefData.getReferences().keySet()) {
@@ -2864,7 +2869,11 @@ public class MapOptics extends JFrame {
         // generate raw data
         RawFileData.setData();
         // set overlap data from raw data
-        SortOverlap.sortOverlaps(RawFileData.getReferences(), RawFileData.getQueries(), 200000);
+        try {
+            SortOverlap.sortOverlaps(RawFileData.getReferences(), RawFileData.getQueries(), 10000);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // set reference view data
         refViewHeight = referenceView.getHeight();

@@ -2,6 +2,7 @@ package Algorithms;
 
 import DataTypes.*;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -10,7 +11,7 @@ import java.util.LinkedHashMap;
  */
 public class SortOrientation {
 
-    public static LinkedHashMap<String, QryContig> sortAllOrientation(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries) {
+    public static LinkedHashMap<String, QryContig> sortAllOrientation(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries) throws IOException {
 
         boolean orientated;
         QryContig orientedQuery;
