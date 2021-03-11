@@ -3,6 +3,9 @@ package Algorithms;
 import DataTypes.QryContig;
 import DataTypes.RefContig;
 import java.awt.geom.Rectangle2D;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
@@ -53,7 +56,7 @@ public class SortOverlap {
         return sortedLabels.get(refqryId);
     }
 
-    public static void sortOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries, int scale) {
+    public static void sortOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries, int scale) throws IOException {
     /* sortOverlaps receives input of two LinkedHashMaps: references and queries alongside an integer for the scale
     GM: was is the impact of scale on time to load rectangles, currently hard coded.
      */
@@ -71,7 +74,7 @@ public class SortOverlap {
         }
     }
 
-    private static void moveOverlappingContigs(String[] qryIds, String refId, LinkedHashMap<String, QryContig> queries, int scale) {
+    private static void moveOverlappingContigs(String[] qryIds, String refId, LinkedHashMap<String, QryContig> queries, int scale) throws IOException {
 
         setArrays(qryIds, refId, queries);
 
@@ -115,7 +118,11 @@ public class SortOverlap {
         }
     }
 
-    private static void moveLeftandRight(int scale) {
+    private static void moveLeftandRight(int scale) throws IOException {//
+        // Does this need to be static?
+
+        FileWriter fileWriter = new FileWriter("C:/git/Mastership/Group_project/SortOverlaps_log/GM_scale_chilenese.log");
+        PrintWriter printWriter = new PrintWriter(fileWriter);
 
         long Start = System.currentTimeMillis();
         // Check for overlaps in alignment sections and move rectangles apart if they overlap
@@ -124,7 +131,12 @@ public class SortOverlap {
             Arrays.fill(overlap[i], true);
         }
 
-        System.out.println("Length of query rects array = " +qryRects.length);
+        // Print to file test
+        printWriter.println("Glynn's log");
+        printWriter.println("Length of query rects array = "+ qryRects.length);
+
+
+
         boolean isLeftOf;
         boolean isOverLapping;
         double alignS1;
@@ -140,21 +152,46 @@ public class SortOverlap {
                     // If rectangles are not the same, check if they overlap in regions
                     if (i < j) {
                         rect1 = qryRects[i];
-                        System.out.println("-----------");
-                        System.out.println(rect1);
                         rect2 = qryRects[j];
 
+                        printWriter.println("Rectangle Number " +i+ " vs Rectangle Number "+j);
+
                         // set variables for areas where there is alignment
-                        alignS1 = rect1.getMinX() + qryStarts[i] - (3 * scale);
-                        // Print line check to understan what is happening here.
-                        System.out.println("Rect1 minX ="+rect1.getMinX());
-                        System.out.println("Query Start pos: "+ qryStarts[i]);
-                        System.out.println("alignS1 = " +alignS1 + " iteration i =" + i+ " iteration j = "+j);
-                        alignE1 = rect1.getMinX() + qryEnds[i] + (3 * scale);
-                        alignS2 = rect2.getMinX() + qryStarts[j] - (3 * scale);
-                        alignE2 = rect2.getMinX() + qryEnds[j] + (3 * scale);
+                        // Test what happens when removing scale component
+                        alignS1 = rect1.getMinX() + qryStarts[i];
+                        //- (3 * scale);
+
+
+                        alignE1 = rect1.getMinX() + qryEnds[i];
+                        //+ (3 * scale);
+                        // Print line check to understand what is happening here.
+                        printWriter.println("Rect1 minX ="+rect1.getMinX());
+                        printWriter.println("Query Start pos: "+ qryStarts[i]);
+                        printWriter.println("Query End pos: "+ qryEnds[i]);
+                        printWriter.println("alignS1 = " +alignS1);
+                        printWriter.println("alignE1 = " +alignE1);
+                        printWriter.println("-------------");
+
+                        alignS2 = rect2.getMinX() + qryStarts[j];
+                        //- (3 * scale);
+
+                        printWriter.println("-------------");
+
+
+                        alignE2 = rect2.getMinX() + qryEnds[j];
+                                //+ (3 * scale);
+                        // Print line check to understand what is happening here.
+                        // Print line check to understand what is happening here.
+                        printWriter.println("Rect2 minX ="+rect2.getMinX());
+                        printWriter.println("Query Start pos: "+ qryStarts[j]);
+                        printWriter.println("alignS2 = " +alignS2 + " iteration i =" + i+ " iteration j = "+j);
+                        printWriter.println("Query End pos: "+ qryEnds[j]);
+                        printWriter.println("alignE2 = " +alignE2 + " iteration i =" + i+ " iteration j = "+j);
+
 
                         isOverLapping = isOverLappingX(alignS1, alignE1, alignS2, alignE2);
+                        printWriter.println("Is there an overlap between Rect #"+i+ " and Rect #"+j+ " "+isOverLapping);
+                        printWriter.println("-------------");
                         if (isOverLapping) {
                             overlap[i][j] = true;
                             isLeftOf = isLeftOf(rect1.getMinX() + qryStarts[i], rect2.getMinX() + qryStarts[j]);
@@ -178,7 +215,8 @@ public class SortOverlap {
         }
         long end = System.currentTimeMillis();
         long timeTaken = end - Start;
-        System.out.println("Time for MoveLeftRight = "+timeTaken + " with Scale: "+scale);
+        printWriter.println("Time for MoveLeftRight = "+timeTaken + " with Scale: "+scale);
+        printWriter.close();
     }
 
     private static void moveUpandDown(int scale) {

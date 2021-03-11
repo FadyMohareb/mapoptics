@@ -2,6 +2,7 @@ package Algorithms;
 
 import DataTypes.*;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -10,8 +11,7 @@ import java.util.LinkedHashMap;
  */
 public class SortOrientation {
 
-    public static LinkedHashMap<String, QryContig> sortAllOrientation(LinkedHashMap<String, RefContig> references,
-                                                                      LinkedHashMap<String, QryContig> queries) {
+    public static LinkedHashMap<String, QryContig> sortAllOrientation(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries) throws IOException {
 
         boolean orientated;
         QryContig orientedQuery;
@@ -57,13 +57,13 @@ public class SortOrientation {
         double centre = qry.getRectangle().getMinX() + qry.getRectangle().getWidth() / 2;
         Rectangle2D[] labels = qry.getLabels();
         double newMinX;
-        for (Rectangle2D rectangle2D : labels) {
-            if (rectangle2D.getMinX() < centre) {
-                newMinX = centre + (centre - rectangle2D.getMinX());
+        for (int i = 0; i < labels.length; i++) {
+            if (labels[i].getMinX() < centre) {
+                newMinX = centre + (centre - labels[i].getMinX());
             } else {
-                newMinX = centre - (rectangle2D.getMinX() - centre);
+                newMinX = centre - (labels[i].getMinX() - centre);
             }
-            rectangle2D.setRect(newMinX, rectangle2D.getMinY(), 1, rectangle2D.getHeight());
+            labels[i].setRect(newMinX, labels[i].getMinY(), 1, labels[i].getHeight());
         }
         qry.setLabels(labels);
         
@@ -74,8 +74,12 @@ public class SortOrientation {
         } else if (orientation.equals("+")) {
             qry.setOrientation("-");
         }
-
-        qry.setReOrientated(!qry.isReOrientated());
+        
+        if (qry.isReOrientated()) {
+            qry.setReOrientated(false);
+        } else {
+            qry.setReOrientated(true);
+        }
         
         double qryShift = qry.getRectangle().getMinX() + qry.getQryAlignStart();
         double refShift = ref.getRectangle().getMinX() + qry.getRefAlignStart();
@@ -84,11 +88,11 @@ public class SortOrientation {
 
         qry.setRectangle(moveRectangle(qry.getRectangle().getBounds2D(), shift));
         // scale query labels
-        ArrayList<Rectangle2D> labelsA = new ArrayList<>();
+        ArrayList<Rectangle2D> labelsA = new ArrayList();
         for (Rectangle2D label : qry.getLabels()) {
             labelsA.add(moveRectangle(label.getBounds2D(), shift));
         }
-        qry.setLabels(labelsA.toArray(new Rectangle2D[0]));
+        qry.setLabels(labelsA.toArray(new Rectangle2D[labelsA.size()]));
         
         
         return qry;
