@@ -1,7 +1,7 @@
 package FileHandling;
 
-import Algorithms.CalculateOverlaps;
 import DataTypes.AlignmentInfo;
+import DataTypes.Reference;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -74,13 +74,12 @@ public class XmapReader {
         return false;
     }
 
-    public static Map<Integer, List<Integer>> getSummaryData(File xmapFile, boolean isReversed) {
+    public static Map<Integer, Reference> getSummaryData(File xmapFile, boolean isReversed) {
 
-        Map<Integer, List<Integer>> summaryData = new HashMap<>();
-        Map<Integer, Integer> alignments = new HashMap<>();
-        Map<Integer, List<Double>> overlaps = new HashMap<>();
+        Map<Integer, Reference> references = new HashMap<>();
 
         int refIndex = isReversed ? 1 : 2;
+        int queryIndex = isReversed ? 2 : 1;
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(xmapFile));
@@ -88,45 +87,24 @@ public class XmapReader {
 
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("#")) {
-                   continue;
+                    continue;
                 }
 
+                Reference ref;
                 String[] data = line.split("\t");
                 int refId = Integer.parseInt(data[refIndex]);
                 double start = Double.parseDouble(data[(refIndex*2)+1]);
                 double stop = Double.parseDouble(data[(refIndex*2)+2]);
 
-                // If not in alignments, will not be in overlaps either
-                if (!alignments.containsKey(refId)) {
-                    alignments.put(refId, 1);
-
-                    List<Double> region = new ArrayList<>();
-                    region.add(start);
-                    region.add(stop);
-                    overlaps.put(refId, region);
+                if (!references.containsKey(refId)) {
+                    ref = new Reference(refId);
+                    references.put(refId, ref);
                 } else {
-                    alignments.put(refId, alignments.get(refId) + 1);
-                    List<Double> regions = overlaps.get(refId);
-
-                    for (int i = 0; i < regions.size(); i += 2) {
-
-                        if (start < regions.get(i)) {
-                            regions.add(i, start);
-                            regions.add(i + 1, stop);
-                            break;
-                        } else if (start == regions.get(i) && stop < regions.get(i + 1)) {
-                            regions.add(i, start);
-                            regions.add(i + 1, stop);
-                            break;
-                        } else if (i == regions.size() - 2) {
-                            regions.add(start);
-                            regions.add(stop);
-                            break;
-                        }
-                    }
-
-                    overlaps.put(refId, regions);
+                    ref = references.get(refId);
                 }
+
+                ref.addQueryRegion(start, stop);
+                ref.addQuery(Integer.parseInt(data[queryIndex]));
             }
 
             br.close();
@@ -135,14 +113,83 @@ public class XmapReader {
             e.printStackTrace();
         }
 
-        Map<Integer, Integer> overlapsCount = CalculateOverlaps.countAllOverlaps(overlaps);
-
-        for (Integer refID : alignments.keySet()) {
-            summaryData.put(refID, Arrays.asList(alignments.get(refID), overlapsCount.get(refID)));
+        for (Reference ref : references.values()) {
+            ref.setOverlaps();
         }
 
-        return summaryData;
+        return references;
     }
+
+//    public static Map<Integer, List<Object>> getSummaryData(File xmapFile, boolean isReversed) {
+//
+//        Map<Integer, List<Object>> summaryData = new HashMap<>();
+//        Map<Integer, Integer> alignments = new HashMap<>();
+//        Map<Integer, List<Double>> overlaps = new HashMap<>();
+//
+//        int refIndex = isReversed ? 1 : 2;
+//        int queryIndex = isReversed ? 2 : 1;
+//
+//        try {
+//            BufferedReader br = new BufferedReader(new FileReader(xmapFile));
+//            String line;
+//
+//            while ((line = br.readLine()) != null) {
+//                if (line.startsWith("#")) {
+//                    continue;
+//                }
+//
+//                String[] data = line.split("\t");
+//                int refId = Integer.parseInt(data[refIndex]);
+//                double start = Double.parseDouble(data[(refIndex*2)+1]);
+//                double stop = Double.parseDouble(data[(refIndex*2)+2]);
+//
+//                // If not in alignments, will not be in overlaps either
+//                if (!alignments.containsKey(refId)) {
+//                    alignments.put(refId, 1);
+//
+//                    List<Double> region = new ArrayList<>();
+//                    region.add(start);
+//                    region.add(stop);
+//                    overlaps.put(refId, region);
+//                } else {
+//                    alignments.put(refId, alignments.get(refId) + 1);
+//                    List<Double> regions = overlaps.get(refId);
+//
+//                    for (int i = 0; i < regions.size(); i += 2) {
+//
+//                        if (start < regions.get(i)) {
+//                            regions.add(i, start);
+//                            regions.add(i + 1, stop);
+//                            break;
+//                        } else if (start == regions.get(i) && stop < regions.get(i + 1)) {
+//                            regions.add(i, start);
+//                            regions.add(i + 1, stop);
+//                            break;
+//                        } else if (i == regions.size() - 2) {
+//                            regions.add(start);
+//                            regions.add(stop);
+//                            break;
+//                        }
+//                    }
+//
+//                    overlaps.put(refId, regions, queries);
+//                }
+//            }
+//
+//            br.close();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Map<Integer, Integer> overlapsCount = CalculateOverlaps.countAllOverlaps(overlaps);
+//
+//        for (Integer refID : alignments.keySet()) {
+//            summaryData.put(refID, Arrays.asList(alignments.get(refID), overlapsCount.get(refID)));
+//        }
+//
+//        return summaryData;
+//    }
 
     public static LinkedHashMap<String, AlignmentInfo> xmapToHashMap(String filename) {
         String line;
