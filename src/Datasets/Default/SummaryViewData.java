@@ -2,6 +2,7 @@ package Datasets.Default;
 
 import DataTypes.QryContig;
 import DataTypes.RefContig;
+import DataTypes.Reference;
 import FileHandling.CmapReader;
 import FileHandling.XmapReader;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
@@ -30,34 +31,59 @@ public class SummaryViewData {
         SummaryViewData.queries = new LinkedHashMap();
     }
 
+//    public static void setSummaryData(MapOpticsModel model) {
+//
+//        Map<Integer, List<Object>> xmapSummaryDataMap =
+//                XmapReader.getSummaryData(model.getXmapFile(), model.isReversed());
+//
+//        List<Integer> refIdList = new ArrayList<>(xmapSummaryDataMap.keySet());
+//        List<List<Object>> cmapData = CmapReader.getSummaryData(model.getRefFile(), refIdList);
+//        Map<Integer, Integer> refQueries = new HashMap<>();
+//        List<Double> lengths = new ArrayList<>();
+//        List<Double> densities = new ArrayList<>();
+//
+//        List<Object[]> tableData = new ArrayList<>();
+//
+//        for (List<Object> row : cmapData) {
+//            int id = (Integer) row.get(0);
+//            List<Object> xmapData = xmapSummaryDataMap.get(id);
+//            Object[] data = {row.get(0), row.get(1), row.get(2), row.get(3), xmapData.get(0), xmapData.get(1)};
+//            tableData.add(data);
+//
+//            refQueries.put(id, (Integer) xmapData.get(2));
+//            lengths.add((Double) row.get(1));
+//            densities.add((Double) row.get(3));
+//        }
+//
+//        Collections.sort(lengths);
+//        Collections.sort(densities);
+//
+//        model.setSummaryTableRows(tableData);
+//        model.setRefQueries(refQueries);
+//        model.setLengths(lengths);
+//        model.setDensities(densities);
+//    }
+
     public static void setSummaryData(MapOpticsModel model) {
 
-        Map<Integer, List<Integer>> overlapAndAlignments =
-                XmapReader.getSummaryData(model.getXmapFile(), model.isReversed());
+        Map<Integer, Reference> referenceMap = XmapReader.getSummaryData(model.getXmapFile(), model.isReversed());
+        List<Reference> references = new ArrayList<>(referenceMap.values());
+        CmapReader.getSummaryData(model.getRefFile(), referenceMap);
 
-        List<Integer> refIdList = new ArrayList<>(overlapAndAlignments.keySet());
-        List<List<Object>> cmapData = CmapReader.getSummaryData(model.getRefFile(), refIdList);
         List<Double> lengths = new ArrayList<>();
         List<Double> densities = new ArrayList<>();
 
-        List<Object[]> tableData = new ArrayList<>();
-
-        for (List<Object> row : cmapData) {
-            int id = (Integer) row.get(0);
-            List<Integer> xmapData = overlapAndAlignments.get(id);
-            Object[] data = {row.get(0), row.get(1), row.get(2), row.get(3), xmapData.get(0), xmapData.get(1)};
-            tableData.add(data);
-
-            lengths.add((Double) row.get(1));
-            densities.add((Double) row.get(3));
+        for (Reference ref : references) {
+            lengths.add(ref.getLength());
+            densities.add(ref.getDensity());
         }
 
         Collections.sort(lengths);
         Collections.sort(densities);
 
-        model.setSummaryTableRows(tableData);
         model.setLengths(lengths);
         model.setDensities(densities);
+        model.setReferences(references);
     }
 
     public static void setData() {
