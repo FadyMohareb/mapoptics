@@ -1,8 +1,11 @@
 package UserInterface.ModelsAndRenderers;
 
+import DataTypes.Reference;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author James
@@ -15,12 +18,15 @@ public class MapOpticsModel {
     private boolean isReversed;
     private List<Double> lengths;
     private List<Double> densities;
+    private Map<Integer, Integer> refQueries;
+    private List<Reference> references;
 
     public MapOpticsModel() {
         isReversed = false;
         selectedQueryRow = "";
         lengths = new ArrayList<>();
         densities = new ArrayList<>();
+        references = new ArrayList<>();
     }
 
     public void swapRefQry() {
@@ -93,5 +99,17 @@ public class MapOpticsModel {
 
     public List<Double> getDensities() {
         return densities;
+    }
+
+    public void setRefQueries(Map<Integer, Integer> refQueries) {
+        this.refQueries = refQueries;
+    }
+
+    public void setReferences(List<Reference> references) {
+        this.references = references;
+    }
+
+    public List<Reference> getReferences() {
+        return references;
     }
 }
