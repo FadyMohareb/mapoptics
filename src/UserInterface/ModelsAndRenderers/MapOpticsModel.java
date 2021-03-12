@@ -10,7 +10,7 @@ import java.util.List;
 public class MapOpticsModel {
 
     private File refFile, qryFile, xmapFile;
-    private String selectedRow;
+    private String selectedQueryRow;
     private List<Object[]> summaryTableRows;
     private boolean isReversed;
     private List<Double> lengths;
@@ -18,7 +18,7 @@ public class MapOpticsModel {
 
     public MapOpticsModel() {
         isReversed = false;
-        selectedRow = "";
+        selectedQueryRow = "";
         lengths = new ArrayList<>();
         densities = new ArrayList<>();
     }
@@ -79,16 +79,16 @@ public class MapOpticsModel {
         this.densities = densities;
     }
 
-    public String getSelectedRow() {
-        return selectedRow;
+    public String getSelectedQueryRow() {
+        return selectedQueryRow;
     }
 
     public List<Double> getLengths() {
         return lengths;
     }
 
-    public void setSelectedRow(String selectedRow) {
-        this.selectedRow = selectedRow;
+    public void setSelectedQueryRow(String selectedRow) {
+        this.selectedQueryRow = selectedRow;
     }
 
     public List<Double> getDensities() {
