@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /*
@@ -43,6 +41,8 @@ public class XmapReader {
                             return true;
                         }
                     }
+
+                    br.close();
 
                     //Show error message if wrong format
                     JOptionPane.showMessageDialog(null,
@@ -93,19 +93,43 @@ public class XmapReader {
 
                 String[] data = line.split("\t");
                 int refId = Integer.parseInt(data[refIndex]);
+                double start = Double.parseDouble(data[(refIndex*2)+1]);
+                double stop = Double.parseDouble(data[(refIndex*2)+2]);
 
                 // If not in alignments, will not be in overlaps either
                 if (!alignments.containsKey(refId)) {
                     alignments.put(refId, 1);
-                    overlaps.put(refId, Arrays.asList(Double.parseDouble(data[(refIndex*2)+1]),
-                            Double.parseDouble(data[(refIndex*2)+2])));
+
+                    List<Double> region = new ArrayList<>();
+                    region.add(start);
+                    region.add(stop);
+                    overlaps.put(refId, region);
                 } else {
                     alignments.put(refId, alignments.get(refId) + 1);
-                    overlaps.put(refId, Stream.concat(overlaps.get(refId).stream(),
-                            Stream.of(Double.parseDouble(data[(refIndex*2)+1]),
-                                    Double.parseDouble(data[(refIndex*2)+2]))).collect(Collectors.toList()));
+                    List<Double> regions = overlaps.get(refId);
+
+                    for (int i = 0; i < regions.size(); i += 2) {
+
+                        if (start < regions.get(i)) {
+                            regions.add(i, start);
+                            regions.add(i + 1, stop);
+                            break;
+                        } else if (start == regions.get(i) && stop < regions.get(i + 1)) {
+                            regions.add(i, start);
+                            regions.add(i + 1, stop);
+                            break;
+                        } else if (i == regions.size() - 2) {
+                            regions.add(start);
+                            regions.add(stop);
+                            break;
+                        }
+                    }
+
+                    overlaps.put(refId, regions);
                 }
             }
+
+            br.close();
 
         } catch (IOException e) {
             e.printStackTrace();
