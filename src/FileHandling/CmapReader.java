@@ -2,18 +2,13 @@ package FileHandling;
 
 import DataTypes.ContigInfo;
 import DataTypes.LabelInfo;
+import DataTypes.Reference;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /*
  * @author Josie
@@ -66,9 +61,10 @@ public class CmapReader {
         return false;
     }
 
-    public static List<List<Object>> getSummaryData(File cmapFile, List<Integer> refIds) {
+    public static void getSummaryData(File cmapFile, Map<Integer, Reference> references) {
 
-        List<List<Object>> summaryData = new ArrayList<>();
+        Set<Integer> unvisited = references.keySet();
+
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(cmapFile));
@@ -82,15 +78,16 @@ public class CmapReader {
                 String[] rowData = line.split("\t");
                 int id = Integer.parseInt(rowData[0]);
 
-                if (refIds.contains(id)) {
-                    refIds.remove(Integer.valueOf(id));
-                    double length = Double.parseDouble(rowData[1]);
-                    int labels = Integer.parseInt(rowData[2]);
-                    double density = (labels / length) * 100000;
+                if (references.containsKey(id)) {
+                    Reference ref = references.get(id);
+                    if (unvisited.contains(id)) {
+                        unvisited.remove(id);
+                        ref.setLength(Double.parseDouble(rowData[1]));
+                        ref.setLabels(Integer.parseInt(rowData[2]));
+                        ref.setDensity();
+                    }
 
-                    List<Object> data = new ArrayList<>(Arrays.asList(id, length, labels, density));
-
-                    summaryData.add(data);
+                    ref.addSite(Integer.parseInt(rowData[3]), Double.parseDouble(rowData[5]));
                 }
             }
 
@@ -99,9 +96,44 @@ public class CmapReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return summaryData;
     }
+
+//    public static List<List<Object>> getSummaryData(File cmapFile, List<Integer> refIds) {
+//
+//        List<List<Object>> summaryData = new ArrayList<>();
+//
+//        try {
+//            BufferedReader br = new BufferedReader(new FileReader(cmapFile));
+//            String line;
+//
+//            while ((line = br.readLine()) != null) {
+//                if (line.startsWith("#")) {
+//                    continue;
+//                }
+//
+//                String[] rowData = line.split("\t");
+//                int id = Integer.parseInt(rowData[0]);
+//
+//                if (refIds.contains(id)) {
+//                    refIds.remove(Integer.valueOf(id));
+//                    double length = Double.parseDouble(rowData[1]);
+//                    int labels = Integer.parseInt(rowData[2]);
+//                    double density = (labels / length) * 100000;
+//
+//                    List<Object> data = new ArrayList<>(Arrays.asList(id, length, labels, density));
+//
+//                    summaryData.add(data);
+//                }
+//            }
+//
+//            br.close();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return summaryData;
+//    }
 
     public static LinkedHashMap cmapToHashMap(String filename) {
         String line;
