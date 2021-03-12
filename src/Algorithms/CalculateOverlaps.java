@@ -34,6 +34,24 @@ public class CalculateOverlaps {
         return counts;
     }
 
+    public static Integer countAllOverlaps(List<Double> regions) {
+
+        int overlaps = 0;
+        for (int i = 0; i < regions.size(); i += 2) {
+            double start = regions.get(i);
+            double stop = regions.get(i + 1);
+            List<Double> queries = regions.subList(i + 2, regions.size());
+            for (int j = 0; j < queries.size(); j += 2) {
+                double query = queries.get(j);
+                if (start <= query && query <= stop) {
+                    overlaps++;
+                }
+            }
+        }
+
+        return overlaps;
+    }
+
     public static LinkedHashMap<String, Integer> countAllOverlaps(LinkedHashMap<String, RefContig> references,
                                                                   LinkedHashMap<String, QryContig> queries) {
         ArrayList<String> done = new ArrayList<>();
