@@ -4,6 +4,7 @@ import Algorithms.DeleteConflicts;
 import Algorithms.SortOrientation;
 import DataTypes.LabelInfo;
 import DataTypes.QryContig;
+import DataTypes.Reference;
 import Datasets.Default.QueryViewData;
 import Datasets.Default.RawFileData;
 import Datasets.Default.RefViewData;
@@ -2483,6 +2484,8 @@ public class MapOptics extends JFrame {
         refModel.addColumn("Overlaps");
 
         refContigTable.setModel(refModel);
+        refContigTable.setUpdateSelectionOnSort(true);
+        refContigTable.getRowSorter().toggleSortOrder(0);
 
         refContigTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "refUp");
@@ -2844,8 +2847,15 @@ public class MapOptics extends JFrame {
         tmRefContigs.setRowCount(0);
         // Add rows to table
 
-        for (Object[] row : model.getSummaryTableRows()) {
-            tmRefContigs.addRow(row);
+        for (Reference ref : model.getReferences()) {
+            tmRefContigs.addRow(new Object[]{
+                    ref.getRefID(),
+                    ref.getLength(),
+                    ref.getLabels(),
+                    ref.getDensity(),
+                    ref.getQueryIDs().size(),
+                    ref.getOverlaps()
+            });
         }
     }
 
@@ -2987,17 +2997,7 @@ public class MapOptics extends JFrame {
     private void changeRef(String refId) {
         model.setSelectedQueryRow(refId);
 
-        // TODO: Read and set alignment data for a specific row
-//        ReferenceView.setRefDataset(refDataset.getText());
-//        ReferenceView.setQryDataset(qryDataset.getText());
-//        ReferenceView.setChosenRef(refId);
-//        SummaryView.setChosenRef(refId);
-//        QueryView.setChosenRef(refId);
-//        fillQryTable(refId);
-//        QueryView.setRegionView(false);
-//        QueryView.setChosenLabel(EMPTY_STRING);
-//        SearchRegionData.resetData();
-
+        //SUMMARY VIEW TAB
         // Redraw the graph with contig marked
         referencesGraph.removeAll();
         ChartPanel chartPanel1 = makeLengthChartPanel(model.getLengths(), refId);
@@ -3010,6 +3010,27 @@ public class MapOptics extends JFrame {
         labelDensityGraph.add(chartPanel2, BorderLayout.CENTER);
         labelDensityGraph.setVisible(true);
         refIdSearch.setText(refId);
+
+        // TODO: Read and set alignment data for a specific row
+        //REFERENCE VIEW TAB
+//        ReferenceView.setRefDataset(refDataset.getText());
+//        ReferenceView.setQryDataset(qryDataset.getText());
+//        ReferenceView.setChosenRef(refId);
+
+        //QUERY VIEW TAB
+//        QueryView.setRegionView(false);
+//        QueryView.setChosenLabel(EMPTY_STRING);
+//        SearchRegionData.resetData();
+//        QueryView.setChosenRef(refId);
+
+
+
+//        SummaryView.setChosenRef(refId); // probably not needed
+
+//        fillQryTable(refId);
+
+
+
         repaint();
     }
 
