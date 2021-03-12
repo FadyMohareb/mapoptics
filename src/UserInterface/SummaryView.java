@@ -4,6 +4,7 @@ import DataTypes.QryContig;
 import DataTypes.RefContig;
 import Datasets.Default.RawFileData;
 import Datasets.UserEdited.SavedRefData;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +16,14 @@ import java.awt.geom.Rectangle2D;
  */
 public class SummaryView extends JPanel {
 
+    private MapOpticsModel model;
+
+    public SummaryView(MapOpticsModel model) {
+        this.model = model;
+        initComponents();
+    }
+
+    // TODO: Delete once deprecated
     private static String chosenRef = "";
 
     public static void setChosenRef(String chosenRef) {
@@ -25,9 +34,7 @@ public class SummaryView extends JPanel {
 //        return chosenRef;
 //    }
 
-    public SummaryView() {
-        initComponents();
-    }
+
 
     /*
     This method is currently unused. Commented out in case it becomes useful.
