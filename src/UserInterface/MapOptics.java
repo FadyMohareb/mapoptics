@@ -1688,15 +1688,17 @@ public class MapOptics extends JFrame {
                 String refCmapDataset = FilenameUtils.getName(refPath);
                 String qryCmapDataset = FilenameUtils.getName(qryPath);
 
+                //TODO: Can delete if not used by other branches
+
                 // extract data from files
-                RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
-                RawFileData.setRefContigs(CmapReader.cmapToHashMap(refPath));
-                RawFileData.setQryContigs(CmapReader.cmapToHashMap(qryPath));
+//                RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
+//                RawFileData.setRefContigs(CmapReader.cmapToHashMap(refPath));
+//                RawFileData.setQryContigs(CmapReader.cmapToHashMap(qryPath));
 
                 refDataset.setText(refCmapDataset);
                 qryDataset.setText(qryCmapDataset);
-                ReferenceView.setRefDataset(refCmapDataset);
-                ReferenceView.setQryDataset(qryCmapDataset);
+//                ReferenceView.setRefDataset(refCmapDataset);
+//                ReferenceView.setQryDataset(qryCmapDataset);
 
                 setAllData();
             }
@@ -1714,40 +1716,50 @@ public class MapOptics extends JFrame {
     private void swapContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // swap the query and the reference around
         if (!qryPath.equals(EMPTY_STRING) && !xmapPath.equals(EMPTY_STRING) && !refPath.equals(EMPTY_STRING)) {
-            int swap = JOptionPane.showConfirmDialog(null, "Are you sure you would like to swap the query and the reference dataset? The data will reset to default", "Swap Contigs", JOptionPane.YES_NO_OPTION);
+            int swap = JOptionPane.showConfirmDialog(
+                    null, "Are you sure you would like to swap the query " +
+                            "and the reference dataset? The data will reset to default",
+                    "Swap Contigs", JOptionPane.YES_NO_OPTION);
             if (swap == JOptionPane.YES_OPTION) {
                 // reset all data
                 resetData();
                 model.swapRefQry();
 
-                // reread the files but swapping the variables
-                if (XmapReader.isSwap()) {
-                    XmapReader.setSwap(false);
-                    // extract data from files
-                    RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
-                    RawFileData.setRefContigs(CmapReader.cmapToHashMap(refPath));
-                    RawFileData.setQryContigs(CmapReader.cmapToHashMap(qryPath));
-                    String refData = refDataset.getText();
-                    refDataset.setText(qryDataset.getText());
-                    qryDataset.setText(refData);
-                    ReferenceView.setRefDataset(qryDataset.getText());
-                    ReferenceView.setQryDataset(refData);
-                } else {
-                    XmapReader.setSwap(true);
-                    // extract data from files
-                    RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
-                    RawFileData.setRefContigs(CmapReader.cmapToHashMap(qryPath));
-                    RawFileData.setQryContigs(CmapReader.cmapToHashMap(refPath));
-                    String refData = refDataset.getText();
-                    refDataset.setText(qryDataset.getText());
-                    qryDataset.setText(refData);
-                    ReferenceView.setRefDataset(qryDataset.getText());
-                    ReferenceView.setQryDataset(refData);
-                }
+                String refData = refDataset.getText();
+                refDataset.setText(qryDataset.getText());
+                qryDataset.setText(refData);
+
+                // TODO: Can possibly delete
+//                // reread the files but swapping the variables
+//                if (XmapReader.isSwap()) {
+//                    XmapReader.setSwap(false);
+//                    // extract data from files
+//                    RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
+//                    RawFileData.setRefContigs(CmapReader.cmapToHashMap(refPath));
+//                    RawFileData.setQryContigs(CmapReader.cmapToHashMap(qryPath));
+//                    String refData = refDataset.getText();
+//                    refDataset.setText(qryDataset.getText());
+//                    qryDataset.setText(refData);
+//                    ReferenceView.setRefDataset(qryDataset.getText());
+//                    ReferenceView.setQryDataset(refData);
+//                } else {
+//                    XmapReader.setSwap(true);
+//                    // extract data from files
+//                    RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
+//                    RawFileData.setRefContigs(CmapReader.cmapToHashMap(qryPath));
+//                    RawFileData.setQryContigs(CmapReader.cmapToHashMap(refPath));
+//                    String refData = refDataset.getText();
+//                    refDataset.setText(qryDataset.getText());
+//                    qryDataset.setText(refData);
+//                    ReferenceView.setRefDataset(qryDataset.getText());
+//                    ReferenceView.setQryDataset(refData);
+//                }
                 setAllData();
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Not all files have been declared - load files first", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    null, "Not all files have been declared - load files first",
+                    "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -2454,7 +2466,7 @@ public class MapOptics extends JFrame {
 
     private void refContigTableMouseClicked() {
         String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
-        model.setSelectedRow(chosenRef);
+        model.setSelectedQueryRow(chosenRef);
         changeRef(chosenRef);
     }
 
@@ -2733,9 +2745,10 @@ public class MapOptics extends JFrame {
 
         // if chosen contig, draw line to show what length
         if (!refId.equals(EMPTY_STRING)) {
-            int selectedBar = lengths.indexOf(RawFileData.getRefContigs(refId).getContigLen());
+            double length = (Double) refContigTable.getValueAt(refContigTable.getSelectedRow(), 1);
+            int selectedBar = lengths.indexOf(length);
             ((MyChartRenderer) plot.getRenderer()).setSelectedBar(selectedBar);
-            Marker line = new ValueMarker(RawFileData.getRefContigs(refId).getContigLen() / 1000);
+            Marker line = new ValueMarker(length / 1000);
             line.setPaint(new Color(97, 204, 10));
             line.setLabel(" ID: " + refId + " ");
             line.setLabelFont(new Font("Tahoma", Font.BOLD, 10));
@@ -2771,10 +2784,10 @@ public class MapOptics extends JFrame {
 
         // if chosen contig, draw line to show what length
         if (!refId.equals(EMPTY_STRING)) {
-            double labDense = ((RawFileData.getRefContigs(refId).getLabelInfo().length - 1) / RawFileData.getRefContigs(refId).getContigLen()) * 100000;
-            Marker line = new ValueMarker(labDense);
+            double density = (Double) refContigTable.getValueAt(refContigTable.getSelectedRow(), 3);
+            Marker line = new ValueMarker(density);
             line.setPaint(new Color(97, 204, 10));
-            line.setLabel(" Label Density: " + String.format("%.2f", labDense) + " ");
+            line.setLabel(" Label Density: " + String.format("%.2f", density) + " ");
             line.setLabelFont(new Font("Tahoma", Font.BOLD, 10));
             line.setLabelAnchor(RectangleAnchor.CENTER);
             line.setLabelBackgroundColor(new Color(244, 244, 244));
@@ -2805,6 +2818,7 @@ public class MapOptics extends JFrame {
         }
     }
 
+    // TODO: Can possibly delete
     private void fillRefTable(LinkedHashMap<String, Integer> numOverlaps) {
         // Format table to list all contigs with matches
         DefaultTableModel tmRefContigs = (DefaultTableModel) refContigTable.getModel();
@@ -2894,6 +2908,8 @@ public class MapOptics extends JFrame {
 
     private void setAllData() {
 
+        // TODO: Can possibly delete
+
 //        // generate raw data
 //        RawFileData.setData();
 //        // set overlap data from raw data
@@ -2936,14 +2952,14 @@ public class MapOptics extends JFrame {
 
 
         // Displays graph of reference contigs
-        String selectedRow = model.getSelectedRow();
+        String selectedRow = model.getSelectedQueryRow();
 
         referencesGraph.removeAll();
         ChartPanel refChartPanel = makeLengthChartPanel(model.getLengths(), selectedRow);
         referencesGraph.add(refChartPanel, BorderLayout.CENTER);
         referencesGraph.setVisible(true);
 
-//      // Displays graph of query contigs
+        // Displays graph of query contigs
         labelDensityGraph.removeAll();
         ChartPanel labDenseChartPanel = makeDensityChartPanel(model.getDensities(), selectedRow);
         labelDensityGraph.add(labDenseChartPanel, BorderLayout.CENTER);
@@ -2969,7 +2985,9 @@ public class MapOptics extends JFrame {
     }
 
     private void changeRef(String refId) {
-        model.setSelectedRow(refId);
+        model.setSelectedQueryRow(refId);
+
+        // TODO: Read and set alignment data for a specific row
 //        ReferenceView.setRefDataset(refDataset.getText());
 //        ReferenceView.setQryDataset(qryDataset.getText());
 //        ReferenceView.setChosenRef(refId);
