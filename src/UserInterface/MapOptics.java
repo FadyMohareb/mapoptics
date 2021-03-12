@@ -244,7 +244,7 @@ public class MapOptics extends JFrame {
         JLabel jLabel15 = new JLabel();
         refDataset = new javax.swing.JTextField();
         qryDataset = new javax.swing.JTextField();
-        summaryView = new UserInterface.SummaryView();
+        summaryView = new UserInterface.SummaryView(model);
         JPanel referenceGraphPanel = new JPanel();
         referencesGraph = new javax.swing.JPanel();
         labelDensityGraph = new javax.swing.JPanel();
