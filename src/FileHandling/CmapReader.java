@@ -34,6 +34,8 @@ public class CmapReader {
                         }
                     }
 
+                    br.close();
+
                     //Show error message if wrong format
                     JOptionPane.showMessageDialog(null,
                             "Error loading CMAP file." +
@@ -91,6 +93,8 @@ public class CmapReader {
                     summaryData.add(data);
                 }
             }
+
+            br.close();
 
         } catch (IOException e) {
             e.printStackTrace();
