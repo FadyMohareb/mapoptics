@@ -1,7 +1,9 @@
 package FileHandling;
 
 import DataTypes.AlignmentInfo;
+import DataTypes.Query;
 import DataTypes.Reference;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -97,7 +99,7 @@ public class XmapReader {
                 double stop = Double.parseDouble(data[(refIndex*2)+2]);
 
                 if (!references.containsKey(refId)) {
-                    ref = new Reference(refId);
+                    ref = new Reference(Integer.toString(refId));
                     references.put(refId, ref);
                 } else {
                     ref = references.get(refId);
@@ -118,6 +120,46 @@ public class XmapReader {
         }
 
         return references;
+    }
+
+    public static Map<Integer, Query> getReferenceData(MapOpticsModel model) {
+
+        Map<Integer, Query> queries = new HashMap<>();
+        boolean isReversed = model.isReversed();
+        int queryIndex = isReversed ? 2 : 1;
+        int refIndex = isReversed ? 1 : 2;
+        String refID = model.getSelectedRefID();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(model.getXmapFile()));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
+
+                String[] data = line.split("\t");
+
+                if (data[refIndex].equals(refID)) {
+                    Query qry = new Query(data[queryIndex]);
+                    qry.setOrientation(data[7]);
+                    qry.setConfidence(Double.parseDouble(data[8]));
+                    qry.getHitEnum(data[9]);
+                    qry.getAlignments(data[13]);
+
+                    queries.put(Integer.parseInt(data[queryIndex]), qry);
+                }
+            }
+
+            br.close();
+            return queries;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 //    public static Map<Integer, List<Object>> getSummaryData(File xmapFile, boolean isReversed) {
