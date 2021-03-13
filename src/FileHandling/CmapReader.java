@@ -2,6 +2,7 @@ package FileHandling;
 
 import DataTypes.ContigInfo;
 import DataTypes.LabelInfo;
+import DataTypes.Query;
 import DataTypes.Reference;
 
 import javax.swing.*;
@@ -63,8 +64,7 @@ public class CmapReader {
 
     public static void getSummaryData(File cmapFile, Map<Integer, Reference> references) {
 
-        Set<Integer> unvisited = references.keySet();
-
+        Set<Integer> unvisited = new HashSet<>(references.keySet());
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(cmapFile));
@@ -88,6 +88,41 @@ public class CmapReader {
                     }
 
                     ref.addSite(Integer.parseInt(rowData[3]), Double.parseDouble(rowData[5]));
+                }
+            }
+
+            br.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void getReferenceData(File qryFile, Map<Integer,Query> queries) {
+
+        Set<Integer> unvisited = new HashSet<>(queries.keySet());
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(qryFile));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
+
+                String[] rowData = line.split("\t");
+                int id = Integer.parseInt(rowData[0]);
+
+                if (queries.containsKey(id)) {
+                    Query qry = queries.get(id);
+                    if (unvisited.contains(id)) {
+                        unvisited.remove(id);
+                        qry.setLength(Double.parseDouble(rowData[1]));
+                        qry.setLabels(Integer.parseInt(rowData[2]));
+                    }
+
+                    qry.addSite(Integer.parseInt(rowData[3]), Double.parseDouble(rowData[5]));
                 }
             }
 
@@ -217,5 +252,4 @@ public class CmapReader {
         }
         return contigs;
     }
-
 }
