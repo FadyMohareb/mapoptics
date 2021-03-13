@@ -1,10 +1,19 @@
 package Datasets.Default;
 
 import Algorithms.SortOverlap;
-import DataTypes.*;
+import DataTypes.QryContig;
+import DataTypes.Query;
+import DataTypes.RefContig;
+import DataTypes.Reference;
+import FileHandling.CmapReader;
+import FileHandling.XmapReader;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
+
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
     @author Josie
@@ -27,6 +36,21 @@ public class RefViewData {
     public static void resetData() {
         RefViewData.references = new LinkedHashMap();
         RefViewData.queries = new LinkedHashMap();
+    }
+
+    public static void setReferenceData(MapOpticsModel model) {
+        Reference ref = model.getSelectedRef();
+
+        Map<Integer, Query> queriesMap = XmapReader.getReferenceData(model);
+        if (queriesMap == null) {
+            System.out.println("Error Reading File");
+            return;
+        }
+
+        List<Query> queries = new ArrayList<>(queriesMap.values());
+        CmapReader.getReferenceData(model.getQryFile(), queriesMap);
+
+        ref.setQueries(queries);
     }
 
     public static void setData() {
