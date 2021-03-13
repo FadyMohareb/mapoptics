@@ -13,7 +13,8 @@ import java.util.Map;
 public class MapOpticsModel {
 
     private File refFile, qryFile, xmapFile;
-    private String selectedQueryRow;
+    private String selectedRefID;
+    private Reference selectedRef;
     private List<Object[]> summaryTableRows;
     private boolean isReversed;
     private List<Double> lengths;
@@ -23,7 +24,7 @@ public class MapOpticsModel {
 
     public MapOpticsModel() {
         isReversed = false;
-        selectedQueryRow = "";
+        selectedRefID = "";
         lengths = new ArrayList<>();
         densities = new ArrayList<>();
         references = new ArrayList<>();
@@ -85,16 +86,17 @@ public class MapOpticsModel {
         this.densities = densities;
     }
 
-    public String getSelectedQueryRow() {
-        return selectedQueryRow;
+    public String getSelectedRefID() {
+        return selectedRefID;
     }
 
     public List<Double> getLengths() {
         return lengths;
     }
 
-    public void setSelectedQueryRow(String selectedRow) {
-        this.selectedQueryRow = selectedRow;
+    public void setSelectedRefID(String selectedRow) {
+        this.selectedRefID = selectedRow;
+        setSelectedRef(selectedRow);
     }
 
     public List<Double> getDensities() {
@@ -111,5 +113,22 @@ public class MapOpticsModel {
 
     public List<Reference> getReferences() {
         return references;
+    }
+
+    private void setSelectedRef(String refID) {
+
+        if (refID.isEmpty()) {
+            selectedRef = null;
+        }
+
+        for (Reference reference : references) {
+            if (reference.getRefID().equals(refID)) {
+                selectedRef = reference;
+            }
+        }
+    }
+
+    public Reference getSelectedRef() {
+        return selectedRef;
     }
 }
