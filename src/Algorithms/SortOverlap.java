@@ -6,8 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /*
  * @author Josie
@@ -79,6 +78,7 @@ public class SortOverlap {
         setArrays(qryIds, refId, queries);
 
         // move left and right and up and down until they no longer overlap
+        sortContigs(qryRects, qryStarts, qryEnds);
         moveLeftandRight(scale);
         moveUpandDown(scale);
 
@@ -116,6 +116,154 @@ public class SortOverlap {
             }
             qryLabels[i] = labels;
         }
+    }
+
+    /* GM: Adding new method with novel approach to sorting overlapping alignment areas
+
+     */
+
+    // Create class called Pair to take pairs of Start and End aligns
+
+    // User defined Pair class
+    static class Pair {
+        int x;
+        int y;
+        int z;
+
+        // Constructor
+        public Pair(int x, int y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    }
+
+    // class to define user defined conparator
+    static class Compare {
+
+        void compare(Pair arr[], int n)
+        {
+            // Comparator to sort the pair according to first element
+            Arrays.sort(arr, new Comparator<Pair>() {
+                @Override public int compare(Pair p1, Pair p2)
+                {
+                     return p1.x - p2.x;
+                }
+            });
+
+            for (int i = 0; i < n; i++) {
+                System.out.print("AlignStart: "+ arr[i].x + " AlignEnd: " + arr[i].y + " Original Rect i: "+ arr[i].z + " ");
+            }
+            System.out.println();
+
+        }
+    }
+
+    private static Pair[] sortContigs(Rectangle2D[] QueryRectangles, Double[] QueryAlignStart, Double[] QueryAlignEnd) {
+        // Take in Rectangle dimensions for contigs for a single reference and
+        // add alignment start and end position as their reference positions
+
+        // Set parameters
+
+        int alignStart;
+        int alignEnd;
+
+        Rectangle2D rect;
+
+       // length of array
+        int n = qryRects.length;
+
+        // Array of Pair
+        Pair rects[] = new Pair[n];
+
+
+        for (int i = 0; i < qryRects.length; i++) {
+
+            rect = qryRects[i];
+
+            // set variables for areas where there is alignment
+            alignStart = (int) (rect.getMinX() + qryStarts[i]);
+            alignEnd = (int) (rect.getMinX() + qryEnds[i]);
+
+            // Add start and end of alignment values to array.
+            rects[i] = new Pair(alignStart, alignEnd, i);
+
+            System.out.println("Contig Number: " +i+ " Align Start: "+alignStart+ " Align End: "+alignEnd);
+
+
+        }
+// Initialise compare class
+        Compare obj = new Compare();
+// Sort Alignments by start position (relevant to the reference)
+        obj.compare(rects, n);
+
+        // List
+        HashMap<Integer, ArrayList<Rectangle2D>> RectLayoutMap = new HashMap<>();
+        ArrayList<Rectangle2D> Overlaps = new ArrayList<>();
+        // Compare align end (rect1) to align start (rect 2 to n) and if align end is larger than align start
+        for(int i =0; i<rects.length; i++) {
+            // Start working way through each pairwise comparison
+            for(int j = 0; j< rects.length; j++) {
+                //Compare ith rect to jth rectangle
+                // Clear array list from last set of comparisons
+
+
+                if(i<j){
+                    // Don't compare the rectangle to itself
+
+                if (rects[i].y >= rects[j].x) {
+                    // Compare end align with start of comparison rectangle and add to Overlaps list
+                    Overlaps.add(qryRects[rects[j].z]);
+                    System.out.println("Overlaps between: "+rects[i].y+ " on rect "+rects[i].z+" and "+ rects[j].x+
+                            " on rect "+rects[j].z);
+                    System.out.println("Rectangle overlapping: "+qryRects[rects[j].z]);
+                }else{
+                    // Add set of Overlaps to Hashmap for future use
+                    RectLayoutMap.put(i, Overlaps);
+                    System.out.println("Hashmap entry "+i+ "="+RectLayoutMap.get(i));
+                    Overlaps.clear();
+                    break;
+                }
+                }
+            }
+
+        }
+        // Add to original rectangle to list called overlaps
+        // Then add overlap to HashMap that the key is the rectangle number
+        for(int k=0; k< RectLayoutMap.size(); k++) {
+            if(RectLayoutMap.containsKey(k)){
+                ArrayList<Rectangle2D> newone = RectLayoutMap.get(k);
+                for(int m=0; m< newone.size(); m++ ){
+                    Rectangle2D newtwo = newone.get(m);
+                    System.out.println("Rectangle before mod = "+newtwo);
+                    newtwo.setRect(newtwo.getMinX(),newtwo.getY()+10,newtwo.getWidth(),newtwo.getHeight());
+                    System.out.println("Rectangle after mod = "+newtwo);
+
+
+                    // Find matching rectangle based  on x value in the orginal qryRects
+                    for(int z =0; z< qryRects.length; z++){
+                        // Loop through qryRects to find matching rectangle and replace
+                        Double qryX = qryRects[z].getMinX();
+                        Double changeX = newtwo.getMinX();
+                        if(qryX == changeX) {
+                            qryRects[z] = newtwo;
+                            System.out.println("Check Rectangle has changed dimension "+qryRects[z]);
+
+                        }
+
+                    }
+
+                }
+
+
+
+            }
+        }
+
+
+        return rects;
+
     }
 
     private static void moveLeftandRight(int scale) throws IOException {//
