@@ -2467,7 +2467,7 @@ public class MapOptics extends JFrame {
 
     private void refContigTableMouseClicked() {
         String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
-        model.setSelectedQueryRow(chosenRef);
+        model.setSelectedRefID(chosenRef);
         changeRef(chosenRef);
     }
 
@@ -2849,7 +2849,7 @@ public class MapOptics extends JFrame {
 
         for (Reference ref : model.getReferences()) {
             tmRefContigs.addRow(new Object[]{
-                    ref.getRefID(),
+                    Integer.parseInt(ref.getRefID()),
                     ref.getLength(),
                     ref.getLabels(),
                     ref.getDensity(),
@@ -2962,7 +2962,7 @@ public class MapOptics extends JFrame {
 
 
         // Displays graph of reference contigs
-        String selectedRow = model.getSelectedQueryRow();
+        String selectedRow = model.getSelectedRefID();
 
         referencesGraph.removeAll();
         ChartPanel refChartPanel = makeLengthChartPanel(model.getLengths(), selectedRow);
@@ -2995,7 +2995,10 @@ public class MapOptics extends JFrame {
     }
 
     private void changeRef(String refId) {
-        model.setSelectedQueryRow(refId);
+        model.setSelectedRefID(refId);
+        if (!refId.isEmpty()) {
+            RefViewData.setReferenceData(model);
+        }
 
         //SUMMARY VIEW TAB
         // Redraw the graph with contig marked
