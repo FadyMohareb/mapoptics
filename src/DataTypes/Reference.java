@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class Reference {
 
-    private final int refID;
+    private final String refID;
 
     private int overlaps;
     private int labels;
@@ -17,11 +17,13 @@ public class Reference {
     private List<Integer> queryIDs;
     private double length, density;
     private Map<Integer, Double> sites;
+    private List<Query> queries;
 
-    public Reference(int refID) {
+    public Reference(String refID) {
         this.refID = refID;
         regions = new ArrayList<>();
         queryIDs = new ArrayList<>();
+        queries = new ArrayList<>();
         sites = new HashMap<>();
     }
 
@@ -49,7 +51,7 @@ public class Reference {
         }
     }
 
-    public int getRefID() {
+    public String getRefID() {
         return refID;
     }
 
@@ -95,5 +97,17 @@ public class Reference {
 
     public void addSite(int siteID, double position) {
         sites.put(siteID, position);
+    }
+
+    public void setQueries(List<Query> queries) {
+        this.queries = queries;
+    }
+
+    public List<Query> getQueries() {
+        return queries;
+    }
+
+    public Map<Integer, Double> getSites() {
+        return sites;
     }
 }
