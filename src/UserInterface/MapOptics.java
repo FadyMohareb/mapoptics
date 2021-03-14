@@ -4,6 +4,7 @@ import Algorithms.DeleteConflicts;
 import Algorithms.SortOrientation;
 import DataTypes.LabelInfo;
 import DataTypes.QryContig;
+import DataTypes.Query;
 import DataTypes.Reference;
 import Datasets.Default.QueryViewData;
 import Datasets.Default.RawFileData;
@@ -2528,7 +2529,10 @@ public class MapOptics extends JFrame {
         qryModel.addColumn("HitEnum");
         qryModel.addColumn("Num Labels");
         qryModel.addColumn("Num Matches");
+
         qryContigTable.setModel(qryModel);
+        qryContigTable.setUpdateSelectionOnSort(true);
+        qryContigTable.getRowSorter().toggleSortOrder(0);
 
         qryContigTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "qryUp");
@@ -2801,21 +2805,44 @@ public class MapOptics extends JFrame {
         return new ChartPanel(chart);
     }
 
+//    private void fillQryTable(String refId) {
+//        // Empty table
+//        DefaultTableModel qryModel = (DefaultTableModel) qryContigTable.getModel();
+//        qryModel.setRowCount(0);
+//        // Add rows to query table
+//        if (!refId.equals(EMPTY_STRING)) {
+//            for (String qryId : RawFileData.getReferences(refId).getConnections()) {
+//                qryModel.addRow(new Object[]{
+//                        qryId,
+//                        (int) RawFileData.getQryContigs(qryId).getContigLen(),
+//                        RawFileData.getAlignmentInfo(refId + "-" + qryId).getOrientation(),
+//                        Double.parseDouble(RawFileData.getAlignmentInfo(refId + "-" + qryId).getConfidence()),
+//                        RawFileData.getAlignmentInfo(refId + "-" + qryId).getHitEnum(),
+//                        RawFileData.getQryContigs(qryId).getLabelInfo().length - 1,
+//                        RawFileData.getQueries(refId + "-" + qryId).getAlignments().length
+//                });
+//            }
+//        }
+//    }
+
     private void fillQryTable(String refId) {
+        // Format table to list all queries of selected reference
+        DefaultTableModel tmRefContigs = (DefaultTableModel) qryContigTable.getModel();
         // Empty table
-        DefaultTableModel qryModel = (DefaultTableModel) qryContigTable.getModel();
-        qryModel.setRowCount(0);
-        // Add rows to query table
-        if (!refId.equals(EMPTY_STRING)) {
-            for (String qryId : RawFileData.getReferences(refId).getConnections()) {
-                qryModel.addRow(new Object[]{
-                        qryId,
-                        (int) RawFileData.getQryContigs(qryId).getContigLen(),
-                        RawFileData.getAlignmentInfo(refId + "-" + qryId).getOrientation(),
-                        Double.parseDouble(RawFileData.getAlignmentInfo(refId + "-" + qryId).getConfidence()),
-                        RawFileData.getAlignmentInfo(refId + "-" + qryId).getHitEnum(),
-                        RawFileData.getQryContigs(qryId).getLabelInfo().length - 1,
-                        RawFileData.getQueries(refId + "-" + qryId).getAlignments().length
+        tmRefContigs.setRowCount(0);
+        // Add rows to table
+        if (!refId.isEmpty()) {
+            Reference ref = model.getSelectedRef();
+
+            for (Query qry : ref.getQueries()) {
+                tmRefContigs.addRow(new Object[]{
+                        Integer.parseInt(qry.getID()),
+                        qry.getLength(),
+                        qry.getOrientation(),
+                        qry.getConfidence(),
+                        qry.getHitEnum(),
+                        qry.getLabels(),
+                        qry.getNumMatches()
                 });
             }
         }
@@ -2996,9 +3023,6 @@ public class MapOptics extends JFrame {
 
     private void changeRef(String refId) {
         model.setSelectedRefID(refId);
-        if (!refId.isEmpty()) {
-            RefViewData.setReferenceData(model);
-        }
 
         //SUMMARY VIEW TAB
         // Redraw the graph with contig marked
@@ -3016,6 +3040,12 @@ public class MapOptics extends JFrame {
 
         // TODO: Read and set alignment data for a specific row
         //REFERENCE VIEW TAB
+        if (!refId.isEmpty()) {
+            RefViewData.setReferenceData(model);
+        }
+
+        fillQryTable(refId);
+
 //        ReferenceView.setRefDataset(refDataset.getText());
 //        ReferenceView.setQryDataset(qryDataset.getText());
 //        ReferenceView.setChosenRef(refId);
