@@ -110,4 +110,13 @@ public class Reference {
     public Map<Integer, Double> getSites() {
         return sites;
     }
+
+    public Query getQuery(String queryID) {
+        for (Query query : queries) {
+            if (query.getID().equals(queryID)) {
+                return query;
+            }
+        }
+        return null;
+    }
 }
