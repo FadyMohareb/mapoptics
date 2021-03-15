@@ -1,6 +1,7 @@
 package DataTypes;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Query {
@@ -9,7 +10,7 @@ public class Query {
     private String orientation, hitEnum, alignments;
     private double confidence, length;
     private int numMatches, labels;
-    private Map<Integer, Double> sites;
+    private Map<Integer, List<Double>> sites;
 
 
 
@@ -39,8 +40,8 @@ public class Query {
         this.length = length;
     }
 
-    public void addSite(int siteID, double position) {
-        sites.put(siteID, position);
+    public void addSite(int siteID, List<Double> siteData) {
+        sites.put(siteID, siteData);
     }
 
     public void setLabels(int labels) {
@@ -75,7 +76,7 @@ public class Query {
         return numMatches;
     }
 
-    public Map<Integer, Double> getSites() {
+    public Map<Integer, List<Double>> getSites() {
         return sites;
     }
 
