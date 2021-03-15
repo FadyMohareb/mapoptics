@@ -106,8 +106,12 @@ public class CmapReader {
             BufferedReader br = new BufferedReader(new FileReader(qryFile));
             String line;
 
+            List<String> header = new ArrayList<>();
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("#")) {
+                    if (line.startsWith("#h")) {
+                        Collections.addAll(header, line.split("\t"));
+                    }
                     continue;
                 }
 
@@ -122,7 +126,13 @@ public class CmapReader {
                         qry.setLabels(Integer.parseInt(rowData[2]));
                     }
 
-                    qry.addSite(Integer.parseInt(rowData[3]), Double.parseDouble(rowData[5]));
+                    qry.addSite(Integer.parseInt(rowData[3]), Arrays.asList(
+                            Double.parseDouble(rowData[header.indexOf("Position")]),
+                            Double.parseDouble(rowData[header.indexOf("StdDev")]),
+                            Double.parseDouble(rowData[header.indexOf("Coverage")]),
+                            Double.parseDouble(rowData[header.indexOf("Occurrence")]),
+                            header.contains("ChimQuality") ?
+                                    Double.parseDouble(rowData[header.indexOf("ChimQuality")]) : 0.0));
                 }
             }
 
