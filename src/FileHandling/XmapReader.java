@@ -12,7 +12,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /*
@@ -98,6 +101,12 @@ public class XmapReader {
                 double start = Double.parseDouble(data[(refIndex*2)+1]);
                 double stop = Double.parseDouble(data[(refIndex*2)+2]);
 
+                if (start > stop) {
+                    double temp = stop;
+                    stop = start;
+                    start = temp;
+                }
+
                 if (!references.containsKey(refId)) {
                     ref = new Reference(Integer.toString(refId));
                     references.put(refId, ref);
@@ -125,6 +134,7 @@ public class XmapReader {
     public static Map<Integer, Query> getReferenceData(MapOpticsModel model) {
 
         Map<Integer, Query> queries = new HashMap<>();
+        List<Integer> queryIDs = model.getSelectedRef().getQueryIDs();
         boolean isReversed = model.isReversed();
         int queryIndex = isReversed ? 2 : 1;
         int refIndex = isReversed ? 1 : 2;
@@ -140,6 +150,26 @@ public class XmapReader {
                 }
 
                 String[] data = line.split("\t");
+                int queryID = Integer.parseInt(data[queryIndex]);
+
+
+                // TODO: Hold data for a given query when it is also found in other reference contigs - could be List<String[refid, orient., conf.]>
+
+//                if (queryIDs.contains(queryID)) {
+//                    Query qry;
+//                    if (!queries.containsKey(queryID)) {
+//                        qry = new Query(data[queryIndex]);
+//                    } else {
+//                        qry = queries.get(queryID);
+//                    }
+//
+//                    if (data[refIndex].equals(refID)) {
+//
+//                    }
+//
+//                    queries.put(queryID, qry);
+//                }
+//                Query qry = new Query(data[queryIndex]);
 
                 if (data[refIndex].equals(refID)) {
                     Query qry = new Query(data[queryIndex]);
