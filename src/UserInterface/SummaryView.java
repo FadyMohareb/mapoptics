@@ -16,10 +16,12 @@ import java.awt.geom.Rectangle2D;
  */
 public class SummaryView extends JPanel {
 
-    private MapOpticsModel model;
+    private final JPanel pane;
+    private final MapOpticsModel model;
 
-    public SummaryView(MapOpticsModel model) {
+    public SummaryView(MapOpticsModel model, JPanel pane) {
         this.model = model;
+        this.pane = pane;
         initComponents();
     }
 
@@ -75,6 +77,115 @@ public class SummaryView extends JPanel {
 //        return rect;
 //    }
 
+//    @Override
+//    public void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        this.setBackground(Color.white);
+//        Graphics2D g2d = (Graphics2D) g;
+//        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//
+//        // draw alignment of single reference and all contigs
+//        try {
+//
+//            if (!model.getSelectedRefID().isEmpty()) {
+//
+//                Reference ref = model.getSelectedRef();
+//                double scale = 0.875;
+//                Rectangle2D refRect = new Rectangle2D.Double(50, pane.getHeight() * 0.2, pane.getWidth() * scale, 20);
+//
+////                Rectangle2D refRect = ref.getRectangle();
+//                // draw reference contig
+//                g2d.setColor(new Color(244, 244, 244));
+//                g2d.fill(refRect);
+//                g2d.setColor(Color.lightGray);
+//                g2d.draw(refRect);
+//                g2d.setColor(new Color(80, 80, 80));
+//                g2d.drawString("ID: " + ref.getRefID(), (int) refRect.getMaxX() - g2d.getFontMetrics().stringWidth("ID: " + ref.getRefID()), (int) refRect.getMinY() - 2);
+//
+//                double scaleWidth = (refRect.getWidth() / ref.getLength()) * 500000 * scale;
+//                // draw scalebar
+//                g2d.drawLine(10, 10, 10 + (int) scaleWidth, 10);
+//                for (int i = 0; i < 6; i++) {
+//                    g2d.drawLine((int) (10 + (scaleWidth / 5 * i)), 5, (int) (10 + (scaleWidth / 5 * i)), 15);
+//                }
+//
+//                g2d.drawString("500 000 bp", 15, 28);
+//
+//                Rectangle2D qryRect;
+//                QryContig qry;
+//
+//                // loop through rest of query contigs and draw one at a time
+//                for (int i = 0; i < ref.getConnections().length; i++) {
+//                    String[] connectingContigs = ref.getConnections();
+//                    String qryId = connectingContigs[i];
+//
+//                    qry = SavedRefData.getQueries(chosenRef + "-" + qryId);
+//
+//                    // draw query contigs
+//                    qryRect = qry.getRectangle();
+//                    g2d.setColor(new Color(244, 244, 244));
+//                    g2d.fill(qryRect);
+//                    g2d.setColor(Color.lightGray);
+//                    g2d.draw(qryRect);
+//                    g2d.setColor(new Color(80, 80, 80));
+//
+//                    int refIndex;
+//
+//                    for (int j = 0; j < qry.getLabels().length; j++) {
+//                        // draw the standard label
+//                        boolean qrymatch = false;
+//                        for (String[] alignment : qry.getAlignments()) {
+//                            if (Integer.parseInt(alignment[1]) == (j + 1)) {
+//                                qrymatch = true;
+//                                // draw line linking the two
+//                                refIndex = Integer.parseInt(alignment[0]) - 1;
+//                                g2d.setColor(Color.black);
+//                                g2d.drawLine((int) ref.getLabels()[refIndex].getCenterX(), (int) refRect.getMinY() + (int) refRect.getHeight(), (int) qry.getLabels()[j].getCenterX(), (int) qryRect.getMinY());
+//                                // draw labels in green
+//                                g2d.setColor(new Color(97, 204, 10));
+//                                g2d.fill(qry.getLabels()[j]);
+//                            }
+//                        }
+//                        if (!qrymatch) {
+//                            g2d.setColor(Color.black);
+//                            g2d.fill(qry.getLabels()[j]);
+//                        }
+//                    }
+//                }
+//
+//                // loop through reference labels
+//                for (int i = 0; i < ref.getLabels().length - 1; i++) {
+//                    boolean refmatch = false;
+//                    // loop through all matching queries
+//                    for (String qryId : ref.getConnections()) {
+//                        String key = chosenRef + "-" + qryId;
+//                        for (String[] alignment : SavedRefData.getQueries(key).getAlignments()) {
+//                            if (Integer.parseInt(alignment[0]) == (i + 1)) {
+//                                refmatch = true;
+//                                // draw labels in green
+//                                g2d.setColor(new Color(97, 204, 10));
+//                                g2d.fill(ref.getLabels()[i]);
+//
+//                            }
+//                        }
+//                    }
+//                    if (!refmatch) {
+//                        g2d.setColor(Color.black);
+//                        g2d.fill(ref.getLabels()[i]);
+//                    }
+//                }
+//
+//            } else {
+//                Font font = new Font("Tahoma", Font.ITALIC, 12);
+//                    g2d.setFont(font);
+//                    g2d.drawString("Choose a reference contig to display SUMMARY VIEW",  this.getWidth() / 2 - 115 , this.getHeight()/2);
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -97,7 +208,7 @@ public class SummaryView extends JPanel {
                 g2d.draw(refRect);
                 g2d.setColor(new Color(80, 80, 80));
                 g2d.drawString("ID: " + chosenRef, (int) refRect.getMaxX() - g2d.getFontMetrics().stringWidth("ID: " + chosenRef), (int) refRect.getMinY() - 2);
-                
+
                 double scaleWidth = (refRect.getWidth() / RawFileData.getRefContigs(chosenRef).getContigLen()) * 500000;
                 // draw scalebar
                 g2d.drawLine(10, 10, 10 + (int) scaleWidth, 10);
