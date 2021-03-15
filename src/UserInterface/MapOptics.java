@@ -2,7 +2,6 @@ package UserInterface;
 
 import Algorithms.DeleteConflicts;
 import Algorithms.SortOrientation;
-import DataTypes.LabelInfo;
 import DataTypes.QryContig;
 import DataTypes.Query;
 import DataTypes.Reference;
@@ -37,10 +36,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /*
  * @author Josie
@@ -245,8 +242,8 @@ public class MapOptics extends JFrame {
         JLabel jLabel15 = new JLabel();
         refDataset = new javax.swing.JTextField();
         qryDataset = new javax.swing.JTextField();
-        summaryView = new UserInterface.SummaryView(model);
         JPanel referenceGraphPanel = new JPanel();
+        summaryView = new UserInterface.SummaryView(model, referenceGraphPanel);
         referencesGraph = new javax.swing.JPanel();
         labelDensityGraph = new javax.swing.JPanel();
         JLabel jLabel16 = new JLabel();
@@ -2917,27 +2914,50 @@ public class MapOptics extends JFrame {
 
     }
 
+//    private void fillLabelTable(String qryId) {
+//        DefaultTableModel labelModel = (DefaultTableModel) labelTable.getModel();
+//        // Empty table
+//        labelModel.setRowCount(0);
+//        // Add rows to table
+//        if (!qryId.equals(EMPTY_STRING)) {
+//            for (int i = 0; i < RawFileData.getQryContigs(qryId).getLabelInfo().length - 1; i++) {
+//                double chimQual;
+//                LabelInfo label = RawFileData.getQryContigs(qryId).getLabelInfo()[i];
+//                if (label.getChimQuality() == null) {
+//                    chimQual = 0.0;
+//                } else {
+//                    chimQual = Double.parseDouble(label.getChimQuality());
+//                }
+//                labelModel.addRow(new Object[]{
+//                        Integer.toString(i),
+//                        Double.parseDouble(label.getLabelPos()),
+//                        Double.parseDouble(label.getCoverage()),
+//                        Double.parseDouble(label.getOccurance()),
+//                        chimQual,
+//                        Double.parseDouble(label.getStdDev())
+//                });
+//            }
+//        }
+//    }
+
     private void fillLabelTable(String qryId) {
         DefaultTableModel labelModel = (DefaultTableModel) labelTable.getModel();
         // Empty table
         labelModel.setRowCount(0);
         // Add rows to table
         if (!qryId.equals(EMPTY_STRING)) {
-            for (int i = 0; i < RawFileData.getQryContigs(qryId).getLabelInfo().length - 1; i++) {
-                double chimQual;
-                LabelInfo label = RawFileData.getQryContigs(qryId).getLabelInfo()[i];
-                if (label.getChimQuality() == null) {
-                    chimQual = 0.0;
-                } else {
-                    chimQual = Double.parseDouble(label.getChimQuality());
-                }
+            Query qry = model.getSelectedRef().getQuery(qryId);
+            Map<Integer, List<Double>> sites = qry.getSites();
+            for (Integer siteId : sites.keySet()) {
+                List<Double> data = sites.get(siteId);
+
                 labelModel.addRow(new Object[]{
-                        Integer.toString(i),
-                        Double.parseDouble(label.getLabelPos()),
-                        Double.parseDouble(label.getCoverage()),
-                        Double.parseDouble(label.getOccurance()),
-                        chimQual,
-                        Double.parseDouble(label.getStdDev())
+                        siteId,
+                        data.get(0),
+                        data.get(2),
+                        data.get(3),
+                        data.get(4),
+                        data.get(1)
                 });
             }
         }
@@ -3045,9 +3065,8 @@ public class MapOptics extends JFrame {
         }
 
         fillQryTable(refId);
-
-//        ReferenceView.setRefDataset(refDataset.getText());
-//        ReferenceView.setQryDataset(qryDataset.getText());
+        ReferenceView.setRefDataset(refDataset.getText());
+        ReferenceView.setQryDataset(qryDataset.getText());
 //        ReferenceView.setChosenRef(refId);
 
         //QUERY VIEW TAB
@@ -3060,7 +3079,6 @@ public class MapOptics extends JFrame {
 
 //        SummaryView.setChosenRef(refId); // probably not needed
 
-//        fillQryTable(refId);
 
 
 
@@ -3076,8 +3094,8 @@ public class MapOptics extends JFrame {
         QueryView.setChosenLabel(EMPTY_STRING);
         SearchRegionData.resetData();
         fillLabelTable(qryId);
-        fillQryViewRefTable(qryId);
-        qryIdSearch.setText(qryId);
+//        fillQryViewRefTable(qryId);
+//        qryIdSearch.setText(qryId);
         repaint();
     }
 
