@@ -19,6 +19,7 @@ public class DeleteConflicts {
 
     public static Map<String, List<String>> deletedContigs = new HashMap<>();
 
+    /* Replaced the deleting contig function with deleted contigs map methods below
     public static void deleteOne(String refId, String qryId) {
         // delete selected contig
         String refqryId = refId + "-" + qryId;
@@ -35,6 +36,8 @@ public class DeleteConflicts {
 
         ref.setConnections(newConnections.toArray(new String[newConnections.size()]));
     }
+
+     */
 
     public static void setDeletedContigs() {
         // Populate deletedContigs map with deleted contigs
