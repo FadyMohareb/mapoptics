@@ -79,8 +79,8 @@ public class SortOverlap {
 
         // move left and right and up and down until they no longer overlap
         sortContigs(qryRects, qryStarts, qryEnds);
-        moveLeftandRight(scale);
-        moveUpandDown(scale);
+        //moveLeftandRight(scale);
+        //moveUpandDown(scale);
 
         // now that all rectangles no longer overlap, put them in the new hashmap of queries and labels
         String refqryId;
@@ -115,6 +115,7 @@ public class SortOverlap {
                 labels[j] = queries.get(refqryId).getLabels()[j].getBounds2D();
             }
             qryLabels[i] = labels;
+            System.out.println("Query Label : "+i+ " is " +qryLabels[i][0]);
         }
     }
 
@@ -200,66 +201,68 @@ public class SortOverlap {
 
         // List
         HashMap<Integer, ArrayList<Rectangle2D>> RectLayoutMap = new HashMap<>();
-        ArrayList<Rectangle2D> Overlaps = new ArrayList<>();
+        //ArrayList<Rectangle2D> Overlaps = new ArrayList<>();
         // Compare align end (rect1) to align start (rect 2 to n) and if align end is larger than align start
         for(int i =0; i<rects.length; i++) {
+            ArrayList<Rectangle2D> Overlaps = new ArrayList<>();
             // Start working way through each pairwise comparison
             for(int j = 0; j< rects.length; j++) {
                 //Compare ith rect to jth rectangle
                 // Clear array list from last set of comparisons
 
 
-                if(i<j){
+                if(i<j) {
                     // Don't compare the rectangle to itself
 
-                if (rects[i].y >= rects[j].x) {
-                    // Compare end align with start of comparison rectangle and add to Overlaps list
-                    Overlaps.add(qryRects[rects[j].z]);
-                    System.out.println("Overlaps between: "+rects[i].y+ " on rect "+rects[i].z+" and "+ rects[j].x+
-                            " on rect "+rects[j].z);
-                    System.out.println("Rectangle overlapping: "+qryRects[rects[j].z]);
-                }else{
-                    // Add set of Overlaps to Hashmap for future use
-                    RectLayoutMap.put(i, Overlaps);
-                    System.out.println("Hashmap entry "+i+ "="+RectLayoutMap.get(i));
-                    Overlaps.clear();
-                    break;
-                }
+                    if (rects[i].y >= rects[j].x) {
+                        // Compare end align with start of comparison rectangle and add to Overlaps list
+                        Overlaps.add(qryRects[rects[j].z]);
+                        System.out.println("Overlaps between: " + rects[i].y + " on rect " + rects[i].z + " and " + rects[j].x +
+                                " on rect " + rects[j].z);
+                        System.out.println("Rectangle overlapping: " + qryRects[rects[j].z]);
+                    } else {
+                        if (!Overlaps.isEmpty()) {
+                            // Add set of Overlaps to Hashmap for future use
+                            RectLayoutMap.put(i, Overlaps);
+                            System.out.println("Hashmap entry " + i + "=" + RectLayoutMap.get(i));
+
+                            System.out.println("Hashmap entry 2: " + i + "=" + RectLayoutMap.get(i));
+                        }
+                        break;
+                    }
                 }
             }
 
         }
-        // Add to original rectangle to list called overlaps
-        // Then add overlap to HashMap that the key is the rectangle number
-        for(int k=0; k< RectLayoutMap.size(); k++) {
-            if(RectLayoutMap.containsKey(k)){
-                ArrayList<Rectangle2D> newone = RectLayoutMap.get(k);
-                for(int m=0; m< newone.size(); m++ ){
-                    Rectangle2D newtwo = newone.get(m);
-                    System.out.println("Rectangle before mod = "+newtwo);
-                    newtwo.setRect(newtwo.getMinX(),newtwo.getY()+10,newtwo.getWidth(),newtwo.getHeight());
-                    System.out.println("Rectangle after mod = "+newtwo);
+
+        // foreach approach for HashMap
+        RectLayoutMap.forEach((k,v) -> {
+           System.out.println("Key :" +k);
+            System.out.println("Values : "+v);
+
+            for(int m=0; m< v.size(); m++ ) {
+                Rectangle2D newtwo = v.get(m);
+                System.out.println("Rectangle before mod = " + newtwo);
+                newtwo.setRect(newtwo.getMinX(), newtwo.getY() + 10, newtwo.getWidth(), newtwo.getHeight());
+                System.out.println("Rectangle after mod = " + newtwo);
 
 
-                    // Find matching rectangle based  on x value in the orginal qryRects
-                    for(int z =0; z< qryRects.length; z++){
-                        // Loop through qryRects to find matching rectangle and replace
-                        Double qryX = qryRects[z].getMinX();
-                        Double changeX = newtwo.getMinX();
-                        if(qryX == changeX) {
-                            qryRects[z] = newtwo;
-                            System.out.println("Check Rectangle has changed dimension "+qryRects[z]);
+                // Find matching rectangle based  on x value in the orginal qryRects
+                for (int z = 0; z < qryRects.length; z++) {
 
-                        }
+                    // Loop through qryRects to find matching rectangle and replace
+                    Double qryX = qryRects[z].getMinX();
+                    Double changeX = newtwo.getMinX();
+                    if (qryX == changeX) {
+                        qryRects[z] = newtwo;
+                        // Move Query Labels as well
+                        System.out.println("Check Rectangle has changed dimension " + qryRects[z]);
 
                     }
-
                 }
-
-
-
             }
-        }
+
+        });
 
 
         return rects;
