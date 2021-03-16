@@ -213,7 +213,8 @@ public class QueryView extends JPanel {
 
                 if (regionView) {
                     // draw only region searched
-                    ref = SearchRegionData.getRef();
+                   // ref = SearchRegionData.getRef();
+                    ref = RawFileData.getN
                     qry = SearchRegionData.getQry();
                 } else {
                     // draw relative to query alignment

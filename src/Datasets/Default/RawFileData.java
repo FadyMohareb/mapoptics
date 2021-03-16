@@ -169,6 +169,36 @@ public class RawFileData {
                 alignInfo.getOrientation());
     }
 
+
+    public static RefContig setnewRefData(String refqryId) {
+        // set reference contig length
+        //-------------------------new-----------------------------------------
+        String refId = refqryId.split("-")[0];
+        String qryId = refqryId.split("-")[1];
+        String[]qryList= {qryId};
+        String refstart= RawFileData.getAlignmentInfo(refqryId).getRefAlignStart();
+        String refend = RawFileData.getAlignmentInfo(refqryId).getRefAlignEnd();
+        Double length= Double.parseDouble(refend)-Double.parseDouble(refstart);
+
+        Rectangle2D refRect = new Rectangle2D.Double(0, 6, length, 1);
+        // set reference contig labels
+        ArrayList<Rectangle2D> labels = new ArrayList();
+        Rectangle2D label;
+        double refLabelPos;
+        for (int i = 0; i < refContigs.get(refId).getLabelInfo().length - 1; i++) {
+
+            refLabelPos = Double.parseDouble(refContigs.get(refId).getLabelInfo()[i].getLabelPos());
+            if (refLabelPos>=Double.parseDouble(refend)& refLabelPos<= Double.parseDouble(refend)){
+                label = new Rectangle2D.Double(refRect.getMinX() + refLabelPos, refRect.getMinY(), 1, refRect.getHeight());
+                labels.add(label);
+            }
+        }
+        return new RefContig(refRect,
+                labels.toArray(new Rectangle2D[labels.size()]),
+                qryList);
+    }
+
+
     public static LinkedHashMap<String, RefContig> getReferences() {
         return references;
     }
