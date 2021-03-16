@@ -40,13 +40,19 @@ public class QueryViewData {
             
             // get raw data
             QryContig qry1 = RawFileData.getQueries(refqryId);
+           // RefContig ref1 = RawFileData.setnewRefData(refqryId) ;
             RefContig ref1 = RawFileData.getReferences(refId) ;
-            
+            references.put(refId, ref);
+            }
+
+
+
             // set scale variables
             setScaleVariables(qry1, ref1);
             
             // scale rectangles and set query data
-            QryContig qry2 = qry1.copy(hScale);
+           // QryContig qry2 = qry1.copy(hScale);
+            QryContig qry2 = RawFileData.setnewRefData(refqryId)
             qry2.setRectangle(scaleRectangle(qry2.getRectangle().getBounds2D(), 7, false));
             for (Rectangle2D label : qry2.getLabels()) {
                 labels.add(scaleRectangle(label.getBounds2D(), 7, true));
