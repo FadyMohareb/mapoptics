@@ -1664,6 +1664,8 @@ public class MapOptics extends JFrame {
         fileLoader.setVisible(false);
         // reset all data
         resetData();
+        // clear deleted contigs when initialising analysis
+        DeleteConflicts.clearDeletedContigs();
         XmapReader.setSwap(false);
         model.setReversed(false);
 
@@ -1906,10 +1908,12 @@ public class MapOptics extends JFrame {
     }
 
     private void deleteContigActionPerformed(java.awt.event.ActionEvent evt) {
-        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
+        if (!MapOpticsModel.getSelectedRefID().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
             int delete = JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete this query contig?", "Delete", JOptionPane.YES_NO_OPTION);
             if (delete == JOptionPane.YES_OPTION) {
-                DeleteConflicts.deleteOne(ReferenceView.getChosenRef(), ReferenceView.getChosenQry());
+                //DeleteConflicts.deleteOne(MapOpticsModel.getSelectedRefID(), ReferenceView.getChosenQry());
+                // populate deleted contigs map with deleted contigs
+                DeleteConflicts.setDeletedContigs();
                 repaint();
             }
         }
@@ -1917,12 +1921,14 @@ public class MapOptics extends JFrame {
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // check the user would really like to reset
-        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
+        // clear deleted contigs map
+        DeleteConflicts.clearDeletedContigs();
+        if (!MapOpticsModel.getSelectedRefID().equals(EMPTY_STRING)) {
             Object[] choices = {"Default", "Last saved", "Cancel"};
 
             int n = JOptionPane.showOptionDialog(null,
                     "Would you like to reset to default? Or last saved?",
-                    "Reset Referene View",
+                    "Reset Reference View",
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
                     null,
@@ -1932,8 +1938,10 @@ public class MapOptics extends JFrame {
             switch (n) {
                 case 0:
                     // reset view to default overlap
-                    UserRefData.resetDataToDefault();
-                    UserQryData.resetDataToDefault();
+                    //UserRefData.resetDataToDefault();
+                    //UserQryData.resetDataToDefault();
+                    // clear deleted contigs map
+                    DeleteConflicts.clearDeletedContigs();
                     break;
                 case 1:
                     // reset view to last saved
@@ -3073,7 +3081,7 @@ public class MapOptics extends JFrame {
 
 
         // Displays graph of reference contigs
-        String selectedRow = model.getSelectedRefID();
+        String selectedRow = MapOpticsModel.getSelectedRefID();
 
         referencesGraph.removeAll();
         ChartPanel refChartPanel = makeLengthChartPanel(model.getLengths(), selectedRow);
