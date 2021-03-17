@@ -2,10 +2,8 @@ package DataTypes;
 
 import Algorithms.CalculateOverlaps;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.awt.geom.Rectangle2D;
+import java.util.*;
 
 public class Reference {
 
@@ -18,6 +16,8 @@ public class Reference {
     private double length, density;
     private Map<Integer, Double> sites;
     private List<Query> queries;
+    private Rectangle2D rectangle;
+    private Set<Integer> alignmentSiteIds;
 
     public Reference(String refID) {
         this.refID = refID;
@@ -118,5 +118,21 @@ public class Reference {
             }
         }
         return null;
+    }
+
+    public void setRectangle(Rectangle2D rectangle) {
+        this.rectangle = rectangle;
+    }
+
+    public Rectangle2D getRectangle() {
+        return rectangle;
+    }
+
+    public void setAlignmentSites(Set<Integer> alignmentSiteIds) {
+        this.alignmentSiteIds = alignmentSiteIds;
+    }
+
+    public Set<Integer> getAlignmentSites() {
+        return alignmentSiteIds;
     }
 }
