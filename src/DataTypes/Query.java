@@ -1,8 +1,9 @@
 package DataTypes;
 
-import java.util.HashMap;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class Query {
 
@@ -10,13 +11,14 @@ public class Query {
     private String orientation, hitEnum, alignments;
     private double confidence, length;
     private int numMatches, labels;
-    private Map<Integer, List<Double>> sites;
-
+    private TreeMap<Integer, List<Double>> sites;
+    private Rectangle2D rectangle;
+    private Map<Integer, List<Integer>> alignmentSiteIds;
 
 
     public Query(String queryID) {
         this.queryID = queryID;
-        sites = new HashMap<>();
+        sites = new TreeMap<>();
     }
 
     public void setOrientation(String orientation) {
@@ -27,11 +29,11 @@ public class Query {
         this.confidence = confidence;
     }
 
-    public void getHitEnum(String hitEnum) {
+    public void setHitEnum(String hitEnum) {
         this.hitEnum = hitEnum;
     }
 
-    public void getAlignments(String alignments) {
+    public void setAlignments(String alignments) {
         this.alignments = alignments;
         numMatches = alignments.length() - alignments.replace(",", "").length();
     }
@@ -64,7 +66,7 @@ public class Query {
         return confidence;
     }
 
-    public String getHitEnum() {
+    public String setHitEnum() {
         return hitEnum;
     }
 
@@ -76,11 +78,33 @@ public class Query {
         return numMatches;
     }
 
-    public Map<Integer, List<Double>> getSites() {
+    public TreeMap<Integer, List<Double>> getSites() {
         return sites;
+    }
+
+    public String[] getFirstAlignment() {
+        String tuple = alignments.split("\\)")[0];
+        tuple = tuple.replace("(", "");
+        return tuple.split(",");
+    }
+
+    public void setRectangle(Rectangle2D rectangle) {
+        this.rectangle = rectangle;
+    }
+
+    public Rectangle2D getRectangle() {
+        return rectangle;
     }
 
     public String getAlignments() {
         return alignments;
+    }
+
+    public void setAlignmentSites(Map<Integer, List<Integer>> alignmentSiteIds) {
+        this.alignmentSiteIds = alignmentSiteIds;
+    }
+
+    public Map<Integer, List<Integer>> getAlignmentSites() {
+        return alignmentSiteIds;
     }
 }
