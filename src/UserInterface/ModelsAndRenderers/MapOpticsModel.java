@@ -5,7 +5,6 @@ import DataTypes.Reference;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author James
@@ -15,12 +14,11 @@ public class MapOpticsModel {
     private File refFile, qryFile, xmapFile;
     private String selectedRefID;
     private Reference selectedRef;
-    private List<Object[]> summaryTableRows;
     private boolean isReversed;
     private List<Double> lengths;
     private List<Double> densities;
-    private Map<Integer, Integer> refQueries;
     private List<Reference> references;
+    private double rectangleTotalWidth;
 
     public MapOpticsModel() {
         isReversed = false;
@@ -70,14 +68,6 @@ public class MapOpticsModel {
         this.xmapFile = xmapFile;
     }
 
-    public void setSummaryTableRows(List<Object[]> summaryTableRows) {
-        this.summaryTableRows = summaryTableRows;
-    }
-
-    public List<Object[]> getSummaryTableRows() {
-        return summaryTableRows;
-    }
-
     public void setLengths(List<Double> lengths) {
         this.lengths = lengths;
     }
@@ -103,10 +93,6 @@ public class MapOpticsModel {
         return densities;
     }
 
-    public void setRefQueries(Map<Integer, Integer> refQueries) {
-        this.refQueries = refQueries;
-    }
-
     public void setReferences(List<Reference> references) {
         this.references = references;
     }
@@ -130,5 +116,13 @@ public class MapOpticsModel {
 
     public Reference getSelectedRef() {
         return selectedRef;
+    }
+
+    public void totalRectangleWidth(double rectangleTotalWidth) {
+        this.rectangleTotalWidth = rectangleTotalWidth;
+    }
+
+    public double getRectangleTotalWidth() {
+        return rectangleTotalWidth;
     }
 }
