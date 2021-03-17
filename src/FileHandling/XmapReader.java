@@ -12,10 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /*
@@ -175,14 +172,17 @@ public class XmapReader {
                     Query qry = new Query(data[queryIndex]);
                     qry.setOrientation(data[7]);
                     qry.setConfidence(Double.parseDouble(data[8]));
-                    qry.getHitEnum(data[9]);
-                    qry.getAlignments(data[13]);
+                    qry.setHitEnum(data[9]);
+                    qry.setAlignments(data[13]);
 
                     queries.put(Integer.parseInt(data[queryIndex]), qry);
+//                    queries.put(Integer.parseInt(data[0]), qry); // in case entryID needs to be used
                 }
             }
 
             br.close();
+
+            setAlignmentSites(model.getSelectedRef(), queries, isReversed);
             return queries;
 
         } catch (IOException e) {
@@ -190,6 +190,59 @@ public class XmapReader {
         }
 
         return null;
+    }
+
+    private static void setAlignmentSites(Reference selectedRef, Map<Integer, Query> queries, boolean isReversed) {
+
+        Set<Integer> refAlignmentSiteIds = new HashSet<>();
+
+        for (Query qry : queries.values()) {
+            Map<Integer, List<Integer>> alignmentSiteIds = new HashMap<>();
+            String alignments = qry.getAlignments();
+            alignments = alignments.replaceAll("\\(", "");
+            String[] siteIds = alignments.split("[,)]");
+            List<Integer> refMatches;
+
+            if (!isReversed) {
+                for (int i = 0; i < siteIds.length; i++) {
+                    int id = Integer.parseInt(siteIds[i]);
+                    if (i % 2 == 0) {
+                        refAlignmentSiteIds.add(id);
+                    } else {
+                        if (alignmentSiteIds.containsKey(id)) {
+                            refMatches = alignmentSiteIds.get(id);
+                            refMatches.add(Integer.parseInt(siteIds[i - 1]));
+                            alignmentSiteIds.put(id, refMatches);
+                        } else {
+                            refMatches = new ArrayList<>();
+                            refMatches.add(Integer.parseInt(siteIds[i - 1]));
+                            alignmentSiteIds.put(id, refMatches);
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < siteIds.length; i++) {
+                    int id = Integer.parseInt(siteIds[i]);
+                    if (i % 2 != 0) {
+                        refAlignmentSiteIds.add(id);
+                    } else {
+                        if (alignmentSiteIds.containsKey(id)) {
+                            refMatches = alignmentSiteIds.get(id);
+                            refMatches.add(Integer.parseInt(siteIds[i + 1]));
+                            alignmentSiteIds.put(id, refMatches);
+                        } else {
+                            refMatches = new ArrayList<>();
+                            refMatches.add(Integer.parseInt(siteIds[i + 1]));
+                            alignmentSiteIds.put(id, refMatches);
+                        }
+                    }
+                }
+            }
+
+            qry.setAlignmentSites(alignmentSiteIds);
+        }
+
+        selectedRef.setAlignmentSites(refAlignmentSiteIds);
     }
 
 //    public static Map<Integer, List<Object>> getSummaryData(File xmapFile, boolean isReversed) {
