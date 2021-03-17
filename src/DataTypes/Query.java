@@ -66,7 +66,7 @@ public class Query {
         return confidence;
     }
 
-    public String setHitEnum() {
+    public String getHitEnum() {
         return hitEnum;
     }
 
