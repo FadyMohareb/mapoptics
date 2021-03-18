@@ -281,7 +281,7 @@ public class MapOptics extends JFrame {
         JLayeredPane queryViewPane = new JLayeredPane();
         JSplitPane jSplitPane1 = new JSplitPane();
         JLayeredPane jLayeredPane1 = new JLayeredPane();
-        queryView = new UserInterface.QueryView();
+        queryView = new UserInterface.QueryView( model);
         exportQryButton = new javax.swing.JButton();
         JPanel jPanel1 = new JPanel();
         qryIdSearch = new javax.swing.JTextField();
