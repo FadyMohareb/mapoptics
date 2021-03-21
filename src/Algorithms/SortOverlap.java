@@ -36,6 +36,7 @@ public class SortOverlap {
     private static LinkedHashMap<String, Rectangle2D> sortedRects = new LinkedHashMap();
     // New linked hashmap for sortedLabels
     private static LinkedHashMap<String, Rectangle2D[]> sortedLabels = new LinkedHashMap();
+    private static Rectangle2D[] ListofRects;
 
     // Getters for LinkedHashMaps
     public static LinkedHashMap<String, Rectangle2D> getSortedRects() {
@@ -232,60 +233,36 @@ public class SortOverlap {
                     // Don't compare the rectangle to itself
 
                     if (rects[i].y >= rects[j].x) {
-                        Overlaps.add(QueryRectangles.get(rects[j].z));
-                        // Compare end align with start of comparison rectangle and add to Overlaps list
 
+                        System.out.println("Before Mod"+QueryRectangles.get(rects[j].z).get(0));
+                        MoveDownandLeft(QueryRectangles.get(rects[j].z));
+                        System.out.println("After Mod"+QueryRectangles.get(rects[j].z).get(0));
+                        Rectangle2D[] newQueryLabels = new Rectangle2D[QueryRectangles.get(rects[j].z).size()-1];
 
-                        System.out.println("Overlaps between: " + rects[i].y + " on rect " + rects[i].z + " and " + rects[j].x +
-                                " on rect " + rects[j].z);
-                        System.out.println("Rectangle overlapping: " + qryRects[rects[j].z]);
-                    } else {
-
-                        if(!Overlaps.isEmpty()) {
-                            RectLayoutMap.put(i, Overlaps);
+                        for(int ka = 1; ka< QueryRectangles.get(rects[j].z).size(); ka++) {
+                         newQueryLabels[ka-1]= QueryRectangles.get(rects[j].z).get(ka);
                         }
+
+                        qryRects[rects[j].z]= QueryRectangles.get(rects[j].z).get(0);
+
+                        qryLabels[rects[j].z] = newQueryLabels;
+
+
+                    } else {
                         break;
+                        }
+
                     }
                 }
             }
 
-        }
-
-        // foreach approach for HashMap
-        RectLayoutMap.forEach((k,v) -> {
-           System.out.println("Key :" +k);
-            System.out.println("Values : "+v);
 
 
 
-            for(int m=0; m< v.size(); m++ ) {
-                Rectangle2D[] newLabels = new Rectangle2D[v.get(m).size()];
-                for(int n1=0; n1 < v.get(m).size(); n1++) {
-
-                    Rectangle2D newtwo = v.get(m).get(n1);
-                    System.out.println("Rectangle before mod = " + newtwo);
-                    newtwo.setRect(newtwo.getMinX(), newtwo.getY() + 10, newtwo.getWidth(), newtwo.getHeight());
-                    System.out.println("Rectangle after mod = " + newtwo);
-                    newLabels[n1] = v.get(m).set(n1, newtwo);
-
-                }
-                qryRects[k] = newLabels[0];
-
-                // Create another array of size one less
-                Rectangle2D[] anotherArray = new Rectangle2D[newLabels.length - 1];
-
-                System.arraycopy(newLabels,
-                        1,
-                        anotherArray,
-                        0, newLabels.length-1);
-                qryLabels[k] = anotherArray;
-
-                System.out.println("New Query Rect = "+qryRects[k]);
-                System.out.println("New Query Labels = "+qryLabels[k]);
 
 
 
-            }});
+
 
 
 
@@ -323,6 +300,21 @@ public class SortOverlap {
 
 
         return rects;
+
+    }
+
+    // Method for changing the bounds of rectangles to move them away from overlaps
+
+    private static void MoveDownandLeft(ArrayList<Rectangle2D> ListofRects){
+
+        // Only moves down at the moment
+        for(int rectangle = 0; rectangle<ListofRects.size(); rectangle++){
+            // Iterate through each array of Rectangle 2D (query contig and labels and move)
+            ListofRects.get(rectangle).setRect(ListofRects.get(rectangle).getMinX(),
+                    ListofRects.get(rectangle).getY() + 10, ListofRects.get(rectangle).getWidth(),
+                    ListofRects.get(rectangle).getHeight());
+        }
+
 
     }
 
