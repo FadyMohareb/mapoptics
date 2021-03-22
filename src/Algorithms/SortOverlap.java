@@ -232,20 +232,37 @@ public class SortOverlap {
                 if(i<j) {
                     // Don't compare the rectangle to itself
 
-                    if (rects[i].y >= rects[j].x) {
+                    if (rects[i].y >= rects[j].x && j< rects.length-1) {
 
-                        System.out.println("Before Mod"+QueryRectangles.get(rects[j].z).get(0));
-                        MoveDownandLeft(QueryRectangles.get(rects[j].z));
-                        System.out.println("After Mod"+QueryRectangles.get(rects[j].z).get(0));
+                        // Can contig move right?
+                        int spaceRight = rects[j+1].y -rects[j].x;
+
+                        if(spaceRight>0){
+                            // This means space to move the contig right
+                            // How much does contig need to move to unoverlap?
+                            int unOverlap = rects[i].y - rects[j].x;
+
+                            if(spaceRight>unOverlap){
+                                MoveDownandRight(QueryRectangles.get(rects[j].z), unOverlap);
+                            }else if(spaceRight<unOverlap){
+                                MoveDownandRight(QueryRectangles.get(rects[j].z), spaceRight);
+                            }
+                        }
+
                         Rectangle2D[] newQueryLabels = new Rectangle2D[QueryRectangles.get(rects[j].z).size()-1];
 
                         for(int ka = 1; ka< QueryRectangles.get(rects[j].z).size(); ka++) {
-                         newQueryLabels[ka-1]= QueryRectangles.get(rects[j].z).get(ka);
+                            newQueryLabels[ka-1]= QueryRectangles.get(rects[j].z).get(ka);
                         }
 
                         qryRects[rects[j].z]= QueryRectangles.get(rects[j].z).get(0);
 
                         qryLabels[rects[j].z] = newQueryLabels;
+
+                       // System.out.println("Before Mod"+QueryRectangles.get(rects[j].z).get(0));
+
+                       // System.out.println("After Mod"+QueryRectangles.get(rects[j].z).get(0));
+
 
 
                     } else {
@@ -305,15 +322,17 @@ public class SortOverlap {
 
     // Method for changing the bounds of rectangles to move them away from overlaps
 
-    private static void MoveDownandLeft(ArrayList<Rectangle2D> ListofRects){
+    private static void MoveDownandRight(ArrayList<Rectangle2D> ListofRects, int farRight){
 
         // Only moves down at the moment
         for(int rectangle = 0; rectangle<ListofRects.size(); rectangle++){
             // Iterate through each array of Rectangle 2D (query contig and labels and move)
-            ListofRects.get(rectangle).setRect(ListofRects.get(rectangle).getMinX(),
+            ListofRects.get(rectangle).setRect(ListofRects.get(rectangle).getMinX()+farRight,
                     ListofRects.get(rectangle).getY() + 10, ListofRects.get(rectangle).getWidth(),
                     ListofRects.get(rectangle).getHeight());
         }
+
+
 
 
     }
