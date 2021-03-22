@@ -1,8 +1,5 @@
 package Algorithms;
 
-import DataTypes.RefContig;
-import Datasets.UserEdited.UserQryData;
-import Datasets.UserEdited.UserRefData;
 import UserInterface.ReferenceView;
 
 import java.util.ArrayList;
