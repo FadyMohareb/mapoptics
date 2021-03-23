@@ -62,7 +62,7 @@ public class MapOptics extends JFrame {
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
     private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
     private javax.swing.JPanel labelDensityGraph, referencesGraph;
-    private javax.swing.JTable labelTable, qryContigTable, qryViewRefTable, refContigTable;
+    private javax.swing.JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
     private javax.swing.JCheckBox overlapSetting;
     private javax.swing.JComboBox<String> refOrQry, regionType;
     private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch;
@@ -84,6 +84,7 @@ public class MapOptics extends JFrame {
 
         setRefContigTable();
         setQryContigTable();
+        setSVTable();
         setLabelTable();
         setQryViewRefTable();
         setImageTable();
@@ -278,6 +279,11 @@ public class MapOptics extends JFrame {
         JLayeredPane queryViewPane = new JLayeredPane();
         JSplitPane jSplitPane1 = new JSplitPane();
         JLayeredPane jLayeredPane1 = new JLayeredPane();
+
+        // Add SV Table
+        JScrollPane refViewSVTableScroll = new JScrollPane();
+        svTable = new javax.swing.JTable();
+
         queryView = new UserInterface.QueryView( model);
         exportQryButton = new javax.swing.JButton();
         JPanel jPanel1 = new JPanel();
@@ -1267,9 +1273,31 @@ public class MapOptics extends JFrame {
                 qryContigTableMouseClicked();
             }
         });
+
+        // Add SV tabpane to refview alongside query contigs table
+        svTable.setAutoCreateRowSorter(true);
+        svTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null}
+                },
+                new String [] {
+                        "Title 1", "Title 2", "Title 3", "Title 4"
+                }
+        ));
+        svTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        svTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                svTableMouseClicked();
+            }
+        });
         refViewTableScroll.setViewportView(qryContigTable);
+        refViewSVTableScroll.setViewportView(svTable);
 
         tabPaneFiles.addTab("Query Contigs", refViewTableScroll);
+        tabPaneFiles.addTab("SVs", refViewSVTableScroll);
 
         jSplitPane2.setRightComponent(tabPaneFiles);
 
@@ -1610,6 +1638,17 @@ public class MapOptics extends JFrame {
                 changeQry(chosenQry);
 
         }
+    }
+
+    private void svTableMouseClicked() {
+        // get selected SV from SV table
+        /*
+        if (qryContigTable.getRowCount() != 0) {
+            String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+            changeQry(chosenQry);
+        }
+
+         */
     }
 
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
@@ -2687,6 +2726,58 @@ public class MapOptics extends JFrame {
 //                model.setSelectedRow(chosenQry);
                 changeQry(chosenQry);
                 repaint();
+            }
+        });
+        qryContigTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "qryDown");
+        qryContigTable.getActionMap().put("qryDown", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (qryContigTable.getSelectedRow() != qryContigTable.getRowCount() - 1) {
+                    qryContigTable.setRowSelectionInterval(qryContigTable.getSelectedRow() + 1, qryContigTable.getSelectedRow() + 1);
+                }
+                // get selected contig
+                String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+                // model.setSelectedRow(chosenQry);
+                changeQry(chosenQry);
+                repaint();
+            }
+        });
+    }
+    // Set SV table columns properties
+    private void setSVTable() {
+        DefaultTableModel svModel = TableModels.getSVModel();
+        svModel.addColumn("Ref ID1");
+        svModel.addColumn("Ref ID2");
+        svModel.addColumn("Ref Start");
+        svModel.addColumn("Ref End");
+        svModel.addColumn("Qry ID");
+        svModel.addColumn("Qry Start");
+        svModel.addColumn("Qry End");
+        svModel.addColumn("Size");
+
+        svTable.setModel(svModel);
+        svTable.setUpdateSelectionOnSort(true);
+        svTable.getRowSorter().toggleSortOrder(0);
+
+        svTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "qryUp");
+        svTable.getActionMap().put("qryUp", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (svTable.getSelectedRow() != 0) {
+                    svTable.setRowSelectionInterval(svTable.getSelectedRow() - 1, svTable.getSelectedRow() - 1);
+                }
+                /* Needs to be edited for SV
+                // get selected contig
+                String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+//                model.setSelectedRow(chosenQry);
+                changeQry(chosenQry);
+                repaint();
+
+                 */
             }
         });
         qryContigTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
