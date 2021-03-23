@@ -88,7 +88,7 @@ public class XmapReader {
             String line;
 
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("#")) {
+                if (line.startsWith("#") || line.isEmpty()) {
                     continue;
                 }
 
@@ -142,7 +142,7 @@ public class XmapReader {
             String line;
 
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("#")) {
+                if (line.startsWith("#") || line.isEmpty()) {
                     continue;
                 }
 
