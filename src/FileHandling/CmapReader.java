@@ -71,7 +71,7 @@ public class CmapReader {
             String line;
 
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("#")) {
+                if (line.startsWith("#") || line.isEmpty()) {
                     continue;
                 }
 
@@ -108,7 +108,7 @@ public class CmapReader {
 
             List<String> header = new ArrayList<>();
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("#")) {
+                if (line.startsWith("#") || line.isEmpty()) {
                     if (line.startsWith("#h")) {
                         Collections.addAll(header, line.split("\t"));
                     }
