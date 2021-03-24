@@ -100,6 +100,19 @@ public class RefViewData {
             rects.add(qryRect);
         }
 
+        SortOverlap moveRectangle = new SortOverlap(ref.getQueries());
+
+        moveRectangle.getAllQueryinfo(ref.getQueries());
+        moveRectangle.sortingOverlaps();
+
+
+
+        // Slot in method with lowestOffSetX, highestOffsetY
+        // List of Rectangles
+        // get. setREct and then setRectangle
+        //Maximum totalRectangleWidth = 8x ref length
+        // Input to method could just be ref get.queries
+
         if (lowestOffsetX < 0.0) {
             refRect = new Rectangle2D.Double(refRect.getX() - lowestOffsetX,
                     refRect.getY(), refRect.getWidth(), refRect.getHeight());
@@ -118,8 +131,8 @@ public class RefViewData {
 
     public static void setData() {
         // get data from overlap algorithm so queries don't overlap
-        LinkedHashMap<String, Rectangle2D> sortedRects = SortOverlap.getSortedRects();
-        LinkedHashMap<String, Rectangle2D[]> sortedLabels = SortOverlap.getSortedLabels();
+       // LinkedHashMap<String, Rectangle2D> sortedRects = SortOverlap.getSortedRects();
+       // LinkedHashMap<String, Rectangle2D[]> sortedLabels = SortOverlap.getSortedLabels();
         
         ArrayList<Rectangle2D> labels = new ArrayList();
         
@@ -128,7 +141,7 @@ public class RefViewData {
             RefContig ref1 = RawFileData.getReferences(refId);
             RefContig ref2 = ref1.copy();
             
-            setScaleVariables(refId, sortedRects);
+           // setScaleVariables(refId, sortedRects);
             ref2.setRectangle(scaleRectangle(ref2.getRectangle().getBounds2D(), false));
             for (Rectangle2D label : ref2.getLabels()) {
                 labels.add(scaleRectangle(label.getBounds2D(), true));
@@ -141,16 +154,16 @@ public class RefViewData {
             for (String qryId : ref2.getConnections()) {
                 QryContig qry1 = RawFileData.getQueries(refId + "-" + qryId);
                 QryContig qry2 = qry1.copy(hScale);
-                qry2.setRectangle(scaleRectangle(sortedRects.get(refId + "-" + qryId).getBounds2D(), false));
-                for (int i = 0; i < sortedLabels.get(refId + "-" + qryId).length; i++) {
-                    labels.add(scaleRectangle(sortedLabels.get(refId + "-" + qryId)[i].getBounds2D(), true));
+               // qry2.setRectangle(scaleRectangle(sortedRects.get(refId + "-" + qryId).getBounds2D(), false));
+              //  for (int i = 0; i < sortedLabels.get(refId + "-" + qryId).length; i++) {
+               //     labels.add(scaleRectangle(sortedLabels.get(refId + "-" + qryId)[i].getBounds2D(), true));
                 }
-                qry2.setLabels(labels.toArray(new Rectangle2D[labels.size()]));
-                queries.put(refId + "-" + qryId, qry2);
+              //  qry2.setLabels(labels.toArray(new Rectangle2D[labels.size()]));
+              //  queries.put(refId + "-" + qryId, qry2);
                 labels.clear();
             }
         }
-    }
+
 
     private static void setScaleVariables(String refId, LinkedHashMap<String, Rectangle2D> sortedRects) {
         double minX = Double.POSITIVE_INFINITY;

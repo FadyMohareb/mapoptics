@@ -18,6 +18,7 @@ import java.util.*;
  */
 public class SortOverlap {
     private static MapOpticsModel model;
+    private final List<Query> queries;
     /* GM: My understanding is that this class attempts to move all overlapping contigs (represented as rectangles,
     parallel to the reference map) so that they no longer overlap and can be viewed by the user.
     GM: the scale and movement of these query contigs is performed iteratively with up and down and/or left or right
@@ -43,25 +44,21 @@ public class SortOverlap {
     private static LinkedHashMap<String, Rectangle2D[]> sortedLabels = new LinkedHashMap();
     private static Rectangle2D[] ListofRects;
 
-    public SortOverlap(MapOpticsModel model) {
-        this.model = model;
+    public SortOverlap(List<Query> queries) {
+        this.queries = queries;
     }
 
 
-    Reference ref = model.getSelectedRef();
-
-
-
-    private ArrayList<Double> accessQueries(Query query){
+    private ArrayList<Double> accessQueries(Query qry){
 
         ArrayList<Double> rectInputs = new ArrayList<>();
         // Get the parameters needed to find out where overlaps occur in alignment sites
         // Contig rectangle dimensions and current position
-        Rectangle2D contig_outline = query.getRectangle();
+        Rectangle2D contig_outline = qry.getRectangle();
         // First alignment on that contig - based on Treemap so know firstEntry will be the first alignment
-        Map.Entry<Integer, List<Double>> first = query.getSites().firstEntry();
+        Map.Entry<Integer, List<Double>> first = qry.getSites().firstEntry();
         // Last alignment on that contig - based on Treemap so know lastEntry will be the last alignment
-        Map.Entry<Integer, List<Double>> last = query.getSites().lastEntry();
+        Map.Entry<Integer, List<Double>> last = qry.getSites().lastEntry();
         // Get values need to find first and last alignment position relevant to contig in relation to reference
         Double firstAlign = first.getValue().get(0);
         Double lastAlign = last.getValue().get(0);
@@ -71,26 +68,26 @@ public class SortOverlap {
         Double alignEnd = contig_outline.getMinX()+lastAlign;
 
         rectInputs.add(contig_outline.getMinX());
+        System.out.println("Query min Rect X = "+contig_outline);
         rectInputs.add(alignStart);
+        System.out.println("Query align Start = "+alignStart);
         rectInputs.add(alignEnd);
+        System.out.println("Query align End = "+alignEnd);
 
         return rectInputs;
 
 
     }
 
-    private HashMap<Integer, ArrayList<Double>> getAllQueryinfo(List<Query> queryRect){
+    public HashMap<Integer, ArrayList<Double>> getAllQueryinfo(List<Query> queries){
 
-        // Take all queries for a reference and get parametes with a for loop
-        queryRect = model.getSelectedRef().getQueries();
-
-        // Create HashMap to contain contigs and information
+        // Create Map to contain contigs and information
 
         HashMap<Integer, ArrayList<Double>> forOverlaps = new HashMap<>();
 
-        for(int i = 0; i< queryRect.size(); i++) {
+        for(int i = 0; i< queries.size(); i++) {
             // For loop to get parameters for sorting overlaps
-            Query here = queryRect.get(i);
+            Query here = queries.get(i);
             ArrayList<Double> inputs = accessQueries(here);
 
             forOverlaps.put(i, inputs);
@@ -100,6 +97,8 @@ public class SortOverlap {
 
     }
 
+    // LowestOffSetX
+    // HighestOffSetY
     // Create class called Pair to take pairs of Start and End aligns
 
     // User defined Pair class
@@ -138,10 +137,12 @@ public class SortOverlap {
         }
     }
 
-    private void sortingOverlaps(HashMap<Integer, ArrayList<Double>> contigInfo) {
+    public HashMap<Integer, ArrayList<Pair>> sortingOverlaps() {
 
+        HashMap<Integer, ArrayList<Double>> contigInfo = getAllQueryinfo(queries);
         // length of array
         int n = contigInfo.size();
+        System.out.println("Number of queries ="+n);
 
         // Array of Pair
         Pair rects[] = new Pair[n];
@@ -174,7 +175,9 @@ public class SortOverlap {
             }else{
                 // Create a pair that represents with X, Y and Z, that is 10% left of reference contigs end
                 //Pair LeftSide = new Pair(Double x, Double y, int Z) ;
-                //Overlaps.add(Leftside);
+                //Overlaps.add(Leftside); // Set based on model.totalRectangleWidth((highestOffSetX - lowestOffsetX));
+                // And model.ref.getLength()
+                // model.getSelectedRef().getLength();
                 //Overlaps.add(rects[i]);
             }
 
@@ -191,16 +194,57 @@ public class SortOverlap {
 
                         } else{
                         // Add surrounding rectangles for how far overlaps can move
-                        Overlaps.add(rects[j+1]);
-                       overlapping.put(i,Overlaps);
-                       break;
+                        if(j < rects.length-1){
+                            Overlaps.add(rects[j + 1]);
+                            overlapping.put(i, Overlaps);
+                            break;
+                          // Add max offset to the right max X offset
+                        }else if(j==rects.length) {
+                            // Add max offset to the right max X offset
+                            overlapping.put(i, Overlaps);
+                            break;
+
+
+                        }
                     }
                 }
             }
         }
+        return overlapping;
     }
 
+// Count number of overlaps per entry in Overlapping to work out left and right moves
 
+    private void movingRects (ArrayList<Pair> overlappingRects) {
+        int numOfRects = overlappingRects.size();
+        double median = numOfRects/2;
+        double gapsLeft = 0;
+        double gapsRight = 0;
+
+        for(int k =1; k<overlappingRects.size()-1; k++){
+           if(k<median){
+               // Move rectangle set left
+               Pair RectInterest = overlappingRects.get(k);
+               Pair RectLeft = overlappingRects.get(k-1);
+               double space_left = RectInterest.x - RectLeft.y;
+
+               gapsLeft = gapsLeft+space_left;
+
+           }else if(k> median){
+               //Move rectangle set right
+               Pair RectInterest = overlappingRects.get(k);
+               Pair RectRight = overlappingRects.get(k+1);
+               double space_right = RectRight.x - RectInterest.y;
+
+               gapsRight = gapsRight+space_right;
+           }else{
+               // Leave rectangle as is
+           }
+
+        }
+
+
+    }
 
 
 
@@ -336,7 +380,7 @@ public class SortOverlap {
             alignEnd = (int) (rect2.getMinX() + qryEnds[key]);
 
             // Add start and end of alignment values to array.
-            rects[key] = new Pair(alignStart, alignEnd, key);
+            //rects[key] = new Pair(alignStart, alignEnd, key);
 
 
         }
@@ -365,9 +409,9 @@ public class SortOverlap {
                     if (rects[i].y >= rects[j].x && j< rects.length-1) {
 
                         // Can contig move right?
-                        int spaceRight = rects[j+1].y -rects[j].x;
+                       // int spaceRight = rects[j+1].y -rects[j].x;
 
-                        if(spaceRight>0){
+                      /*  if(spaceRight>0){
                             // This means space to move the contig right
                             // How much does contig need to move to unoverlap?
                             int unOverlap = rects[i].y - rects[j].x;
@@ -377,7 +421,7 @@ public class SortOverlap {
                             }else if(spaceRight<unOverlap){
                                 MoveDownandRight(QueryRectangles.get(rects[j].z), spaceRight);
                             }
-                        }
+                        }*/
 
                         Rectangle2D[] newQueryLabels = new Rectangle2D[QueryRectangles.get(rects[j].z).size()-1];
 
