@@ -1,5 +1,7 @@
 package DataTypes;
 
+import Algorithms.SortOverlap;
+
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
