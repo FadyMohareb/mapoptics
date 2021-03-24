@@ -1,13 +1,17 @@
+/*
 package Algorithms;
 
 import DataTypes.*;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+*/
 /*
  * @author Josie
- */
+ *//*
+
 public class SortOrientation {
 
     public static LinkedHashMap<String, QryContig> sortAllOrientation(LinkedHashMap<String, RefContig> references,
@@ -31,7 +35,8 @@ public class SortOrientation {
             }
         }
 
-        // sort overlaps 
+*/
+/*        // sort overlaps
         SortOverlap.sortOverlaps(references, queries, 5);
         Rectangle2D[] labels;
         for (String refqryId : queries.keySet()) {
@@ -44,7 +49,8 @@ public class SortOrientation {
         }
 
         return queries;
-    }
+    }*//*
+
 
     public static QryContig sortOneOrientation(QryContig qry, RefContig ref) {
         // swap start and end alignments
@@ -103,3 +109,4 @@ public class SortOrientation {
         return rect;
     }
 }
+*/

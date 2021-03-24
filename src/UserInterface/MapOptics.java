@@ -1,7 +1,7 @@
 package UserInterface;
 
 import Algorithms.DeleteConflicts;
-import Algorithms.SortOrientation;
+//import Algorithms.SortOrientation;
 import DataTypes.QryContig;
 import DataTypes.Query;
 import DataTypes.Reference;
@@ -1134,7 +1134,7 @@ public class MapOptics extends JFrame {
         jLabel3.setText("Contig tools:");
 
         reOrientate.setText("reOrientate");
-        reOrientate.addActionListener(this::reOrientateActionPerformed);
+       // reOrientate.addActionListener(this::reOrientateActionPerformed);
 
         deleteContig.setText("delete");
         deleteContig.addActionListener(this::deleteContigActionPerformed);
@@ -1549,7 +1549,7 @@ public class MapOptics extends JFrame {
 
         orientateContigs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         orientateContigs.setText("Orientate all contigs");
-        orientateContigs.addActionListener(this::orientateContigsActionPerformed);
+        //orientateContigs.addActionListener(this::orientateContigsActionPerformed);
         jMenu3.add(orientateContigs);
 
         saveAllContigs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
@@ -1600,7 +1600,7 @@ public class MapOptics extends JFrame {
         }
     }
 
-    private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
+   /* private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // orientates all query contigs that are negatively oriented
         UserRefData.setQueries(SortOrientation.sortAllOrientation(UserRefData.getReferences(), UserRefData.getQueries()));
         UserRefData.setPanelLength(refViewWidth);
@@ -1609,7 +1609,7 @@ public class MapOptics extends JFrame {
             UserRefData.reCentreView(refId);
         }
         referenceView.repaint();
-    }
+    }*/
 
     private void browseXmapActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for xmap file
@@ -1864,7 +1864,7 @@ public class MapOptics extends JFrame {
         repaint();
     }
 
-    private void reOrientateActionPerformed(java.awt.event.ActionEvent evt) {
+/*    private void reOrientateActionPerformed(java.awt.event.ActionEvent evt) {
         // reorientate chosen contig
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
             String refqryId = ReferenceView.getChosenRef() + "-" + ReferenceView.getChosenQry();
@@ -1872,7 +1872,7 @@ public class MapOptics extends JFrame {
             UserRefData.getQueries().put(refqryId, sortedContig);
             repaint();
         }
-    }
+    }*/
 
     private void deleteContigActionPerformed(java.awt.event.ActionEvent evt) {
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {

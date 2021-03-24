@@ -1,6 +1,6 @@
 package Datasets.Default;
 
-import Algorithms.SortOrientation;
+//import Algorithms.SortOrientation;
 import DataTypes.*;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
@@ -30,7 +30,7 @@ public class QueryViewData {
         QueryViewData.qryConnections = new LinkedHashMap();
     }
 
-    public static void setData() {
+    /*public static void setData() {
         ArrayList<Rectangle2D> labels = new ArrayList();
         ArrayList<String> qryIds = new ArrayList();
 
@@ -73,8 +73,8 @@ public class QueryViewData {
             queries.put(refqryId, qry2);
             references.put(refqryId, ref2);
         }
-
-        // add all references to query connections (unique to this view)
+*/
+        /*// add all references to query connections (unique to this view)
         ArrayList<String> connections = new ArrayList();
         String[] refConnections;
         for (int i = 0; i < qryIds.size(); i++) {
@@ -90,7 +90,7 @@ public class QueryViewData {
             qryConnections.put(qryId1, connections.toArray(new String[connections.size()]));
             connections.clear();
         }
-    }
+    }*/
 
     private static void setScaleVariables(QryContig qry, RefContig ref) {
         double minX = Double.POSITIVE_INFINITY;
