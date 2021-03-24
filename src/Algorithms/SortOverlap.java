@@ -1,7 +1,8 @@
 package Algorithms;
 
-import DataTypes.QryContig;
-import DataTypes.RefContig;
+import DataTypes.*;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
+
 import java.awt.geom.Rectangle2D;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.util.*;
 
  */
 public class SortOverlap {
+    private static MapOpticsModel model;
     /* GM: My understanding is that this class attempts to move all overlapping contigs (represented as rectangles,
     parallel to the reference map) so that they no longer overlap and can be viewed by the user.
     GM: the scale and movement of these query contigs is performed iteratively with up and down and/or left or right
@@ -23,6 +25,9 @@ public class SortOverlap {
     GM: This process is currently very, very slow.
     GM: Look at placing timings to capture slowest parts
      */
+
+
+    private Rectangle2D rectangle;
 
     private static Rectangle2D[] qryRects; // Rect2D array
     private static Rectangle2D[][] qryLabels; // Rect2D 2D array
@@ -38,7 +43,169 @@ public class SortOverlap {
     private static LinkedHashMap<String, Rectangle2D[]> sortedLabels = new LinkedHashMap();
     private static Rectangle2D[] ListofRects;
 
-    // Getters for LinkedHashMaps
+    public SortOverlap(MapOpticsModel model) {
+        this.model = model;
+    }
+
+
+    Reference ref = model.getSelectedRef();
+
+
+
+    private ArrayList<Double> accessQueries(Query query){
+
+        ArrayList<Double> rectInputs = new ArrayList<>();
+        // Get the parameters needed to find out where overlaps occur in alignment sites
+        // Contig rectangle dimensions and current position
+        Rectangle2D contig_outline = query.getRectangle();
+        // First alignment on that contig - based on Treemap so know firstEntry will be the first alignment
+        Map.Entry<Integer, List<Double>> first = query.getSites().firstEntry();
+        // Last alignment on that contig - based on Treemap so know lastEntry will be the last alignment
+        Map.Entry<Integer, List<Double>> last = query.getSites().lastEntry();
+        // Get values need to find first and last alignment position relevant to contig in relation to reference
+        Double firstAlign = first.getValue().get(0);
+        Double lastAlign = last.getValue().get(0);
+
+        // Get in relation to contig start X position
+        Double alignStart = contig_outline.getMinX()+firstAlign;
+        Double alignEnd = contig_outline.getMinX()+lastAlign;
+
+        rectInputs.add(contig_outline.getMinX());
+        rectInputs.add(alignStart);
+        rectInputs.add(alignEnd);
+
+        return rectInputs;
+
+
+    }
+
+    private HashMap<Integer, ArrayList<Double>> getAllQueryinfo(List<Query> queryRect){
+
+        // Take all queries for a reference and get parametes with a for loop
+        queryRect = model.getSelectedRef().getQueries();
+
+        // Create HashMap to contain contigs and information
+
+        HashMap<Integer, ArrayList<Double>> forOverlaps = new HashMap<>();
+
+        for(int i = 0; i< queryRect.size(); i++) {
+            // For loop to get parameters for sorting overlaps
+            Query here = queryRect.get(i);
+            ArrayList<Double> inputs = accessQueries(here);
+
+            forOverlaps.put(i, inputs);
+
+        }
+        return forOverlaps;
+
+    }
+
+    // Create class called Pair to take pairs of Start and End aligns
+
+    // User defined Pair class
+    static class Pair {
+        Double x;
+        Double y;
+        int z;
+
+        // Constructor
+        public Pair(Double x, Double y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+    }
+
+    // class to define user defined conparator
+    static class Compare {
+
+        void compare(Pair arr[], int n)
+        {
+            // Comparator to sort the pair according to first element
+            Arrays.sort(arr, new Comparator<Pair>() {
+                @Override public int compare(Pair p1, Pair p2)
+                {
+                    return (int) (p1.x - p2.x);
+                }
+            });
+
+            for (int i = 0; i < n; i++) {
+                System.out.print("AlignStart: "+ arr[i].x + " AlignEnd: " + arr[i].y + " Original Rect i: "+ arr[i].z + " ");
+            }
+            System.out.println();
+
+        }
+    }
+
+    private void sortingOverlaps(HashMap<Integer, ArrayList<Double>> contigInfo) {
+
+        // length of array
+        int n = contigInfo.size();
+
+        // Array of Pair
+        Pair rects[] = new Pair[n];
+
+        // Add start and end of alignment values to array.
+        for (Map.Entry<Integer, ArrayList<Double>> entry : contigInfo.entrySet()) {
+            Integer key = entry.getKey();
+            ArrayList value = entry.getValue();
+            rects[key] = new Pair((Double) (value.get(1)), (Double) (value.get(2)), key);
+
+        }
+        // Initialise compare class
+        Compare obj = new Compare();
+        // Sort Alignments by start position (relevant to the reference)
+        obj.compare(rects, n);
+
+        HashMap<Integer, ArrayList<Pair>> overlapping = new HashMap<>();
+
+        // Compare align end (rect1) to align start (rect 2 to n) and if align end is larger than align start
+        for (int i = 0; i < rects.length; i++) {
+            ArrayList<Pair> Overlaps = new ArrayList<>();
+
+            // Add X-1 (i-1) rectangle to ArrayList in position 0 and X (i in position 1)
+            // These are used for number of rectangles in an overlap "block" and to calculate space either side for
+            // moving the rectangles left or rigth and down.
+
+            if(i>0) {
+                Overlaps.add(rects[i - 1]);
+                Overlaps.add(rects[i]);
+            }else{
+                // Create a pair that represents with X, Y and Z, that is 10% left of reference contigs end
+                //Pair LeftSide = new Pair(Double x, Double y, int Z) ;
+                //Overlaps.add(Leftside);
+                //Overlaps.add(rects[i]);
+            }
+
+            // Start working way through each pairwise comparison
+            for (int j = 0; j < rects.length; j++) {
+                //Compare ith rect to jth rectangle
+
+                if (i < j) {
+                    // Don't compare the rectangle to itself
+
+                    if (rects[i].y >= rects[j].x && j < rects.length - 1) {
+                        // Want to add rectangles that overlap sequentially to list
+                        Overlaps.add(rects[j]);
+
+                        } else{
+                        // Add surrounding rectangles for how far overlaps can move
+                        Overlaps.add(rects[j+1]);
+                       overlapping.put(i,Overlaps);
+                       break;
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+    /*// Getters for LinkedHashMaps
     public static LinkedHashMap<String, Rectangle2D> getSortedRects() {
         return sortedRects;
     }
@@ -55,11 +222,11 @@ public class SortOverlap {
     public static Rectangle2D[] getSortedLabels(String refqryId) {
         return sortedLabels.get(refqryId);
     }
-
-    public static void sortOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries, int scale) throws IOException {
-    /* sortOverlaps receives input of two LinkedHashMaps: references and queries alongside an integer for the scale
+*/
+/*    public static void sortOverlaps(LinkedHashMap<String, RefContig> references, LinkedHashMap<String, QryContig> queries, int scale)  {
+    *//* sortOverlaps receives input of two LinkedHashMaps: references and queries alongside an integer for the scale
     GM: was is the impact of scale on time to load rectangles, currently hard coded.
-     */
+     *//*
     // Clears current LinkedHashMaps
         sortedRects.clear();
         sortedLabels.clear();
@@ -70,11 +237,11 @@ public class SortOverlap {
             //.getConnections() ? -Gets a connection to a database - connections of XMAP, ref CMAP and qry CMAP?
             qryIds = references.get(refId).getConnections();
             // MoveOverlappingContigs method qryIDs related to refID, queries HashMap and scale parameter
-            moveOverlappingContigs(qryIds, refId, queries, scale);
+            //moveOverlappingContigs(qryIds, refId, queries, scale);
         }
-    }
+    }*/
 
-    private static void moveOverlappingContigs(String[] qryIds, String refId, LinkedHashMap<String, QryContig> queries, int scale) throws IOException {
+   /* private static void moveOverlappingContigs(String[] qryIds, String refId, LinkedHashMap<String, QryContig> queries, int scale) throws IOException {
 
         HashMap<Integer, ArrayList<Rectangle2D>> new_Hash = setArrays(qryIds, refId, queries);
 
@@ -90,7 +257,7 @@ public class SortOverlap {
             sortedRects.put(refqryId, qryRects[i]);
             sortedLabels.put(refqryId, qryLabels[i]);
         }
-    }
+    }*/
 
     private static HashMap<Integer, ArrayList<Rectangle2D>> setArrays(String[] qryIds, String refId, LinkedHashMap<String, QryContig> queries) {
         /* Creating a number of arrays and making an array of rectangles that matches the given reference
@@ -137,43 +304,6 @@ public class SortOverlap {
 
      */
 
-    // Create class called Pair to take pairs of Start and End aligns
-
-    // User defined Pair class
-    static class Pair {
-        int x;
-        int y;
-        int z;
-
-        // Constructor
-        public Pair(int x, int y, int z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-    }
-
-    // class to define user defined conparator
-    static class Compare {
-
-        void compare(Pair arr[], int n)
-        {
-            // Comparator to sort the pair according to first element
-            Arrays.sort(arr, new Comparator<Pair>() {
-                @Override public int compare(Pair p1, Pair p2)
-                {
-                     return p1.x - p2.x;
-                }
-            });
-
-            for (int i = 0; i < n; i++) {
-                System.out.print("AlignStart: "+ arr[i].x + " AlignEnd: " + arr[i].y + " Original Rect i: "+ arr[i].z + " ");
-            }
-            System.out.println();
-
-        }
-    }
 
     private static Pair[] sortContigs(HashMap<Integer, ArrayList<Rectangle2D>> QueryRectangles, Double[] QueryAlignStart, Double[] QueryAlignEnd) {
         // Take in Rectangle dimensions for contigs for a single reference and
