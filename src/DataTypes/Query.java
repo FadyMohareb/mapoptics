@@ -1,5 +1,7 @@
 package DataTypes;
 
+import Algorithms.SortOverlap;
+
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +99,8 @@ public class Query {
 
     public void setRectangle(Rectangle2D rectangle) {
         this.rectangle = rectangle;
+
+
     }
 
     public Rectangle2D getRectangle() {
