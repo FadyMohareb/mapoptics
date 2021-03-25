@@ -370,10 +370,10 @@ public class ReferenceView extends JPanel {
 
                     int qryOffSetY = (int) qryRectScaled.getY();
                     int qryHeight = (int) qryRectScaled.getHeight();
-                    Map<Integer, java.util.List<Double>> qrySites = qry.getSites();
+                    Map<Integer, Double> qrySites = qry.getRefViewSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
 
-                    for (int site : qry.getSites().keySet()) {
+                    for (int site : qry.getRefViewSites().keySet()) {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
@@ -382,7 +382,7 @@ public class ReferenceView extends JPanel {
                             g2d.setColor(BLACK);
                         }
 
-                        int position = (int) ((qrySites.get(site).get(0) / scale) + qryRectScaled.getX());
+                        int position = (int) ((qrySites.get(site) / scale) + qryRectScaled.getX());
                         g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
 
                         g2d.setColor(BLACK);
