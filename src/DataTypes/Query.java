@@ -22,6 +22,7 @@ public class Query {
     private int refViewOffsetX;
     private boolean isFlipped = false;
 
+    private Rectangle2D qryViewRect = null;
 
     public Query(String queryID) {
         this.queryID = queryID;
@@ -159,5 +160,17 @@ public class Query {
             isFlipped = true;
         }
     }
+
+
+    public void setQryViewRect(Rectangle2D qryViewRect) {
+        this.qryViewRect = qryViewRect;
+    }
+
+    public Rectangle2D getQryViewRect() {
+        return qryViewRect;
+    }
+
+
+
 }
 
