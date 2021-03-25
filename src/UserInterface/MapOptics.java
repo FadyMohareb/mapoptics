@@ -1,8 +1,6 @@
 package UserInterface;
 
 import Algorithms.DeleteConflicts;
-import Algorithms.SortOrientation;
-import DataTypes.QryContig;
 import DataTypes.Query;
 import DataTypes.Reference;
 import Datasets.Default.QueryViewData;
@@ -1641,13 +1639,19 @@ public class MapOptics extends JFrame {
 
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // orientates all query contigs that are negatively oriented
-        UserRefData.setQueries(SortOrientation.sortAllOrientation(UserRefData.getReferences(), UserRefData.getQueries()));
-        UserRefData.setPanelLength(refViewWidth);
-        UserRefData.setPanelHeight(refViewHeight);
-        for (String refId : UserRefData.getReferences().keySet()) {
-            UserRefData.reCentreView(refId);
+//        UserRefData.setQueries(SortOrientation.sortAllOrientation(UserRefData.getReferences(), UserRefData.getQueries()));
+//        UserRefData.setPanelLength(refViewWidth);
+//        UserRefData.setPanelHeight(refViewHeight);
+//        for (String refId : UserRefData.getReferences().keySet()) {
+//            UserRefData.reCentreView(refId);
+//        }
+//        referenceView.repaint();
+        if (!model.getSelectedRefID().isEmpty())
+        for (Query qry : model.getSelectedRef().getQueries()) {
+            if (qry.getOrientation().equals("-")) {
+                qry.reOrientate();
+            }
         }
-        referenceView.repaint();
     }
 
     private void browseXmapActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1928,9 +1932,14 @@ public class MapOptics extends JFrame {
     private void reOrientateActionPerformed(java.awt.event.ActionEvent evt) {
         // reorientate chosen contig
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
-            String refqryId = ReferenceView.getChosenRef() + "-" + ReferenceView.getChosenQry();
-            QryContig sortedContig = SortOrientation.sortOneOrientation(UserRefData.getQueries(refqryId), UserRefData.getReferences(ReferenceView.getChosenRef()));
-            UserRefData.getQueries().put(refqryId, sortedContig);
+            for (Query qry : model.getSelectedRef().getQueries()) {
+                if (qry.getID().equals(ReferenceView.getChosenQry())) {
+                    qry.reOrientate();
+                }
+            }
+//            String refqryId = ReferenceView.getChosenRef() + "-" + ReferenceView.getChosenQry();
+//            QryContig sortedContig = SortOrientation.sortOneOrientation(UserRefData.getQueries(refqryId), UserRefData.getReferences(ReferenceView.getChosenRef()));
+//            UserRefData.getQueries().put(refqryId, sortedContig);
             repaint();
         }
     }
