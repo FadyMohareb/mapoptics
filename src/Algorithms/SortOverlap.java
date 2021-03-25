@@ -235,7 +235,7 @@ public class SortOverlap {
 
 
 
-        for(int k =1; k<overlappingRects.size()-1; k++){
+        for(int k =1; k<overlappingRects.size(); k++){
 
              if(k<median){
                // Move rectangle set left
@@ -263,12 +263,20 @@ public class SortOverlap {
                          original_rect.getWidth(), original_rect.getHeight());
                  System.out.println("New Rectangle dimensions "+new_rect);
                  original_qry.setRectangle(new_rect);
-               Pair RectRight = overlappingRects.get(k+1);
-               double space_right = RectRight.x - RectInterest.y;
+               //Pair RectRight = overlappingRects.get(k+1);
+               //double space_right = RectRight.x - RectInterest.y;
 
-               gapsRight = gapsRight+space_right;
+               //gapsRight = gapsRight+space_right;
            }else{
                // Leave rectangle as is
+                 Pair RectInterest = overlappingRects.get(k);
+                 Query original_qry = queries.get(RectInterest.z);
+                 Rectangle2D original_rect = original_qry.getRectangle();
+                 System.out.println("Original Rectangle dimensions "+original_rect);
+                 Rectangle2D new_rect = new Rectangle2D.Double(original_rect.getX(), original_rect.getY()+52,
+                         original_rect.getWidth(), original_rect.getHeight());
+                 System.out.println("New Rectangle dimensions "+new_rect);
+                 original_qry.setRectangle(new_rect);
            }
 
         }
