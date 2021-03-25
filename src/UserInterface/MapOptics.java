@@ -253,7 +253,7 @@ public class MapOptics extends JFrame {
         JLayeredPane refViewPane = new JLayeredPane();
         JSplitPane jSplitPane2 = new JSplitPane();
         JLayeredPane jLayeredPane2 = new JLayeredPane();
-        referenceView = new UserInterface.ReferenceView();
+        referenceView = new UserInterface.ReferenceView(model);
         exportRefButton = new javax.swing.JButton();
         JPanel jPanel3 = new JPanel();
         JLabel jLabel4 = new JLabel();
@@ -1795,15 +1795,15 @@ public class MapOptics extends JFrame {
 
     private void referenceViewMouseClicked(java.awt.event.MouseEvent evt) {
         // Set clicked contig
-        Rectangle2D qry;
+        Rectangle2D qryRect;
         boolean qryMatch = false;
-        String chosenRef = ReferenceView.getChosenRef();
-        if (!chosenRef.equals(EMPTY_STRING)) {
-            for (String qryId : UserRefData.getReferences(chosenRef).getConnections()) {
-                qry = UserRefData.getQueries(chosenRef + "-" + qryId).getRectangle();
-                if (qry.contains(evt.getPoint())) {
+        Reference chosenRef = model.getSelectedRef();
+        if (!chosenRef.getRefID().equals(EMPTY_STRING)) {
+            for (Query qry : chosenRef.getQueries()) {
+                qryRect = qry.getRefViewRect();
+                if (qryRect.contains(evt.getPoint())) {
                     qryMatch = true;
-                    changeQry(qryId);
+                    changeQry(qry.getID());
                 }
             }
             if (!qryMatch) {
@@ -1813,10 +1813,31 @@ public class MapOptics extends JFrame {
         }
     }
 
+//    private void referenceViewMouseClicked(java.awt.event.MouseEvent evt) {
+//        // Set clicked contig
+//        Rectangle2D qry;
+//        boolean qryMatch = false;
+//        String chosenRef = ReferenceView.getChosenRef();
+//        if (!chosenRef.equals(EMPTY_STRING)) {
+//            for (String qryId : UserRefData.getReferences(chosenRef).getConnections()) {
+//                qry = UserRefData.getQueries(chosenRef + "-" + qryId).getRectangle();
+//                if (qry.contains(evt.getPoint())) {
+//                    qryMatch = true;
+//                    changeQry(qryId);
+//                }
+//            }
+//            if (!qryMatch) {
+//                changeQry(EMPTY_STRING);
+//            }
+//            repaint();
+//        }
+//    }
+
     private void zoomInActionPerformed(java.awt.event.ActionEvent evt) {
         // zoom in reference view
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
-            ReferenceView.zoom(1.2, referenceView.getWidth());
+            referenceView.zoomIn();
+//            ReferenceView.zoom(1.2, referenceView.getWidth());
             referenceView.repaint();
         }
     }
@@ -1824,7 +1845,8 @@ public class MapOptics extends JFrame {
     private void zoomOutActionPerformed(java.awt.event.ActionEvent evt) {
         // zoom out reference view
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
-            ReferenceView.zoom(0.8, referenceView.getWidth());
+            referenceView.zoomOut();
+//            ReferenceView.zoom(0.8, referenceView.getWidth());
             referenceView.repaint();
         }
     }
@@ -1955,10 +1977,11 @@ public class MapOptics extends JFrame {
     private void reCentreActionPerformed(java.awt.event.ActionEvent evt) {
         // recentre the view
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
-            UserRefData.setPanelLength(refViewWidth);
-            UserRefData.setPanelHeight(refViewHeight);
-            String chosenRef = ReferenceView.getChosenRef();
-            UserRefData.reCentreView(chosenRef);
+//            UserRefData.setPanelLength(refViewWidth);
+//            UserRefData.setPanelHeight(refViewHeight);
+//            String chosenRef = ReferenceView.getChosenRef();
+//            UserRefData.reCentreView(chosenRef);
+            referenceView.reCenter();
             referenceView.repaint();
         }
     }
@@ -2050,19 +2073,21 @@ public class MapOptics extends JFrame {
             double positionScale;
             String position = EMPTY_STRING;
             String refId = ReferenceView.getChosenRef();
-            Rectangle2D ref = UserRefData.getReferences(refId).getRectangle();
+//            Rectangle2D ref = UserRefData.getReferences(refId).getRectangle();
+            Rectangle2D ref = model.getSelectedRef().getRefViewRect();
             if (ref.contains(evt.getPoint())) {
                 // display position
-                positionScale = RawFileData.getRefContigs(refId).getContigLen() / ref.getWidth();
+                positionScale = model.getSelectedRef().getLength() / ref.getWidth();
                 position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale);
             }
-            Rectangle2D qry;
-            for (String qryId : UserRefData.getReferences(refId).getConnections()) {
-                qry = UserRefData.getQueries(refId + "-" + qryId).getRectangle();
-                if (qry.contains(evt.getPoint())) {
+            Rectangle2D qryRect;
+//            for (String qryId : UserRefData.getReferences(refId).getConnections()) {
+            for (Query qry : model.getSelectedRef().getQueries()) {
+                qryRect = qry.getRefViewRect();
+                if (qryRect.contains(evt.getPoint())) {
                     // display position
-                    positionScale = RawFileData.getQryContigs(qryId).getContigLen() / qry.getWidth();
-                    position = String.format("%.2f", (evt.getPoint().getX() - qry.getMinX()) * positionScale);
+                    positionScale = qry.getLength() / qryRect.getWidth();
+                    position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
                 }
             }
 
@@ -3067,13 +3092,13 @@ public class MapOptics extends JFrame {
         fillQryTable(refId);
         ReferenceView.setRefDataset(refDataset.getText());
         ReferenceView.setQryDataset(qryDataset.getText());
-//        ReferenceView.setChosenRef(refId);
+        ReferenceView.setChosenRef(refId);
 
         //QUERY VIEW TAB
-//        QueryView.setRegionView(false);
-//        QueryView.setChosenLabel(EMPTY_STRING);
-//        SearchRegionData.resetData();
-//        QueryView.setChosenRef(refId);
+        QueryView.setRegionView(false);
+        QueryView.setChosenLabel(EMPTY_STRING);
+        SearchRegionData.resetData();
+        QueryView.setChosenRef(refId);
 
 
 
