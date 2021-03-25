@@ -14,6 +14,9 @@ public class Query {
     private TreeMap<Integer, List<Double>> sites;
     private Rectangle2D rectangle;
     private Map<Integer, List<Integer>> alignmentSiteIds;
+    private Rectangle2D refViewRect = null;
+    private int refViewOffsetY;
+    private int refViewOffsetX;
 
 
     public Query(String queryID) {
@@ -107,4 +110,29 @@ public class Query {
     public Map<Integer, List<Integer>> getAlignmentSites() {
         return alignmentSiteIds;
     }
+
+    public void setRefViewRect(Rectangle2D refViewRect) {
+        this.refViewRect = refViewRect;
+    }
+
+    public Rectangle2D getRefViewRect() {
+        return refViewRect;
+    }
+
+    public void setRefViewOffsetX(int refViewOffsetX) {
+        this.refViewOffsetX += refViewOffsetX;
+    }
+
+    public int getRefViewOffsetX() {
+        return refViewOffsetX;
+    }
+
+    public void setRefViewOffsetY(int refViewOffsetY) {
+        this.refViewOffsetY += refViewOffsetY;
+    }
+
+    public int getRefViewOffsetY() {
+        return refViewOffsetY;
+    }
 }
+
