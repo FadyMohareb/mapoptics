@@ -17,7 +17,7 @@ public class Query {
     private Rectangle2D refViewRect = null;
     private int refViewOffsetY;
     private int refViewOffsetX;
-
+    private Rectangle2D qryViewRect = null;
 
     public Query(String queryID) {
         this.queryID = queryID;
@@ -91,6 +91,7 @@ public class Query {
         return tuple.split(",");
     }
 
+
     public void setRectangle(Rectangle2D rectangle) {
         this.rectangle = rectangle;
     }
@@ -134,5 +135,17 @@ public class Query {
     public int getRefViewOffsetY() {
         return refViewOffsetY;
     }
+
+
+    public void setQryViewRect(Rectangle2D qryViewRect) {
+        this.qryViewRect = qryViewRect;
+    }
+
+    public Rectangle2D getQryViewRect() {
+        return qryViewRect;
+    }
+
+
+
 }
 

@@ -2100,13 +2100,41 @@ public class MapOptics extends JFrame {
     }
 
     private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {
+
         // when mouse is hovered over, display the position
         if (!QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
             double positionScale;
-            String position = EMPTY_STRING;
+            String position = "";
             String refId = QueryView.getChosenRef();
             String qryId = QueryView.getChosenQry();
-            Rectangle2D ref;
+            Rectangle2D ref = model.getSelectedRef().getQryViewRect();
+            if (ref.contains(evt.getPoint())) {
+                // display position
+                positionScale = model.getSelectedRef().getLength() / ref.getWidth();
+                position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale);
+            }
+            Rectangle2D qryRect;
+
+            Reference ref1 = model.getSelectedRef();
+            Query qry= ref1.getQuery(qryId);
+                qryRect = qry.getQryViewRect();
+                if (qryRect.contains(evt.getPoint())) {
+                    // display position
+                    positionScale = qry.getLength() / qryRect.getWidth();
+                    position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                }
+
+
+            QueryView.setPosition(position);
+            QueryView.setMouseX(evt.getX());
+            QueryView.setMouseY(evt.getY());
+
+            queryView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
+
+
+
+
+            /*Rectangle2D ref;
             Rectangle2D qry;
             if (QueryView.isRegionView()) {
                 ref = SearchRegionData.getRef().getRectangle();
@@ -2132,6 +2160,8 @@ public class MapOptics extends JFrame {
             QueryView.setMouseY(evt.getY());
 
             queryView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
+
+             */
         }
     }
 

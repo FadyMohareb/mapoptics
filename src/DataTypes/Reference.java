@@ -19,7 +19,7 @@ public class Reference {
     private Rectangle2D rectangle;
     private Set<Integer> alignmentSiteIds;
     private Rectangle2D refViewRect = null;
-
+    private Rectangle2D qryViewRect = null;
     public Reference(String refID) {
         this.refID = refID;
         regions = new ArrayList<>();
@@ -144,4 +144,18 @@ public class Reference {
     public Rectangle2D getRefViewRect() {
         return refViewRect;
     }
+
+    public double getAlignmentLen(){
+        double AlignmentLen= regions.get(1)-regions.get(0);
+        return AlignmentLen;
+    }
+
+    public void setQryViewRect(Rectangle2D qryViewRect) {
+        this.qryViewRect = qryViewRect;
+    }
+
+    public Rectangle2D getQryViewRect() {
+        return qryViewRect;
+    }
+
 }
