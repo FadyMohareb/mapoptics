@@ -18,6 +18,7 @@ public class Reference {
     private List<Query> queries;
     private Rectangle2D rectangle;
     private Set<Integer> alignmentSiteIds;
+    private Rectangle2D refViewRect = null;
 
     public Reference(String refID) {
         this.refID = refID;
@@ -134,5 +135,13 @@ public class Reference {
 
     public Set<Integer> getAlignmentSites() {
         return alignmentSiteIds;
+    }
+
+    public void setRefViewRect(Rectangle2D refViewRect) {
+        this.refViewRect = refViewRect;
+    }
+
+    public Rectangle2D getRefViewRect() {
+        return refViewRect;
     }
 }
