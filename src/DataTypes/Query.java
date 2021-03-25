@@ -12,16 +12,19 @@ public class Query {
     private double confidence, length;
     private int numMatches, labels;
     private TreeMap<Integer, List<Double>> sites;
+    private TreeMap<Integer, Double> refViewSites;
     private Rectangle2D rectangle;
     private Map<Integer, List<Integer>> alignmentSiteIds;
     private Rectangle2D refViewRect = null;
     private int refViewOffsetY;
     private int refViewOffsetX;
+    private boolean isFlipped = false;
 
 
     public Query(String queryID) {
         this.queryID = queryID;
         sites = new TreeMap<>();
+        refViewSites = new TreeMap<>();
     }
 
     public void setOrientation(String orientation) {
@@ -47,6 +50,7 @@ public class Query {
 
     public void addSite(int siteID, List<Double> siteData) {
         sites.put(siteID, siteData);
+        refViewSites.put(siteID, siteData.get(0));
     }
 
     public void setLabels(int labels) {
@@ -133,6 +137,23 @@ public class Query {
 
     public int getRefViewOffsetY() {
         return refViewOffsetY;
+    }
+
+    public TreeMap<Integer, Double> getRefViewSites() {
+        return refViewSites;
+    }
+
+    public void reOrientate() {
+        if (isFlipped) {
+            refViewSites.replaceAll((i, v) -> sites.get(i).get(0));
+            isFlipped = false;
+        } else {
+            for (Integer id : refViewSites.keySet()) {
+                double newPos = length - refViewSites.get(id);
+                refViewSites.put(id, newPos);
+            }
+            isFlipped = true;
+        }
     }
 }
 
