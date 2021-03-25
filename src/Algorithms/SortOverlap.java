@@ -142,7 +142,7 @@ public class SortOverlap {
         HashMap<Integer, ArrayList<Double>> contigInfo = getAllQueryinfo(queries);
         // length of array
         int n = contigInfo.size();
-        System.out.println("Number of queries ="+n);
+        System.out.println("Number of queries is ="+n);
 
         // Array of Pair
         Pair rects[] = new Pair[n];
