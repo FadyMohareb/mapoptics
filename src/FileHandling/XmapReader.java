@@ -87,7 +87,7 @@ public class XmapReader {
             BufferedReader br = new BufferedReader(new FileReader(xmapFile));
             String line;
 
-            while ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null ) {
                 if (line.startsWith("#") || line.isEmpty()) {
                     continue;
                 }
@@ -213,10 +213,14 @@ public class XmapReader {
                             refMatches = alignmentSiteIds.get(id);
                             refMatches.add(Integer.parseInt(siteIds[i - 1]));
                             alignmentSiteIds.put(id, refMatches);
+                            //System.out.println(Integer.toString(id)+"  "+Integer.toString(Integer.parseInt(siteIds[i - 1])));
+
                         } else {
                             refMatches = new ArrayList<>();
                             refMatches.add(Integer.parseInt(siteIds[i - 1]));
                             alignmentSiteIds.put(id, refMatches);
+                            //System.out.println(Integer.toString(id)+"  "+Integer.toString(Integer.parseInt(siteIds[i - 1])));
+
                         }
                     }
                 }
@@ -230,10 +234,14 @@ public class XmapReader {
                             refMatches = alignmentSiteIds.get(id);
                             refMatches.add(Integer.parseInt(siteIds[i + 1]));
                             alignmentSiteIds.put(id, refMatches);
+                            //System.out.println(Integer.toString(id)+"  "+Integer.toString(Integer.parseInt(siteIds[i + 1])));
+
+
                         } else {
                             refMatches = new ArrayList<>();
                             refMatches.add(Integer.parseInt(siteIds[i + 1]));
                             alignmentSiteIds.put(id, refMatches);
+                           // System.out.println(Integer.toString(id)+"  "+Integer.toString(Integer.parseInt(siteIds[i + 1])));
                         }
                     }
                 }
