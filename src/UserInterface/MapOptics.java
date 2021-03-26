@@ -1609,7 +1609,8 @@ public class MapOptics extends JFrame {
 //        referenceView.repaint();
         if (!model.getSelectedRefID().isEmpty())
         for (Query qry : model.getSelectedRef().getQueries()) {
-            if (qry.getOrientation().equals("-")) {
+            if ((qry.getOrientation().equals("-") && !qry.isFlipped()) ||
+                    (qry.getOrientation().equals("+") && qry.isFlipped())) {
                 qry.reOrientate();
             }
         }
