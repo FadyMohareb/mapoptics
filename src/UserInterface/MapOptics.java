@@ -1646,11 +1646,12 @@ public class MapOptics extends JFrame {
 //            UserRefData.reCentreView(refId);
 //        }
 //        referenceView.repaint();
-        if (!model.getSelectedRefID().isEmpty())
-        for (Query qry : model.getSelectedRef().getQueries()) {
-            if ((qry.getOrientation().equals("-") && !qry.isFlipped()) ||
-                    (qry.getOrientation().equals("+") && qry.isFlipped())) {
-                qry.reOrientate();
+        if (!model.getSelectedRefID().isEmpty()) {
+            for (Query qry : model.getSelectedRef().getQueries()) {
+                if ((qry.getOrientation().equals("-") && !qry.isFlipped()) ||
+                        (qry.getOrientation().equals("+") && qry.isFlipped())) {
+                    qry.reOrientate();
+                }
             }
         }
     }
