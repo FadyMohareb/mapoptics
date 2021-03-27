@@ -1,5 +1,6 @@
 package Algorithms;
 
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
 import UserInterface.ReferenceView;
 
 import java.util.ArrayList;
@@ -7,16 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static UserInterface.ModelsAndRenderers.MapOpticsModel.getSelectedRefID;
 
 /*
  * @author Josie
  */
 public class DeleteConflicts {
 
-    public static Map<String, List<String>> deletedContigs = new HashMap<>();
+    private final Map<String, List<String>> deletedContigs = new HashMap<>();
 
     /* Replaced the deleting contig function with deleted contigs map methods below
+
     public static void deleteOne(String refId, String qryId) {
         // delete selected contig
         String refqryId = refId + "-" + qryId;
@@ -35,10 +36,13 @@ public class DeleteConflicts {
     }
 
      */
+    public Map<String, List<String>> getDeletedContigs() {
+        return deletedContigs;
+    }
 
-    public static void setDeletedContigs() {
+    public void setDeletedContigs() {
         // Populate deletedContigs map with deleted contigs
-        String refID = getSelectedRefID();
+        String refID = MapOpticsModel.getSelectedRefID();
         String qryID = ReferenceView.getChosenQry();
         List<String> queries = new ArrayList<>();
         // check if refID and qryID pair is already present in deletedContigs
@@ -55,7 +59,7 @@ public class DeleteConflicts {
         }
     }
 
-    public static void clearDeletedContigs() {
+    public void clearDeletedContigs() {
         // empty deleted contigs map
         deletedContigs.clear();
     }
