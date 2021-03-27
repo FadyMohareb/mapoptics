@@ -229,53 +229,104 @@ public class SortOverlap {
 
     public void movingRects (ArrayList<Pair> overlappingRects, List<Query> queries) {
         int numOfRects = overlappingRects.size();
-        double median = numOfRects/2;
+        double median;
         double gapsLeft = 0;
         double gapsRight = 0;
+        int numberOfQueries = queries.size();
+        System.out.println("Number of queries: "+numberOfQueries);
+
+        // If queries fewer than 20 do one type of sorting greater than 20 default sorting below
+
+        // Find median depending on number of rects in the overlap set
+        if(numOfRects%2 == 0){
+             median = numOfRects+1 / 2;
+        }else{
+            median = numOfRects / 2;
+        }
 
 
-
-        for(int k =1; k<overlappingRects.size(); k++){
+        for(int k =1; k<overlappingRects.size()-1; k++){
 
              if(k<median){
                // Move rectangle set left
+                 // get pair class of first overlap rectangle and the one to the left
                Pair RectInterest = overlappingRects.get(k);
-               Query original_qry = queries.get(RectInterest.z);
-               Rectangle2D original_rect = original_qry.getRectangle();
-               System.out.println("Original Rectangle dimensions "+original_rect);
-               Rectangle2D new_rect = new Rectangle2D.Double(original_rect.getX(), original_rect.getY()+52,
-                       original_rect.getWidth(), original_rect.getHeight());
-                 System.out.println("New Rectangle dimensions "+new_rect);
-               original_qry.setRectangle(new_rect);
                Pair RectLeft = overlappingRects.get(k-1);
-               double space_left = RectInterest.x - RectLeft.y;
 
-               gapsLeft = gapsLeft+space_left;
+               // Get the Query of the two rectangles to calculate overlap move
+               Query interest_qry = queries.get(RectInterest.z);
+               Query left_qry = queries.get(RectLeft.z);
+
+
+               // Get rectangle dimensions
+               Rectangle2D interest_rect = interest_qry.getRectangle();
+               Rectangle2D left_rect = left_qry.getRectangle();
+
+               // Find gap between alignments of Pair of interest and left
+                 double overlapOrGap = RectInterest.x - RectLeft.y;
+
+                 // if overlapOrGap is positive move RectInterest to RectLeft +10
+                 // Need to check if overlap is solved after move
+                 if(overlapOrGap > 0) {
+
+                     double moveLeft = overlapOrGap-10;
+
+                     Rectangle2D new_interest_rect = new Rectangle2D.Double(interest_rect.getX()-moveLeft, interest_rect.getY() + 52,
+                             interest_rect.getWidth(), interest_rect.getHeight());
+                    // System.out.println("New Rectangle dimensions " + new_interest_rect);
+                     interest_qry.setRectangle(new_interest_rect);
+                 }else{
+                     Rectangle2D new_interest_rect = new Rectangle2D.Double(interest_rect.getX(), interest_rect.getY() + 52,
+                             interest_rect.getWidth(), interest_rect.getHeight());
+                     //System.out.println("New Rectangle dimensions " + new_interest_rect);
+                     interest_qry.setRectangle(new_interest_rect);
+
+                 }
+
 
            }else if(k> median){
-               //Move rectangle set right
-                 // Move rectangle set left
+                // Move rectangle set right
+                 // get pair class of first overlap rectangle and the one to the left
                  Pair RectInterest = overlappingRects.get(k);
-                 Query original_qry = queries.get(RectInterest.z);
-                 Rectangle2D original_rect = original_qry.getRectangle();
-                 System.out.println("Original Rectangle dimensions "+original_rect);
-                 Rectangle2D new_rect = new Rectangle2D.Double(original_rect.getX(), original_rect.getY()+52,
-                         original_rect.getWidth(), original_rect.getHeight());
-                 System.out.println("New Rectangle dimensions "+new_rect);
-                 original_qry.setRectangle(new_rect);
-               //Pair RectRight = overlappingRects.get(k+1);
-               //double space_right = RectRight.x - RectInterest.y;
+                 Pair RectRight = overlappingRects.get(k+1);
 
-               //gapsRight = gapsRight+space_right;
+                 // Get the Query of the two rectangles to calculate overlap move
+                 Query interest_qry = queries.get(RectInterest.z);
+                 Query right_qry = queries.get(RectRight.z);
+
+                 // Get rectangle dimensions
+                 Rectangle2D interest_rect = interest_qry.getRectangle();
+                 Rectangle2D right_rect = right_qry.getRectangle();
+
+                 // Find gap between alignments of Pair of interest and left
+                 double overlapOrGap =  RectRight.x - RectInterest.y;
+
+                 // if overlapOrGap is positive move RectInterest to RectLeft +10
+                 // Need to check if overlap is solved after move
+                 if(overlapOrGap > 0) {
+
+                     double moveRight = overlapOrGap-10;
+
+                     Rectangle2D new_interest_rect = new Rectangle2D.Double(interest_rect.getX()+moveRight, interest_rect.getY() + 52,
+                             interest_rect.getWidth(), interest_rect.getHeight());
+                     //System.out.println("New Rectangle dimensions " + new_interest_rect);
+                     interest_qry.setRectangle(new_interest_rect);
+                 }else{
+                     Rectangle2D new_interest_rect = new Rectangle2D.Double(interest_rect.getX(), interest_rect.getY() + 52,
+                             interest_rect.getWidth(), interest_rect.getHeight());
+                     //System.out.println("New Rectangle dimensions " + new_interest_rect);
+                     interest_qry.setRectangle(new_interest_rect);
+
+                 }
            }else{
                // Leave rectangle as is
                  Pair RectInterest = overlappingRects.get(k);
                  Query original_qry = queries.get(RectInterest.z);
                  Rectangle2D original_rect = original_qry.getRectangle();
-                 System.out.println("Original Rectangle dimensions "+original_rect);
+                // System.out.println("Original Rectangle dimensions "+original_rect);
                  Rectangle2D new_rect = new Rectangle2D.Double(original_rect.getX(), original_rect.getY()+52,
                          original_rect.getWidth(), original_rect.getHeight());
-                 System.out.println("New Rectangle dimensions "+new_rect);
+                // System.out.println("New Rectangle dimensions "+new_rect);
                  original_qry.setRectangle(new_rect);
            }
 
