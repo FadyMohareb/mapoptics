@@ -1,18 +1,16 @@
 package UserInterface;
 
-import Algorithms.SortSequence;
-import DataTypes.*;
-import Datasets.Default.RawFileData;
-import Datasets.Default.RefViewData;
-import Datasets.UserEdited.SearchRegionData;
-import Datasets.UserEdited.UserQryData;
+import DataTypes.Query;
+import DataTypes.Reference;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * @author Josie
@@ -203,7 +201,14 @@ public class QueryView extends JPanel {
 
         // draw alignment of single reference and contig
         try {
-            if (!"".equals(chosenQry)) {
+            Reference ref = model.getSelectedRef();
+            if (ref.getDelQryIDs().contains(Integer.parseInt(chosenQry))) {
+                Font font = new Font("Tahoma", Font.ITALIC, 12);
+                g2d.setFont(font);
+                g2d.setColor(Color.red);
+                g2d.drawString("Selected query contig has been deleted.",
+                        this.getWidth() / 2 - 115 , this.getHeight()/2);
+            } else if (!"".equals(chosenQry)) {
 
                 Font defaultFont = g2d.getFont();
                 Font fontB = new Font("Tahoma", Font.BOLD, 12);
@@ -220,7 +225,7 @@ public class QueryView extends JPanel {
 
                 double scale = model.getRectangleTotalWidth() / (this.getWidth() * 0.9);
 
-                Reference ref = model.getSelectedRef();
+                //Reference ref = model.getSelectedRef(); // already declared at start of try statement
                 Query qry = ref.getQuery(chosenQry);
                 Map<Integer, Double> refSites = ref.getSites();
                 //double scale = qry.getLength()/(this.getWidth()* 0.9 );
@@ -233,7 +238,7 @@ public class QueryView extends JPanel {
                 Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
 
 
-                List <Integer> refalignments = new ArrayList();
+                List <Integer> refalignments = new ArrayList<>();
                 for (int site : qry.getSites().keySet()) {
                     if (qryAlignments.containsKey(site)) {
                         refalignments.add(qryAlignments.get(site).get(0));
