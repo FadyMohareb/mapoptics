@@ -202,49 +202,49 @@ public class QueryView extends JPanel {
         // draw alignment of single reference and contig
         try {
             Reference ref = model.getSelectedRef();
-            if (ref.getDelQryIDs().contains(Integer.parseInt(chosenQry))) {
-                Font font = new Font("Tahoma", Font.ITALIC, 12);
-                g2d.setFont(font);
-                g2d.setColor(Color.red);
-                g2d.drawString("Selected query contig has been deleted.",
-                        this.getWidth() / 2 - 115 , this.getHeight()/2);
-            } else if (!"".equals(chosenQry)) {
+            if (!"".equals(chosenQry)) {
+                if (ref.getDelQryIDs().contains(Integer.parseInt(chosenQry))) {
+                    Font font = new Font("Tahoma", Font.ITALIC, 12);
+                    g2d.setFont(font);
+                    g2d.setColor(Color.red);
+                    g2d.drawString("Selected query contig has been deleted.",
+                            this.getWidth() / 2 - 115 , this.getHeight()/2);
+                } else {
+                    Font defaultFont = g2d.getFont();
+                    Font fontB = new Font("Tahoma", Font.BOLD, 12);
+                    g2d.setFont(fontB);
+                    g2d.drawString("Reference ID:  ", 20, 20);
+                    g2d.drawString("Query ID:  ", 20, 40);
+                    int refStringLen = g2d.getFontMetrics().stringWidth("Reference ID:  ");
+                    int qryStringLen = g2d.getFontMetrics().stringWidth("Query ID:  ");
+                    g2d.setFont(defaultFont);
+                    g2d.drawString(model.getSelectedRef().getRefID(), refStringLen + 20, 20);
+                    g2d.drawString(chosenQry, qryStringLen + 20, 40);
 
-                Font defaultFont = g2d.getFont();
-                Font fontB = new Font("Tahoma", Font.BOLD, 12);
-                g2d.setFont(fontB);
-                g2d.drawString("Reference ID:  ", 20, 20);
-                g2d.drawString("Query ID:  ", 20, 40);
-                int refStringLen = g2d.getFontMetrics().stringWidth("Reference ID:  ");
-                int qryStringLen = g2d.getFontMetrics().stringWidth("Query ID:  ");
-                g2d.setFont(defaultFont);
-                g2d.drawString(model.getSelectedRef().getRefID(), refStringLen + 20, 20);
-                g2d.drawString(chosenQry, qryStringLen + 20, 40);
+                    //draw blank reference rectangle
 
-                //draw blank reference rectangle
+                    double scale = model.getRectangleTotalWidth() / (this.getWidth() * 0.9);
 
-                double scale = model.getRectangleTotalWidth() / (this.getWidth() * 0.9);
-
-                //Reference ref = model.getSelectedRef(); // already declared at start of try statement
-                Query qry = ref.getQuery(chosenQry);
-                Map<Integer, Double> refSites = ref.getSites();
-                //double scale = qry.getLength()/(this.getWidth()* 0.9 );
-                // WinoffX= (int) ((int)Double.parseDouble(qry.getFirstAlignment()[1]) /scale);
-
-
-                Set<Integer> refAlignments = ref.getAlignmentSites();
-
-                Map<Integer, List<Double>> qrySites = qry.getSites();
-                Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
+                    //Reference ref = model.getSelectedRef(); // already declared at start of try statement
+                    Query qry = ref.getQuery(chosenQry);
+                    Map<Integer, Double> refSites = ref.getSites();
+                    //double scale = qry.getLength()/(this.getWidth()* 0.9 );
+                    // WinoffX= (int) ((int)Double.parseDouble(qry.getFirstAlignment()[1]) /scale);
 
 
-                List <Integer> refalignments = new ArrayList<>();
-                for (int site : qry.getSites().keySet()) {
-                    if (qryAlignments.containsKey(site)) {
-                        refalignments.add(qryAlignments.get(site).get(0));
-                       //System.out.println(Integer.toString(qryAlignments.get(site).get(0)));
-                    }}
-               // Set<Integer> refAlignments = new HashSet<>(refalignments);;
+                    Set<Integer> refAlignments = ref.getAlignmentSites();
+
+                    Map<Integer, List<Double>> qrySites = qry.getSites();
+                    Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
+
+
+                    List <Integer> refalignments = new ArrayList<>();
+                    for (int site : qry.getSites().keySet()) {
+                        if (qryAlignments.containsKey(site)) {
+                            refalignments.add(qryAlignments.get(site).get(0));
+                            //System.out.println(Integer.toString(qryAlignments.get(site).get(0)));
+                        }}
+                    // Set<Integer> refAlignments = new HashSet<>(refalignments);;
 
 
 /*
@@ -261,75 +261,75 @@ public class QueryView extends JPanel {
                 g2d.drawString("500 000 bp", 15, 74);
 */
 
-                // Draw reference rectangle and sites
-                Rectangle2D refRect = new Rectangle2D.Double(0, 10, ref.getLength(), 50);
-               // Rectangle2D refRectRaw = new Rectangle2D.Double(0, 30, ref.getAlignmentLen(), 50) ;
-                Rectangle2D refRectScaled = new Rectangle2D.Double(
-                        this.getWidth() /20-WinoffX,
-                        80,
-                        refRect.getWidth()/ scale,
-                        60);
-                ref.setQryViewRect(refRectScaled);
-                g2d.setColor(LIGHT_GREY);
-                g2d.fill(refRectScaled);
-                g2d.setColor(GREY);
-                g2d.draw(refRectScaled);
-                g2d.setColor(DARK_GREY);
-                drawScaleBar(g2d, refRectScaled);
+                    // Draw reference rectangle and sites
+                    Rectangle2D refRect = new Rectangle2D.Double(0, 10, ref.getLength(), 50);
+                    // Rectangle2D refRectRaw = new Rectangle2D.Double(0, 30, ref.getAlignmentLen(), 50) ;
+                    Rectangle2D refRectScaled = new Rectangle2D.Double(
+                            this.getWidth() /20-WinoffX,
+                            80,
+                            refRect.getWidth()/ scale,
+                            60);
+                    ref.setQryViewRect(refRectScaled);
+                    g2d.setColor(LIGHT_GREY);
+                    g2d.fill(refRectScaled);
+                    g2d.setColor(GREY);
+                    g2d.draw(refRectScaled);
+                    g2d.setColor(DARK_GREY);
+                    drawScaleBar(g2d, refRectScaled);
 
-                int refOffSetY = (int) refRectScaled.getY();
-                int refHeight = (int) refRectScaled.getHeight();
+                    int refOffSetY = (int) refRectScaled.getY();
+                    int refHeight = (int) refRectScaled.getHeight();
 
-                //int firstRefAlignment=  Integer. valueOf(qry.getFirstAlignment()[1]);
-                //Double startpos = refSites.get(firstRefAlignment);
-                //System.out.println(qry.getFirstAlignment()[1]);
-                //System.out.println(qry.getFirstAlignment()[0]);
+                    //int firstRefAlignment=  Integer. valueOf(qry.getFirstAlignment()[1]);
+                    //Double startpos = refSites.get(firstRefAlignment);
+                    //System.out.println(qry.getFirstAlignment()[1]);
+                    //System.out.println(qry.getFirstAlignment()[0]);
 
-                //draw reference sites
-                  for (int site : refSites.keySet()) {
-                      if (refalignments.contains(site)) {
+                    //draw reference sites
+                    for (int site : refSites.keySet()) {
+                        if (refalignments.contains(site)) {
 
-                    if (refAlignments.contains(site)) {
-                        g2d.setColor(GREEN);
-                    }} else {
-                        g2d.setColor(BLACK);
-                    }
-                    //System.out.println(Double.toString(refSites.get(site)));
-                    int position = (int) ((refSites.get(site)/ scale) + this.getWidth() /20-WinoffX);
-                    g2d.drawLine(position, refOffSetY, position, refOffSetY + refHeight);
-                }
-
-                // For each query, draw rectangle, sites and alignments
-
-                Rectangle2D qryRectRaw = qry.getRectangle();
-                Rectangle2D qryRectScaled = new Rectangle2D.Double(
-                        (qryRectRaw.getX()  / scale ) + this.getWidth() / 20.0 -WinoffX,
-                        qryRectRaw.getY() + 50,
-                        qryRectRaw.getWidth() / scale,
-                        qryRectRaw.getHeight());
-                qry.setQryViewRect(qryRectScaled);
-                g2d.setColor(LIGHT_GREY);
-                g2d.fill(qryRectScaled);
-                g2d.setColor(GREY);
-                g2d.draw(qryRectScaled);
-
-                int qryOffSetY = (int) qryRectScaled.getY();
-                int qryHeight = (int) qryRectScaled.getHeight();
-                //Map<Integer, List<Double>> qrySites = qry.getSites();
-                //Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-
-                for (int site : qry.getSites().keySet()) {
-                    boolean match = false;
-                    if (qryAlignments.containsKey(site)) {
-                        match = true;
-                        g2d.setColor(GREEN);
-
-                    } else {
-                        g2d.setColor(BLACK);
+                            if (refAlignments.contains(site)) {
+                                g2d.setColor(GREEN);
+                            }} else {
+                            g2d.setColor(BLACK);
+                        }
+                        //System.out.println(Double.toString(refSites.get(site)));
+                        int position = (int) ((refSites.get(site)/ scale) + this.getWidth() /20-WinoffX);
+                        g2d.drawLine(position, refOffSetY, position, refOffSetY + refHeight);
                     }
 
-                    int position = (int) ((qrySites.get(site).get(0) / scale) + qryRectScaled.getX()-WinoffX);
-                    g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
+                    // For each query, draw rectangle, sites and alignments
+
+                    Rectangle2D qryRectRaw = qry.getRectangle();
+                    Rectangle2D qryRectScaled = new Rectangle2D.Double(
+                            (qryRectRaw.getX()  / scale ) + this.getWidth() / 20.0 -WinoffX,
+                            qryRectRaw.getY() + 50,
+                            qryRectRaw.getWidth() / scale,
+                            qryRectRaw.getHeight());
+                    qry.setQryViewRect(qryRectScaled);
+                    g2d.setColor(LIGHT_GREY);
+                    g2d.fill(qryRectScaled);
+                    g2d.setColor(GREY);
+                    g2d.draw(qryRectScaled);
+
+                    int qryOffSetY = (int) qryRectScaled.getY();
+                    int qryHeight = (int) qryRectScaled.getHeight();
+                    //Map<Integer, List<Double>> qrySites = qry.getSites();
+                    //Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
+
+                    for (int site : qry.getSites().keySet()) {
+                        boolean match = false;
+                        if (qryAlignments.containsKey(site)) {
+                            match = true;
+                            g2d.setColor(GREEN);
+
+                        } else {
+                            g2d.setColor(BLACK);
+                        }
+
+                        int position = (int) ((qrySites.get(site).get(0) / scale) + qryRectScaled.getX()-WinoffX);
+                        g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
 
                         g2d.setColor(BLACK);
                         // Draw alignment
@@ -341,15 +341,16 @@ public class QueryView extends JPanel {
                             }
                         }
                     }
-                if (!position.isEmpty()) {
+                    if (!position.isEmpty()) {
 
-                    g2d.setStroke(g2d.getStroke());
-                    g2d.setColor(Color.white);
-                    int stringLen = g2d.getFontMetrics().stringWidth(position);
-                    g2d.fillRect(mouseX, mouseY, stringLen + 16, 14);
-                    g2d.setColor(Color.black);
-                    g2d.drawRect(mouseX, mouseY, stringLen + 16, 14);
-                    g2d.drawString(position, mouseX + 12, mouseY + 12);}
+                        g2d.setStroke(g2d.getStroke());
+                        g2d.setColor(Color.white);
+                        int stringLen = g2d.getFontMetrics().stringWidth(position);
+                        g2d.fillRect(mouseX, mouseY, stringLen + 16, 14);
+                        g2d.setColor(Color.black);
+                        g2d.drawRect(mouseX, mouseY, stringLen + 16, 14);
+                        g2d.drawString(position, mouseX + 12, mouseY + 12);}
+                }
 
             } else {
                 Font font = new Font("Tahoma", Font.ITALIC, 12);
@@ -357,8 +358,6 @@ public class QueryView extends JPanel {
                 g2d.drawString("Choose a reference contig to display SUMMARY VIEW",
                         this.getWidth() / 2 - 115 , this.getHeight()/2);
             }
-
-
 
                 } catch (Exception e) {
                     e.printStackTrace();
