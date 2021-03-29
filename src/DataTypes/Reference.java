@@ -20,12 +20,17 @@ public class Reference {
     private Set<Integer> alignmentSiteIds;
     private Rectangle2D refViewRect = null;
     private Rectangle2D qryViewRect = null;
+    public List<Integer> delQryIDs;
+    public List<Integer> savedDelQryIDs;
+
     public Reference(String refID) {
         this.refID = refID;
         regions = new ArrayList<>();
         queryIDs = new ArrayList<>();
         queries = new ArrayList<>();
         sites = new HashMap<>();
+        delQryIDs = new ArrayList<>();
+        savedDelQryIDs = new ArrayList<>();
     }
 
     public void addQueryRegion(double start, double stop) {
@@ -157,5 +162,22 @@ public class Reference {
     public Rectangle2D getQryViewRect() {
         return qryViewRect;
     }
+
+    // Methods for manipulating deleted contigs
+
+    public List<Integer> getDelQryIDs() { return delQryIDs; }
+
+    // Add method for storing deleted query IDs
+    public void setDelQryIDs(List<Integer> delQryIDs, Integer queryID) {
+        delQryIDs.add(queryID);
+        this.delQryIDs = delQryIDs;
+    }
+
+    public List<Integer> getSavedDelQryIDs() { return savedDelQryIDs; }
+
+
+    // method for copying delQryIDs to savedQryIDs
+    public void setSavedDelQryIDs(List<Integer> delQryIDs) { this.savedDelQryIDs = delQryIDs; }
+
 
 }

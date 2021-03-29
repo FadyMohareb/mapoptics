@@ -1,6 +1,5 @@
 package UserInterface;
 
-import Algorithms.DeleteConflicts;
 import DataTypes.Query;
 import DataTypes.Reference;
 import Datasets.Default.QueryViewData;
@@ -47,6 +46,7 @@ public class MapOptics extends JFrame {
     private final JCheckBox selectAllImages = new JCheckBox();
 
     private MapOpticsModel model;
+
     private String xmapPath, refPath, qryPath;
 
     // set variables for panel widths and heights so when resized, drawing can be resized relatively
@@ -62,7 +62,7 @@ public class MapOptics extends JFrame {
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
     private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
     private javax.swing.JPanel labelDensityGraph, referencesGraph;
-    private javax.swing.JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
+    private javax.swing.JTable labelTable, qryContigTable, qryViewRefTable, refContigTable;
     private javax.swing.JCheckBox overlapSetting;
     private javax.swing.JComboBox<String> refOrQry, regionType;
     private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch;
@@ -80,12 +80,10 @@ public class MapOptics extends JFrame {
         this.setName("MapOptics");
 
         model = new MapOpticsModel();
-
         initComponents();
 
         setRefContigTable();
         setQryContigTable();
-        setSVTable();
         setLabelTable();
         setQryViewRefTable();
         setImageTable();
@@ -280,12 +278,7 @@ public class MapOptics extends JFrame {
         JLayeredPane queryViewPane = new JLayeredPane();
         JSplitPane jSplitPane1 = new JSplitPane();
         JLayeredPane jLayeredPane1 = new JLayeredPane();
-
-        // Add SV Table
-        JScrollPane refViewSVTableScroll = new JScrollPane();
-        svTable = new javax.swing.JTable();
-
-        queryView = new UserInterface.QueryView();
+        queryView = new UserInterface.QueryView( model);
         exportQryButton = new javax.swing.JButton();
         JPanel jPanel1 = new JPanel();
         qryIdSearch = new javax.swing.JTextField();
@@ -1272,31 +1265,9 @@ public class MapOptics extends JFrame {
                 qryContigTableMouseClicked();
             }
         });
-
-        // Add SV tabpane to refview alongside query contigs table
-        svTable.setAutoCreateRowSorter(true);
-        svTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String [] {
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
-        svTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        svTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                svTableMouseClicked();
-            }
-        });
         refViewTableScroll.setViewportView(qryContigTable);
-        refViewSVTableScroll.setViewportView(svTable);
 
         tabPaneFiles.addTab("Query Contigs", refViewTableScroll);
-        tabPaneFiles.addTab("SVs", refViewSVTableScroll);
 
         jSplitPane2.setRightComponent(tabPaneFiles);
 
@@ -1622,19 +1593,9 @@ public class MapOptics extends JFrame {
         // get selected contig from query table
         if (qryContigTable.getRowCount() != 0) {
             String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-            changeQry(chosenQry);
-        }
-    }
+                changeQry(chosenQry);
 
-    private void svTableMouseClicked() {
-        // get selected SV from SV table
-        /*
-        if (qryContigTable.getRowCount() != 0) {
-            String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-            changeQry(chosenQry);
         }
-
-         */
     }
 
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1947,10 +1908,17 @@ public class MapOptics extends JFrame {
     }
 
     private void deleteContigActionPerformed(java.awt.event.ActionEvent evt) {
-        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
+        if (!MapOpticsModel.getSelectedRefID().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
             int delete = JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete this query contig?", "Delete", JOptionPane.YES_NO_OPTION);
             if (delete == JOptionPane.YES_OPTION) {
-                DeleteConflicts.deleteOne(ReferenceView.getChosenRef(), ReferenceView.getChosenQry());
+                //DeleteConflicts.deleteOne(MapOpticsModel.getSelectedRefID(), ReferenceView.getChosenQry());
+
+                // create ref object for selected ref
+                Reference chosenRef = model.getSelectedRef();
+                // convert selected qryID string to integer
+                int chosenQry = Integer.parseInt(ReferenceView.getChosenQry());
+                // populate deleted contigs list with deleted qryIDs
+                chosenRef.setDelQryIDs(chosenRef.getDelQryIDs(), chosenQry);
                 repaint();
             }
         }
@@ -1958,12 +1926,12 @@ public class MapOptics extends JFrame {
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // check the user would really like to reset
-        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
+        if (!MapOpticsModel.getSelectedRefID().equals(EMPTY_STRING)) {
             Object[] choices = {"Default", "Last saved", "Cancel"};
 
             int n = JOptionPane.showOptionDialog(null,
                     "Would you like to reset to default? Or last saved?",
-                    "Reset Referene View",
+                    "Reset Reference View",
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
                     null,
@@ -1973,8 +1941,13 @@ public class MapOptics extends JFrame {
             switch (n) {
                 case 0:
                     // reset view to default overlap
-                    UserRefData.resetDataToDefault();
-                    UserQryData.resetDataToDefault();
+                    //UserRefData.resetDataToDefault();
+                    //UserQryData.resetDataToDefault();
+
+                    // clear deleted qryIDs list in each reference
+                    for (Reference ref : model.getReferences()) {
+                        ref.getDelQryIDs().clear();
+                    }
                     break;
                 case 1:
                     // reset view to last saved
@@ -1982,6 +1955,7 @@ public class MapOptics extends JFrame {
                     UserRefData.setVertZoom(refViewHeight / sumViewHeight);
                     UserRefData.resetDataToLastSaved();
                     UserQryData.resetDataToLastSaved();
+
                     break;
                 default:
                     break;
@@ -2015,10 +1989,15 @@ public class MapOptics extends JFrame {
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
             int save = JOptionPane.showConfirmDialog(null, "Would you like to save changes and update Summary View?", "Save Changes", JOptionPane.YES_NO_OPTION);
             if (save == JOptionPane.YES_OPTION) {
+                /*
                 SavedRefData.setHorZoom(sumViewWidth / refViewWidth);
                 SavedRefData.setVertZoom(sumViewHeight / refViewHeight);
                 SavedRefData.saveOneData(ReferenceView.getChosenRef());
                 SavedQryData.saveOneData(ReferenceView.getChosenRef());
+                 */
+                // save the deleted qryIDs by populating the savedDelQryID list with qryIDs
+                Reference chosenRef = model.getSelectedRef();
+                chosenRef.setSavedDelQryIDs(chosenRef.getDelQryIDs());
                 repaint();
             }
         }
@@ -2133,6 +2112,11 @@ public class MapOptics extends JFrame {
             Rectangle2D qryRect;
 //            for (String qryId : UserRefData.getReferences(refId).getConnections()) {
             for (Query qry : model.getSelectedRef().getQueries()) {
+                // don't display deleted query contig position
+                int refID = Integer.parseInt(model.getSelectedRef().getRefID());
+                if (model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
+                    continue;
+                }
                 qryRect = qry.getRefViewRect();
                 if (qryRect.contains(evt.getPoint())) {
                     // display position
@@ -2152,7 +2136,8 @@ public class MapOptics extends JFrame {
     private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {
 
         // when mouse is hovered over, display the position
-        if (!QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
+        if (!model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
+                && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
             double positionScale;
             String position = "";
             String refId = QueryView.getChosenRef();
@@ -2663,58 +2648,6 @@ public class MapOptics extends JFrame {
                 }
                 // get selected contig
                 String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-                // model.setSelectedRow(chosenQry);
-                changeQry(chosenQry);
-                repaint();
-            }
-        });
-    }
-    // Set SV table columns properties
-    private void setSVTable() {
-        DefaultTableModel svModel = TableModels.getSVModel();
-        svModel.addColumn("Ref ID1");
-        svModel.addColumn("Ref ID2");
-        svModel.addColumn("Ref Start");
-        svModel.addColumn("Ref End");
-        svModel.addColumn("Qry ID");
-        svModel.addColumn("Qry Start");
-        svModel.addColumn("Qry End");
-        svModel.addColumn("Size");
-
-        svTable.setModel(svModel);
-        svTable.setUpdateSelectionOnSort(true);
-        svTable.getRowSorter().toggleSortOrder(0);
-
-        svTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "qryUp");
-        svTable.getActionMap().put("qryUp", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (svTable.getSelectedRow() != 0) {
-                    svTable.setRowSelectionInterval(svTable.getSelectedRow() - 1, svTable.getSelectedRow() - 1);
-                }
-                /* Needs to be edited for SV
-                // get selected contig
-                String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-//                model.setSelectedRow(chosenQry);
-                changeQry(chosenQry);
-                repaint();
-
-                 */
-            }
-        });
-        qryContigTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "qryDown");
-        qryContigTable.getActionMap().put("qryDown", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (qryContigTable.getSelectedRow() != qryContigTable.getRowCount() - 1) {
-                    qryContigTable.setRowSelectionInterval(qryContigTable.getSelectedRow() + 1, qryContigTable.getSelectedRow() + 1);
-                }
-                // get selected contig
-                String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
 //                model.setSelectedRow(chosenQry);
                 changeQry(chosenQry);
                 repaint();
@@ -3166,7 +3099,7 @@ public class MapOptics extends JFrame {
 
 
         // Displays graph of reference contigs
-        String selectedRow = model.getSelectedRefID();
+        String selectedRow = MapOpticsModel.getSelectedRefID();
 
         referencesGraph.removeAll();
         ChartPanel refChartPanel = makeLengthChartPanel(model.getLengths(), selectedRow);

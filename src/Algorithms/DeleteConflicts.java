@@ -1,14 +1,21 @@
 package Algorithms;
 
-import DataTypes.*;
-import Datasets.UserEdited.UserQryData;
-import Datasets.UserEdited.UserRefData;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
 import UserInterface.ReferenceView;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
 /*
  * @author Josie
  */
 public class DeleteConflicts {
+    // This class is no longer needed. Deleted contigs fuctionality has been moved to Reference class.
+
+    /*
 
     public static void deleteOne(String refId, String qryId) {
         // delete selected contig
@@ -17,7 +24,7 @@ public class DeleteConflicts {
         UserQryData.getQueries().remove(refqryId);
 
         RefContig ref = UserRefData.getReferences(ReferenceView.getChosenRef());
-        ArrayList<String> newConnections = new ArrayList();
+        ArrayList<String> newConnections = new ArrayList<>();
         for (String connection : ref.getConnections()) {
             if (!ReferenceView.getChosenQry().equals(connection)) {
                 newConnections.add(connection);
@@ -26,5 +33,7 @@ public class DeleteConflicts {
 
         ref.setConnections(newConnections.toArray(new String[newConnections.size()]));
     }
+
+     */
 
 }

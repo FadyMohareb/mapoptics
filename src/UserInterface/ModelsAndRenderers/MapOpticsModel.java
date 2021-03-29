@@ -12,7 +12,7 @@ import java.util.List;
 public class MapOpticsModel {
 
     private File refFile, qryFile, xmapFile;
-    private String selectedRefID;
+    private static String selectedRefID;
     private Reference selectedRef;
     private boolean isReversed;
     private List<Double> lengths;
@@ -76,7 +76,7 @@ public class MapOpticsModel {
         this.densities = densities;
     }
 
-    public String getSelectedRefID() {
+    public static String getSelectedRefID() {
         return selectedRefID;
     }
 
@@ -85,7 +85,7 @@ public class MapOpticsModel {
     }
 
     public void setSelectedRefID(String selectedRow) {
-        this.selectedRefID = selectedRow;
+        selectedRefID = selectedRow;
         setSelectedRef(selectedRow);
     }
 
