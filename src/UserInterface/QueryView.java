@@ -202,7 +202,7 @@ public class QueryView extends JPanel {
         // draw alignment of single reference and contig
         try {
             Reference ref = model.getSelectedRef();
-            if (ref.getDelQryIDs().contains(Integer.parseInt(chosenQry))) {
+            if (!"".equals(chosenQry) && ref.getDelQryIDs().contains(Integer.parseInt(chosenQry))) {
                 Font font = new Font("Tahoma", Font.ITALIC, 12);
                 g2d.setFont(font);
                 g2d.setColor(Color.red);
