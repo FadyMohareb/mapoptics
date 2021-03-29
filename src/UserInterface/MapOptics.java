@@ -1,6 +1,5 @@
 package UserInterface;
 
-import Algorithms.DeleteConflicts;
 import DataTypes.Query;
 import DataTypes.Reference;
 import Datasets.Default.QueryViewData;
@@ -47,6 +46,7 @@ public class MapOptics extends JFrame {
     private final JCheckBox selectAllImages = new JCheckBox();
 
     private MapOpticsModel model;
+
     private String xmapPath, refPath, qryPath;
 
     // set variables for panel widths and heights so when resized, drawing can be resized relatively
@@ -80,7 +80,6 @@ public class MapOptics extends JFrame {
         this.setName("MapOptics");
 
         model = new MapOpticsModel();
-
         initComponents();
 
         setRefContigTable();
@@ -1594,7 +1593,8 @@ public class MapOptics extends JFrame {
         // get selected contig from query table
         if (qryContigTable.getRowCount() != 0) {
             String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-            changeQry(chosenQry);
+                changeQry(chosenQry);
+
         }
     }
 
@@ -1664,8 +1664,6 @@ public class MapOptics extends JFrame {
         fileLoader.setVisible(false);
         // reset all data
         resetData();
-        // clear deleted contigs when initialising analysis
-        DeleteConflicts.clearDeletedContigs();
         XmapReader.setSwap(false);
         model.setReversed(false);
 
@@ -1912,8 +1910,13 @@ public class MapOptics extends JFrame {
             int delete = JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete this query contig?", "Delete", JOptionPane.YES_NO_OPTION);
             if (delete == JOptionPane.YES_OPTION) {
                 //DeleteConflicts.deleteOne(MapOpticsModel.getSelectedRefID(), ReferenceView.getChosenQry());
-                // populate deleted contigs map with deleted contigs
-                DeleteConflicts.setDeletedContigs();
+
+                // create ref object for selected ref
+                Reference chosenRef = model.getSelectedRef();
+                // convert selected qryID string to integer
+                int chosenQry = Integer.parseInt(ReferenceView.getChosenQry());
+                // populate deleted contigs list with deleted qryIDs
+                chosenRef.setDelQryIDs(chosenRef.getDelQryIDs(), chosenQry);
                 repaint();
             }
         }
@@ -1921,8 +1924,6 @@ public class MapOptics extends JFrame {
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // check the user would really like to reset
-        // clear deleted contigs map
-        DeleteConflicts.clearDeletedContigs();
         if (!MapOpticsModel.getSelectedRefID().equals(EMPTY_STRING)) {
             Object[] choices = {"Default", "Last saved", "Cancel"};
 
@@ -1940,8 +1941,11 @@ public class MapOptics extends JFrame {
                     // reset view to default overlap
                     //UserRefData.resetDataToDefault();
                     //UserQryData.resetDataToDefault();
-                    // clear deleted contigs map
-                    DeleteConflicts.clearDeletedContigs();
+
+                    // clear deleted qryIDs list in each reference
+                    for (Reference ref : model.getReferences()) {
+                        ref.getDelQryIDs().clear();
+                    }
                     break;
                 case 1:
                     // reset view to last saved
@@ -1949,6 +1953,7 @@ public class MapOptics extends JFrame {
                     UserRefData.setVertZoom(refViewHeight / sumViewHeight);
                     UserRefData.resetDataToLastSaved();
                     UserQryData.resetDataToLastSaved();
+
                     break;
                 default:
                     break;
@@ -1982,10 +1987,15 @@ public class MapOptics extends JFrame {
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
             int save = JOptionPane.showConfirmDialog(null, "Would you like to save changes and update Summary View?", "Save Changes", JOptionPane.YES_NO_OPTION);
             if (save == JOptionPane.YES_OPTION) {
+                /*
                 SavedRefData.setHorZoom(sumViewWidth / refViewWidth);
                 SavedRefData.setVertZoom(sumViewHeight / refViewHeight);
                 SavedRefData.saveOneData(ReferenceView.getChosenRef());
                 SavedQryData.saveOneData(ReferenceView.getChosenRef());
+                 */
+                // save the deleted qryIDs by populating the savedDelQryID list with qryIDs
+                Reference chosenRef = model.getSelectedRef();
+                chosenRef.setSavedDelQryIDs(chosenRef.getDelQryIDs());
                 repaint();
             }
         }
@@ -2100,6 +2110,11 @@ public class MapOptics extends JFrame {
             Rectangle2D qryRect;
 //            for (String qryId : UserRefData.getReferences(refId).getConnections()) {
             for (Query qry : model.getSelectedRef().getQueries()) {
+                // don't display deleted query contig position
+                int refID = Integer.parseInt(model.getSelectedRef().getRefID());
+                if (model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
+                    continue;
+                }
                 qryRect = qry.getRefViewRect();
                 if (qryRect.contains(evt.getPoint())) {
                     // display position
@@ -2119,7 +2134,8 @@ public class MapOptics extends JFrame {
     private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {
 
         // when mouse is hovered over, display the position
-        if (!QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
+        if (!model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
+                && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
             double positionScale;
             String position = "";
             String refId = QueryView.getChosenRef();
