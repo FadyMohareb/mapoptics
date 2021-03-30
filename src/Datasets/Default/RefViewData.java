@@ -63,6 +63,8 @@ public class RefViewData {
         ref.setRectangle(refRect);
         rects.add(refRect);
 
+
+
         for (Query qry : ref.getQueries()) {
             // isNegative maybe not needed?? - could just reverse site list when reorientate button pressed??
             boolean isNegative = qry.getOrientation().equals("-");
@@ -97,15 +99,14 @@ public class RefViewData {
             rects.add(qryRect);
         }
 
-        SortOverlap moveRectangle = new SortOverlap(ref.getQueries());
+        Double refLength = ref.getLength();
+        SortOverlap moveRectangle = new SortOverlap(ref.getQueries(), refLength);
 
         moveRectangle.getAllQueryinfo(ref.getQueries());
         moveRectangle.sortingOverlaps();
 
 
-
-
-        // Slot in method with lowestOffSetX, highestOffsetY
+               // Slot in method with lowestOffSetX, highestOffsetY
         // List of Rectangles
         // get. setREct and then setRectangle
         //Maximum totalRectangleWidth = 8x ref length
