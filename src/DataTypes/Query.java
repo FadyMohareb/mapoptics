@@ -26,6 +26,7 @@ public class Query {
         this.queryID = queryID;
         sites = new TreeMap<>();
         refViewSites = new TreeMap<>();
+
     }
 
     public void setOrientation(String orientation) {
