@@ -22,6 +22,7 @@ public class Reference {
     private Rectangle2D qryViewRect = null;
     public List<Integer> delQryIDs;
     public List<Integer> savedDelQryIDs;
+    private Map<Integer, String> refAlignRegion;
 
     public Reference(String refID) {
         this.refID = refID;
@@ -31,6 +32,7 @@ public class Reference {
         sites = new HashMap<>();
         delQryIDs = new ArrayList<>();
         savedDelQryIDs = new ArrayList<>();
+        refAlignRegion = new HashMap<>();
     }
 
     public void addQueryRegion(double start, double stop) {
@@ -179,5 +181,22 @@ public class Reference {
     // method for copying delQryIDs to savedQryIDs
     public void setSavedDelQryIDs(List<Integer> delQryIDs) { this.savedDelQryIDs = delQryIDs; }
 
+    public void setRefAlignPos(Map<Integer, String> refAlignRegion){
+        this.refAlignRegion= refAlignRegion;
+    }
+    public Double[] getRefAlignPos(String ChosenQry){
+        int qry= Integer.parseInt(ChosenQry);
+        String[] StartEnd = refAlignRegion.get(qry).split("-");
+        Double Start = Double.parseDouble(StartEnd[0]);
+        Double End = Double.parseDouble(StartEnd[1]);
+
+        if(Start>End){
+            Double[] RefAlignRegion={End,Start};
+            return RefAlignRegion;
+        }else{
+            Double[] RefAlignRegion={Start,End};
+            return RefAlignRegion;
+        }
+    }
 
 }

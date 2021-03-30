@@ -131,6 +131,7 @@ public class XmapReader {
     public static Map<Integer, Query> getReferenceData(MapOpticsModel model) {
 
         Map<Integer, Query> queries = new HashMap<>();
+        Map<Integer, String> refAlignRegion= new HashMap<>();
         List<Integer> queryIDs = model.getSelectedRef().getQueryIDs();
         boolean isReversed = model.isReversed();
         int queryIndex = isReversed ? 2 : 1;
@@ -148,6 +149,8 @@ public class XmapReader {
 
                 String[] data = line.split("\t");
                 int queryID = Integer.parseInt(data[queryIndex]);
+
+
 
 
                 // TODO: Hold data for a given query when it is also found in other reference contigs - could be List<String[refid, orient., conf.]>
@@ -177,11 +180,14 @@ public class XmapReader {
 
                     queries.put(Integer.parseInt(data[queryIndex]), qry);
 //                    queries.put(Integer.parseInt(data[0]), qry); // in case entryID needs to be used
+                    String qryStartEnd = data[(refIndex*2)+1]+"-"+data[(refIndex*2)+2];
+                    refAlignRegion.put(queryID,qryStartEnd);
+
                 }
             }
 
             br.close();
-
+            model.getSelectedRef().setRefAlignPos(refAlignRegion);
             setAlignmentSites(model.getSelectedRef(), queries, isReversed);
             return queries;
 

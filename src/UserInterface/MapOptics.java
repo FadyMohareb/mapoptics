@@ -2140,7 +2140,7 @@ public class MapOptics extends JFrame {
                 && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
             double positionScale;
             String position = "";
-            String refId = QueryView.getChosenRef();
+
             String qryId = QueryView.getChosenQry();
             Rectangle2D ref = model.getSelectedRef().getQryViewRect();
             if (ref.contains(evt.getPoint())) {
