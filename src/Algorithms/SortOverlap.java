@@ -218,9 +218,10 @@ public class SortOverlap {
 
 
                             }
-                            // If number of contigs over 20:
+                            if (queries.size() > 20) {
+                                // If number of contigs over 20:
                                 movingRects20plus(Overlaps, queries);
-
+                            } else {
 
 
                             }
@@ -230,43 +231,37 @@ public class SortOverlap {
                     }
 
                 }
-
+            }
         } else {
             double QryLength;
-            double TotalQueryLength =0;
+            double TotalQryLength =0;
 
-            for(int Qry = 0; Qry<queries.size(); Qry++){
+            for(int Qry = 0; Qry <queries.size(); Qry++){
                 QryLength = queries.get(Qry).getLength();
-
-                TotalQueryLength = TotalQueryLength+QryLength;
-
+                System.out.println("Length of Query is "+QryLength);
+                TotalQryLength = TotalQryLength+QryLength;
             }
 
-            if(TotalQueryLength>=refLength*1.2){
+            System.out.println("Total Length of Queries are "+TotalQryLength);
+            System.out.println("Total Length of Reference is "+ refLength);
 
+
+            if (TotalQryLength> refLength*1.2) {
+                sumAlignRegionsOverlaps(rects, queries);
             }else{
-                int onePercentRef = (int) (refLength/1000);
-                moveLeftandRight(onePercentRef);
+                // If number of contigs under 20:
+                /* One percent of reference length to set scale for moving contigs
+
+                 */
+
+               int pointOnePercentRef = (int) (refLength/1000);
+               int pointZeroOnePercentRef =(int) (refLength/10000);
+
+               moveLeftandRight(pointOnePercentRef);
+               moveUpandDown(pointZeroOnePercentRef);
+
             }
 
-            // Need to get sum of contigs length vs reference length
-
-            // If all contigs length shorter than 120% reference length use MoveLeftandRight
-            // Otherwise use median method
-
-
-        movingRects20minus(rects, queries);
-            //sumAlignRegionsOverlaps(rects, queries, centerRef);
-            // If number of contigs under 20:
-            /* One percent of reference length to set scale for moving contigs
-
-             */
-
-
-
-
-            //moveLeftandRight(onePercentRef);
-            //moveUpandDown(onePercentRef);
 
         }
 
@@ -276,11 +271,10 @@ public class SortOverlap {
     // New method for capturing overlap sections based on adding to list whilst overlaps exist and moveable position
     // is negative. When this becomes positive (by adding additional sequential rectangles) move to movingRect20minus method
 
-    public void sumAlignRegionsOverlaps(Pair[] SequentialRects, List<Query> queries, Double centerRef) {
+    public void sumAlignRegionsOverlaps(Pair[] SequentialRects, List<Query> queries) {
         double sumOfGaps = 0;
-        double spaceToRight=0;
+        double halfOfGaps =0;
         double median;
-        double halfSumofGaps;
         int countUnderMedian = 0;
         int countOverMedian = 0;
        ArrayList<Pair> overlappingRects = new ArrayList<>();
@@ -297,72 +291,109 @@ public class SortOverlap {
 
             double gapDifference = SequentialRects[i].x - SequentialRects[i - 1].y;
 
+            // This gives total gaps and overlaps in contigs
             sumOfGaps = sumOfGaps + gapDifference;
+        }
 
-            System.out.println(" Sum of gaps = " + sumOfGaps);
-            halfSumofGaps = sumOfGaps / 2;
-
-                   double numOfContigstoMove =SequentialRects.length;
-
-                   if (numOfContigstoMove % 2 == 0) {
-                       median = ((numOfContigstoMove + 1) / 2); // for zero indexing purposes
-                   } else {
-                       median = (numOfContigstoMove / 2);
-                   }
-
-                   System.out.println("Median = " + median);
+            // WIth contigs greater that 120% lenght of reference would expect this to be negative
+            System.out.println("Total sum of gaps in contigs = " +sumOfGaps);
 
                    // If space to right is > 10% of reference length - take space the right down to 10% reference length
                    // NEED TO ADD THIS FUNCTIONALITY in
 
                    // Half sumOfGaps provide pull left and pull right
+        double halfSumofGaps = sumOfGaps / 2;
 
-                   System.out.println(" Sum of gaps = " + sumOfGaps);
-                   double halfSumofGaps = spaceToRight / 2;
 
-                   // If only two rectangles with space move apart by overlap
-                   if(median<1){
-                       Pair recLeft = overlappingRects.get(0);
-                       Pair recRight = overlappingRects.get(1);
+        double numOfContigstoMove = SequentialRects.length - 2;
 
-                       double overlapsHere = recLeft.y - recRight.x;
+        if (numOfContigstoMove % 2 == 0) {
+            median = ((numOfContigstoMove + 1) / 2); // for zero indexing purposes
+        } else {
+            median = (numOfContigstoMove / 2);
+        }
 
-                       double MoveLeft = +overlapsHere/2;
-                       double MoveRight = -overlapsHere/2;
+        System.out.println("Median = " + median);
 
-                       getAndSetQryRect(queries, recLeft, MoveLeft, false, countOverMedian);
-                       getAndSetQryRect(queries,recRight, MoveRight, false, countOverMedian);
 
-                   }else {
-                       // Sum total of overlaps
-                       for (int rec = overlappingRects.size() - 2; rec > median; rec--) {
-                           // Sum all overlaps
-                           System.out.println("Number of Rectangle in overlap section- less than median " + rec);
-                           // Move rectangle set left
-                           // get pair class of first overlap rectangle and the one to the left
-                           Pair RectInterest = overlappingRects.get(rec);
-                           Pair RectRight = overlappingRects.get(rec + 1);
+        for(
+                int rec = 1;
+                rec <median;rec++)
 
-                           // Find gap between alignments of Pair of interest and left
+        {
+            // Sum all overlaps
+            System.out.println("Number of Rectangle in overlap section- less than median " + rec);
+            // Move rectangle set left
+            // get pair class of first overlap rectangle and the one to the left
+            Pair RectInterest = SequentialRects[rec];
+            Pair RectLeft = SequentialRects[rec - 1];
 
-                           double overlapsHere = RectInterest.y - RectRight.x;
-                           //if (overlapsHere > 0) {
+            // Find gap between alignments of Pair of interest and left
 
-                           double MoveRight = halfSumofGaps - overlapsHere;
+            double overlapsHere = RectInterest.x - RectLeft.y;
+            System.out.println("Overlap under median " + overlapsHere);
+            if (overlapsHere < 0) {
 
-                           halfSumofGaps = halfSumofGaps - overlapsHere;
+                double MoveLeft = halfSumofGaps - overlapsHere;
+                System.out.println("Moving left " + MoveLeft);
 
-                           countOverMedian++;
+                halfSumofGaps = halfSumofGaps - overlapsHere;
+                System.out.println(" halfSumofGaps under median " + halfSumofGaps);
 
-                           // Move rectangle
-                           getAndSetQryRect(queries, RectInterest, MoveRight, true, countOverMedian);
-                       }
-                   }
-               }
+                countUnderMedian++;
 
-               continue;
+                // Move rectangle
+                getAndSetQryRect(queries, RectInterest, MoveLeft, true, countUnderMedian);
+            }
+        }
 
-           }
+        halfSumofGaps = sumOfGaps / 2;
+        System.out.println("Half sum of gaps reset " + halfSumofGaps);
+
+        for(
+                int rec = SequentialRects.length - 2;
+                rec >median;rec--) {
+
+
+            // Sum all overlaps
+            System.out.println("Number of Rectangle in overlap section- greater than median " + rec);
+            // Move rectangle set left
+            // get pair class of first overlap rectangle and the one to the left
+            Pair RectInterest = SequentialRects[rec];
+            Pair RectRight = SequentialRects[rec + 1];
+
+            // Find gap between alignments of Pair of interest and left
+
+            double overlapsHere = RectInterest.y - RectRight.x;
+
+            System.out.println("Overlap over median" + overlapsHere);
+            if (overlapsHere > 0) {
+
+                double MoveRight = -halfSumofGaps - overlapsHere;
+                System.out.println("Moving right " + MoveRight);
+
+                halfSumofGaps = halfSumofGaps + overlapsHere;
+                System.out.println(" halfSumofGaps over median " + halfSumofGaps);
+
+                countOverMedian++;
+
+                // Move rectangle
+                getAndSetQryRect(queries, RectInterest, MoveRight, true, countOverMedian);
+            }
+        }
+
+        halfSumofGaps =sumOfGaps/2;
+        //Move rectangle index 0 the halfSumOfGaps distance to the left
+        Pair RectFarLeft = SequentialRects[0];
+        Pair RectFarRight = SequentialRects[SequentialRects.length - 1];
+
+        if(halfSumofGaps<0)
+
+        {
+            getAndSetQryRect(queries, RectFarLeft, halfSumofGaps, false, 1);
+            getAndSetQryRect(queries, RectFarRight, -halfSumofGaps, false, 1);
+        }
+
 
 
 
@@ -392,18 +423,7 @@ public class SortOverlap {
         // Half sumOfGaps provide pull left and pull right
 
         System.out.println(" Sum of gaps = " + sumOfGaps);
-        double halfSumofGaps = sumOfGaps / 2;
 
-
-        double numOfContigstoMove = SequentialRects.length - 2;
-
-        if (numOfContigstoMove % 2 == 0) {
-            median = ((numOfContigstoMove + 1) / 2); // for zero indexing purposes
-        } else {
-            median = (numOfContigstoMove / 2);
-        }
-
-        System.out.println("Median = " + median);
 
 
 
@@ -411,33 +431,7 @@ public class SortOverlap {
     // halfSumofGaps = sumOfGaps/2;
 
     // Sum total of overlaps
-        for(
-    int rec = SequentialRects.length - 2;
-    rec >median;rec--)
 
-    {
-        // Sum all overlaps
-        System.out.println("Number of Rectangle in overlap section- less than median " + rec);
-        // Move rectangle set left
-        // get pair class of first overlap rectangle and the one to the left
-        Pair RectInterest = SequentialRects[rec];
-        Pair RectRight = SequentialRects[rec + 1];
-
-        // Find gap between alignments of Pair of interest and left
-
-        double overlapsHere = RectInterest.y - RectRight.x;
-        //if (overlapsHere > 0) {
-
-        double MoveRight = -halfSumofGaps - overlapsHere;
-
-        halfSumofGaps = halfSumofGaps + overlapsHere;
-
-        countOverMedian++;
-
-        // Move rectangle
-        getAndSetQryRect(queries, RectInterest, MoveRight, true, countOverMedian);
-        //}
-    }
 
     halfSumofGaps =sumOfGaps/2;
     //Move rectangle index 0 the halfSumOfGaps distance to the left
@@ -452,7 +446,7 @@ public class SortOverlap {
     }
 */
 
-}
+
 
 
 
@@ -590,7 +584,7 @@ public class SortOverlap {
 
     }
 
-    public void movingRects20minus (ArrayList<Pair> overlappingRects, List<Query> queries) {
+   /* public void movingRects20minus (ArrayList<Pair> overlappingRects, List<Query> queries) {
 
         // Need to find sum of overlaps in that overlaps set
         //loop through overlapping rectangles and add overlaps
@@ -605,8 +599,6 @@ public class SortOverlap {
         double overlapsOverall = 0;
         double overlapsLessMedian=0;
         double overlapsGreaterMedian =0;
-        int countover = 0;
-        int countunder = 0;
 
         double gapsRight = 0;
         int numberOfQueries = queries.size();
@@ -655,10 +647,8 @@ public class SortOverlap {
 
             double MoveLeft = overlapsHere;
 
-            countunder++;
-
             // Move rectangle
-            getAndSetQryRect(queries, RectInterest, MoveLeft, true, countunder);
+            getAndSetQryRect(queries, RectInterest, MoveLeft, true);
 
             // Running total
             overlapsLessMedian= overlapsLessMedian+overlapsHere;
@@ -680,10 +670,8 @@ public class SortOverlap {
 
             double MoveRight = -1*overlapsHere;
 
-            countover++;
-
             // Move rectangle
-            getAndSetQryRect(queries, RectInterest, MoveRight, true, countover );
+            getAndSetQryRect(queries, RectInterest, MoveRight, true);
 
             // Running total
             overlapsGreaterMedian= overlapsGreaterMedian+overlapsHere;
@@ -704,8 +692,8 @@ public class SortOverlap {
 
         double halfMiddleOverlap = MiddleOverlap/2;
 
-        getAndSetQryRect(queries, RectBelowMedian, halfMiddleOverlap, false, 1);
-        getAndSetQryRect(queries, RectAboveMedian, -halfMiddleOverlap, false, 1);
+        getAndSetQryRect(queries, RectBelowMedian, halfMiddleOverlap, true);
+        getAndSetQryRect(queries, RectAboveMedian, -halfMiddleOverlap, true);
 
 
         // Now use overlap knowledge to move the non-overlapping rectangles out of the way, to provide a large gap
@@ -719,16 +707,31 @@ public class SortOverlap {
         double MoveLeft = overlapsLessMedian+halfMiddleOverlap;
         double MoveRight = -1*(overlapsGreaterMedian-halfMiddleOverlap);
 
-        getAndSetQryRect(queries, RectFarLeft, MoveLeft, false, 1);
-        getAndSetQryRect(queries, RectFarRight, MoveRight, false, 1);
+        getAndSetQryRect(queries, RectFarLeft, MoveLeft, false);
+        getAndSetQryRect(queries, RectFarRight, MoveRight, false);
 
         // Get the Query of the two rectangles to calculate overlap move
         //Query farLeftQry = queries.get(RectFarLeft.z);
          //Query farRightQry = queries.get(RectFarRight.z);
 
+        // Get rectangle dimensions
+       // Rectangle2D LeftRect = farLeftQry.getRectangle();
+        Rectangle2D RightRect = farRightQry.getRectangle();
 
+        //Move these rectangles
+        Rectangle2D newFarLeftRect = new Rectangle2D.Double(LeftRect.getX()+overlapsLessMedian+halfMiddleOverlap, LeftRect.getY(),
+                LeftRect.getWidth(), LeftRect.getHeight());
 
-    }
+        // Set rectangles
+        farLeftQry.setRectangle(newFarLeftRect);
+
+        Rectangle2D newFarRightRect = new Rectangle2D.Double(RightRect.getX()-overlapsLessMedian-halfMiddleOverlap, RightRect.getY(),
+                RightRect.getWidth(),RightRect.getHeight());
+
+        // Set rectangles
+        farRightQry.setRectangle(newFarRightRect);*//*
+
+    }*/
 
     private void getAndSetQryRect(List<Query> queries, Pair p1, double xMove, boolean yMove, double yMultiplier) {
 
