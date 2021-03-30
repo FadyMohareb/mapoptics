@@ -1,6 +1,6 @@
 package Datasets.Default;
 
-import Algorithms.SortOrientation;
+//import Algorithms.SortOrientation;
 import DataTypes.*;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
@@ -30,21 +30,17 @@ public class QueryViewData {
         QueryViewData.qryConnections = new LinkedHashMap();
     }
 
-    public static void setData() {
+    /*public static void setData() {
         ArrayList<Rectangle2D> labels = new ArrayList();
         ArrayList<String> qryIds = new ArrayList();
-
         for (String refqryId : RawFileData.getQueries().keySet()) {
             String refId = refqryId.split("-")[0];
             String qryId = refqryId.split("-")[1];
-
             // get raw data
             QryContig qry1 = RawFileData.getQueries(refqryId);
             RefContig ref1 = RawFileData.getReferences(refId) ;
-
             // set scale variables
             setScaleVariables(qry1, ref1);
-
             // scale rectangles and set query data
             QryContig qry2 = qry1.copy(hScale);
             qry2.setRectangle(scaleRectangle(qry2.getRectangle().getBounds2D(), 7, false));
@@ -53,7 +49,6 @@ public class QueryViewData {
             }
             qry2.setLabels(labels.toArray(new Rectangle2D[labels.size()]));
             labels.clear();
-
             // scale rectangles and set reference data
             RefContig ref2 = ref1.copy();
             ref2.setRectangle(scaleRectangle(ref1.getRectangle().getBounds2D(), 3, false));
@@ -62,7 +57,6 @@ public class QueryViewData {
             }
             ref2.setLabels(labels.toArray(new Rectangle2D[labels.size()]));
             labels.clear();
-
             // if negatively oriented, reorientate for query view
             if (qry2.getOrientation().equals("-")) {
                 SortOrientation.sortOneOrientation(qry2, ref2);
@@ -73,8 +67,8 @@ public class QueryViewData {
             queries.put(refqryId, qry2);
             references.put(refqryId, ref2);
         }
-
-        // add all references to query connections (unique to this view)
+*/
+        /*// add all references to query connections (unique to this view)
         ArrayList<String> connections = new ArrayList();
         String[] refConnections;
         for (int i = 0; i < qryIds.size(); i++) {
@@ -90,7 +84,7 @@ public class QueryViewData {
             qryConnections.put(qryId1, connections.toArray(new String[connections.size()]));
             connections.clear();
         }
-    }
+    }*/
 
     private static void setScaleVariables(QryContig qry, RefContig ref) {
         double minX = Double.POSITIVE_INFINITY;

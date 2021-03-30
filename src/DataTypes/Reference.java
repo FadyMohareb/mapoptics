@@ -26,6 +26,7 @@ public class Reference {
         queryIDs = new ArrayList<>();
         queries = new ArrayList<>();
         sites = new HashMap<>();
+
     }
 
     public void addQueryRegion(double start, double stop) {
