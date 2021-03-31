@@ -291,6 +291,7 @@ public class MapOptics extends JFrame {
         regionSearch = new javax.swing.JTextField();
         JLabel jLabel13 = new JLabel();
         regionType = new javax.swing.JComboBox<>();
+        javax.swing.JButton qryorientate = new javax.swing.JButton();
         JScrollPane jScrollPane1 = new JScrollPane();
         qryViewRefTable = new javax.swing.JTable();
         JScrollPane queryViewTableScroll = new JScrollPane();
@@ -1073,6 +1074,7 @@ public class MapOptics extends JFrame {
         exportRefButton.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 10)); // NOI18N
         exportRefButton.setText("Export Image");
         exportRefButton.addActionListener(this::exportRefButtonActionPerformed);
+        exportRefButton.setText("Export Image");
 
         javax.swing.GroupLayout referenceViewLayout = new javax.swing.GroupLayout(referenceView);
         referenceView.setLayout(referenceViewLayout);
@@ -1339,17 +1341,24 @@ public class MapOptics extends JFrame {
 
         regionType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Reference", "Query" }));
 
+        qryorientate.setLabel("reOrientate");
+        qryorientate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                qryorientateActionPerformed(evt);
+            }
+        });
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(search, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())
                         .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                .addComponent(qryorientate)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(search, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addContainerGap())
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                                 .addComponent(regionSearch)
                                                 .addContainerGap())
@@ -1395,12 +1404,17 @@ public class MapOptics extends JFrame {
                                         .addComponent(jLabel12))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(regionSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
                                 .addComponent(jLabel13)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(search)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(search)
+                                        .addComponent(qryorientate))
                                 .addContainerGap())
         );
+
+        qryorientate.getAccessibleContext().setAccessibleName("");
+        qryorientate.getAccessibleContext().setAccessibleDescription("");
 
         qryViewRefTable.setAutoCreateRowSorter(true);
         qryViewRefTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -2024,6 +2038,26 @@ public class MapOptics extends JFrame {
         String qrySearch = qryIdSearch.getText();
         String region = regionSearch.getText();
         String type = Objects.requireNonNull(regionType.getSelectedItem()).toString();
+        // check if qry Id or ref Id exist otherwise give error message
+        if (!refSearch.equals(EMPTY_STRING)) {
+
+            if (model.getReferences().contains(refSearch)) {
+                QueryView.setChosenRef(refSearch);
+        }else{
+                JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+
+        if (!qrySearch.equals(EMPTY_STRING)) {
+            if (model.getReferences().contains(refSearch)) {
+                QueryView.setChosenRef(refSearch);
+            }else{
+                JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            }
+            }
+        }
+        /*
 
         // check if qry Id or ref Id exist otherwise give error message
         if (!refSearch.equals(EMPTY_STRING)) {
@@ -2094,7 +2128,8 @@ public class MapOptics extends JFrame {
             JOptionPane.showMessageDialog(null, "Region out of bounds", "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
 
-    }
+         */
+
 
     private void referenceViewMouseMoved(java.awt.event.MouseEvent evt) {
         // when mouse is hovered over, display the position
@@ -2382,6 +2417,23 @@ public class MapOptics extends JFrame {
     private void fastaLoadActionPerformed(java.awt.event.ActionEvent evt) {
         // Open dialog for fasta loading
         fastaLoader.setVisible(true);
+    }
+
+    private void qryorientateActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+        // reorientate chosen contig
+        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
+            for (Query qry : model.getSelectedRef().getQueries()) {
+                if (qry.getID().equals(ReferenceView.getChosenQry())) {
+                    qry.reOrientate();
+                }
+            }
+//            String refqryId = ReferenceView.getChosenRef() + "-" + ReferenceView.getChosenQry();
+//            QryContig sortedContig = SortOrientation.sortOneOrientation(UserRefData.getQueries(refqryId), UserRefData.getReferences(ReferenceView.getChosenRef()));
+//            UserRefData.getQueries().put(refqryId, sortedContig);
+            repaint();
+        }
+
     }
 
     private void closeActionPerformed(java.awt.event.ActionEvent evt) {

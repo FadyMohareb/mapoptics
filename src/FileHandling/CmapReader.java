@@ -116,6 +116,8 @@ public class CmapReader {
                 }
 
                 String[] rowData = line.split("\t");
+                int channel = Integer.parseInt(rowData[4]);
+                if(channel!=0){
                 int id = Integer.parseInt(rowData[0]);
 
                 if (queries.containsKey(id)) {
@@ -134,7 +136,7 @@ public class CmapReader {
                             header.contains("ChimQuality") ?
                                     Double.parseDouble(rowData[header.indexOf("ChimQuality")]) : 0.0));
                 }
-            }
+            }}
 
             br.close();
 
