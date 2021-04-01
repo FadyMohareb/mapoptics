@@ -1,18 +1,19 @@
 package UserInterface;
 
-import Algorithms.SortSequence;
-import DataTypes.*;
+import Algorithms.Variant;
+import DataTypes.LabelInfo;
+import DataTypes.Query;
+import DataTypes.Reference;
 import Datasets.Default.RawFileData;
-import Datasets.Default.RefViewData;
-import Datasets.UserEdited.SearchRegionData;
-import Datasets.UserEdited.UserQryData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * @author Josie
@@ -250,7 +251,11 @@ public class QueryView extends JPanel {
                     Set<Integer> refAlignments = ref.getAlignmentSites();
                     Map<Integer, List<Double>> qrySites = qry.getSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-                    List <Integer> refalignments = new ArrayList();
+                    List <Integer> refalignments = new ArrayList<>();
+                    String hitEnum = qry.getHitEnum();
+                    Variant variant = new Variant(hitEnum);
+                    variant.setQryAlignsCigar(qryAlignments);
+                    Map<Integer, String> qryAlignsCigar = variant.getQryAlignsCigar();
                     for (int site : qry.getSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
                             refalignments.add(qryAlignments.get(site).get(0));
@@ -336,15 +341,22 @@ public class QueryView extends JPanel {
                             g2d.setColor(GREEN);
 
                         } else {
-                            g2d.setColor(BLACK);
+                            // Highlight single label insertions red
+                            g2d.setColor(Color.RED);
                         }
 
                         int position = (int) ((qrySites.get(site).get(0) / scale)+this.getWidth() / 20);
                         g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
-                        g2d.setColor(BLACK);
+                        //g2d.setColor(BLACK);
                         // Draw alignment
                         if (match) {
                             for (int i : qryAlignments.get(site)) {
+                                // check if qryAlignment is insertion and if so, color red
+                                if (qryAlignsCigar.get(site).equals("I")) {
+                                    g2d.setColor(Color.RED);
+                                } else {
+                                    g2d.setColor(BLACK);
+                                }
                                 int refPositionX = (int) (((refSites.get(i))/ scale) + this.getWidth() /20 -refx);
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
                                 g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
@@ -395,7 +407,7 @@ public class QueryView extends JPanel {
             Font font = new Font("Tahoma", Font.ITALIC, 12);
             g2d.setColor(Color.red);
             g2d.setFont(font);
-
+            e.printStackTrace(); // test for errors
             g2d.drawString("ERROR DRAWING ALIGNMENT".concat(e.toString()), this.getWidth() / 2 - 115, this.getHeight() / 2);
         }
 
