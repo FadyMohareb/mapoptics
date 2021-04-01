@@ -143,12 +143,15 @@ public class ReferenceView extends JPanel {
     public void zoomIn() {
         if (scaleMultiplier < 50) {
             scaleMultiplier *= 1.2;
+            windowOffX += scaleMultiplier;
+//            windowOffX = (int) ((windowOffX + (this.getWidth() / 2)) * scaleMultiplier);
         }
     }
 
     public void zoomOut() {
         if (scaleMultiplier > 0.05) {
             scaleMultiplier /= 1.2;
+//            windowOffX -= this.getWidth() / 2;
         }
     }
 
@@ -304,7 +307,8 @@ public class ReferenceView extends JPanel {
                 g2d.drawString(model.getRefFile().getName(), refStringLen + 20, 20);
                 g2d.drawString(model.getQryFile().getName(), qryStringLen + 20, 40);
 
-                double scale = model.getRectangleTotalWidth() / (this.getWidth() * scaleMultiplier);
+                double scaleX = model.getRectangleTotalWidth() / (this.getWidth() * scaleMultiplier);
+                double scaleY = model.getRectangleTotalHeight() / ((this.getHeight() - yOff) * 0.7);
                 Reference ref = model.getSelectedRef();
                 Map<Integer, Double> refSites = ref.getSites();
                 Set<Integer> refAlignments = ref.getAlignmentSites();
@@ -314,10 +318,10 @@ public class ReferenceView extends JPanel {
                 Rectangle2D refRectScaled;
                 Rectangle2D refRectRaw = ref.getRectangle();
                 refRectScaled = new Rectangle2D.Double(
-                        (refRectRaw.getX()  / scale ) + (this.getWidth() / 20.0) + windowOffX,
-                        refRectRaw.getY() + 50 + yOff + windowOffY,
-                        refRectRaw.getWidth() / scale,
-                        refRectRaw.getHeight());
+                        (refRectRaw.getX() / scaleX) + (this.getWidth() / 20.0) + windowOffX,
+                        (refRectRaw.getY() / scaleY) + (this.getHeight() / 6.66) + yOff + windowOffY,
+                        refRectRaw.getWidth() / scaleX,
+                        refRectRaw.getHeight() / scaleY);
 
                 ref.setRefViewRect(refRectScaled);
 
@@ -340,7 +344,7 @@ public class ReferenceView extends JPanel {
                         g2d.setColor(BLACK);
                     }
 
-                    int position = (int) ((refSites.get(site) / scale) + refRectScaled.getX());
+                    int position = (int) ((refSites.get(site) / scaleX) + refRectScaled.getX());
                     g2d.drawLine(position, refOffSetY, position, refOffSetY + refHeight);
                 }
 
@@ -351,10 +355,10 @@ public class ReferenceView extends JPanel {
                     Rectangle2D qryRectScaled;
                     Rectangle2D qryRectRaw = qry.getRectangle();
                     qryRectScaled = new Rectangle2D.Double(
-                            (qryRectRaw.getX() / scale) + (this.getWidth() / 20.0) + windowOffX + qry.getRefViewOffsetX(),
-                            qryRectRaw.getY()+ 50 + yOff + windowOffY + qry.getRefViewOffsetY(),
-                            qryRectRaw.getWidth() / scale,
-                            qryRectRaw.getHeight());
+                            (qryRectRaw.getX() / scaleX) + (this.getWidth() / 20.0) + windowOffX + qry.getRefViewOffsetX(),
+                            (qryRectRaw.getY() / scaleY) + (this.getHeight() / 6.66) + yOff + windowOffY + qry.getRefViewOffsetY(),
+                            qryRectRaw.getWidth() / scaleX,
+                            qryRectRaw.getHeight() / scaleY);
 
                     qry.setRefViewRect(qryRectScaled);
 
@@ -382,14 +386,14 @@ public class ReferenceView extends JPanel {
                             g2d.setColor(BLACK);
                         }
 
-                        int position = (int) ((qrySites.get(site) / scale) + qryRectScaled.getX());
+                        int position = (int) ((qrySites.get(site) / scaleX) + qryRectScaled.getX());
                         g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
 
                         g2d.setColor(BLACK);
                         // Draw alignment
                         if (match) {
                             for (int i : qryAlignments.get(site)) {
-                                int refPositionX = (int) ((refSites.get(i) / scale) + refRectScaled.getX());
+                                int refPositionX = (int) ((refSites.get(i) / scaleX) + refRectScaled.getX());
                                 int refPositionY = (int) (refRectScaled.getY() + refRectScaled.getHeight());
                                 g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
                             }
