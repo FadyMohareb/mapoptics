@@ -1,5 +1,6 @@
 package UserInterface;
 
+import DataTypes.Query;
 import Algorithms.Variants;
 import DataTypes.LabelInfo;
 import DataTypes.Query;
@@ -249,21 +250,24 @@ public class QueryView extends JPanel {
                     Rectangle2D qryRect = qry.getRectangle();
                     scale = qryRect.getWidth()/ (this.getWidth() * 0.9);
 
-
+                    //find the start and end pos of the alignment in ref contig
+                    double Start= ref.getRefAlignPos(chosenQry)[0];
+                    double End = ref.getRefAlignPos(chosenQry)[1];
+                    double alignlen= End-Start;
 
                     //set scale
                     g2d.setColor(Color.BLACK);
                     Map<Integer, Double> refSites = ref.getSites();
                     Set<Integer> refAlignments = ref.getAlignmentSites();
-                    Map<Integer, List<Double>> qrySites = qry.getSites();
+                    Map<Integer, Double> qrySites = qry.getQryViewSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-                    List <Integer> refalignments = new ArrayList<>();
+                    List <Integer> refalignments = new ArrayList();
+
                     for (int site : qry.getSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
                             refalignments.add(qryAlignments.get(site).get(0));
                             //System.out.println(Integer.toString(qryAlignments.get(site).get(0)));
                         }}
-
                     for (int site : refSites.keySet()) {
                         if (refalignments.contains(site)) {
                             if (refAlignments.contains(site)) {
@@ -276,32 +280,36 @@ public class QueryView extends JPanel {
                                 }
                             }
                         } }}
-                    for (int site : qry.getSites().keySet()) {
+                    for (int site : qry.getQryViewSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
                             if(WinoffX2==0){
-                                WinoffX2= (qrySites.get(site).get(0))/scale;
+                                WinoffX2= (qrySites.get(site))/scale;
                                 break;
                             }else{
-                                if((qrySites.get(site).get(0) / scale)< WinoffX2){
-                                    WinoffX2=  qrySites.get(site).get(0)/scale;break;
+                                if((qrySites.get(site)/ scale)< WinoffX2){
+                                    WinoffX2=  qrySites.get(site)/scale;break;
                                 }
 
                             }
 
                         }
                     }
-                     if(ref.getLength()>qry.getLength()){
-                           refx= (int) (WinoffX-WinoffX2);
-                       }else{
-                             refx= -(int) (WinoffX2-WinoffX);
+                    boolean isFlipped = qry.isFlipped();
+                    System.out.println(isFlipped);
+                    if(isFlipped==false){
+                        if (ref.getLength() > qry.getLength()) {
+                            refx = (int) (WinoffX - WinoffX2);
+                        } else {
+                            refx = -(int) (WinoffX2 - WinoffX);
+                        }
+                    }else{
+                        if (ref.getLength() > qry.getLength()) {
+                            refx = (int) (WinoffX - WinoffX2+alignlen/scale);
+                        } else {
+                            refx = -(int) ((WinoffX2 - WinoffX)-alignlen/scale);
+                        }
+                    }
 
-                         }
-
-
-                    //find the start and end pos of the alignment in ref contig
-                    double Start= ref.getRefAlignPos(chosenQry)[0];
-                    double End = ref.getRefAlignPos(chosenQry)[1];
-                    double alignlen= End-Start;
                     //set rectangles
                     Rectangle2D qryScaled=zoomQryRectangle(qryRect);
                     Rectangle2D refScaled=zoomRectangle(refRect,Start,End);
@@ -355,7 +363,7 @@ public class QueryView extends JPanel {
                             g2d.setColor(BLACK);
                         }
 
-                        int position = (int) ((qrySites.get(site).get(0) / scale)+this.getWidth() / 20);
+                        int position = (int) ((qrySites.get(site)/ scale)+this.getWidth() / 20);
                         g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
                         g2d.setColor(BLACK);
                         // Draw alignment
@@ -382,6 +390,7 @@ public class QueryView extends JPanel {
                             g2d.drawString(String.format("%.1f", labelpos), (int)(labelpos/scale + this.getWidth()/20), 290);
 
                         }
+//
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
                     g2d.setFont(font);
@@ -587,24 +596,7 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
             g2d.setStroke(defaultStroke);
         }
     }
-    */
-
-    private void drawSV(Graphics2D g2d, Stroke defaultStroke) {
-        Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{6, 2}, 2);
-        Stroke dotted = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[]{1, 2}, 2);
-        double confidence = Double.parseDouble(RawFileData.getAlignmentInfo(chosenRef + "-" + chosenQry).getConfidence());
-        g2d.setColor(Color.black);
-        int lowConf = 20;
-        int highConf = 40;
-        if (confidence < 20) {
-            g2d.setStroke(dotted);
-        } else if (confidence >= lowConf && confidence < highConf) {
-            g2d.setStroke(dashed);
-        } else {
-            g2d.setStroke(defaultStroke);
-        }
-    }
-
+*/
     private void initComponents() {
 
         setPreferredSize(new java.awt.Dimension(0, 0));
