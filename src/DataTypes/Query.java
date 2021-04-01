@@ -1,5 +1,7 @@
 package DataTypes;
 
+import UserInterface.QueryView;
+
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +14,7 @@ public class Query {
     private double confidence, length;
     private int numMatches, labels;
     private TreeMap<Integer, List<Double>> sites;
-    private TreeMap<Integer, Double> refViewSites;
+    private TreeMap<Integer, Double> refViewSites,qryViewSites;
     private Rectangle2D rectangle;
     private Map<Integer, List<Integer>> alignmentSiteIds;
     private Rectangle2D refViewRect = null;
@@ -26,6 +28,7 @@ public class Query {
         this.queryID = queryID;
         sites = new TreeMap<>();
         refViewSites = new TreeMap<>();
+        qryViewSites = new TreeMap<>();
 
     }
 
@@ -53,6 +56,7 @@ public class Query {
     public void addSite(int siteID, List<Double> siteData) {
         sites.put(siteID, siteData);
         refViewSites.put(siteID, siteData.get(0));
+        qryViewSites.put(siteID, siteData.get(0));
     }
 
     public void setLabels(int labels) {
@@ -146,15 +150,21 @@ public class Query {
     public TreeMap<Integer, Double> getRefViewSites() {
         return refViewSites;
     }
+    public TreeMap<Integer, Double> getQryViewSites() {
+        return qryViewSites;
+    }
+
 
     public void reOrientate() {
         if (isFlipped) {
             refViewSites.replaceAll((i, v) -> sites.get(i).get(0));
+            qryViewSites.replaceAll((i, v) -> sites.get(i).get(0));
             isFlipped = false;
         } else {
             for (Integer id : refViewSites.keySet()) {
                 double newPos = length - refViewSites.get(id);
                 refViewSites.put(id, newPos);
+                qryViewSites.put(id, newPos);
             }
             isFlipped = true;
         }

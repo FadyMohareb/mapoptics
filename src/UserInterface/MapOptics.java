@@ -1342,11 +1342,8 @@ public class MapOptics extends JFrame {
         regionType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Reference", "Query" }));
 
         qryorientate.setLabel("reOrientate");
-        qryorientate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                qryorientateActionPerformed(evt);
-            }
-        });
+        qryorientate.addActionListener(this::qryorientateActionPerformed);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -2041,22 +2038,32 @@ public class MapOptics extends JFrame {
         // check if qry Id or ref Id exist otherwise give error message
         if (!refSearch.equals(EMPTY_STRING)) {
 
+
+        /*
+
             if (model.getReferences().contains(refSearch)) {
                 QueryView.setChosenRef(refSearch);
         }else{
                 JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-            }
+            }*/
         }
 
 
         if (!qrySearch.equals(EMPTY_STRING)) {
-            if (model.getReferences().contains(refSearch)) {
+            /*if (model.getReferences().contains(refSearch)) {
                 QueryView.setChosenRef(refSearch);
             }else{
                 JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             }
-            }
+            }*/
         }
+
+        changeRef(refSearch);
+        changeQry(qrySearch);
+        repaint();
+
+    }
+
         /*
 
         // check if qry Id or ref Id exist otherwise give error message
@@ -2422,18 +2429,15 @@ public class MapOptics extends JFrame {
     private void qryorientateActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         // reorientate chosen contig
-        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
+        System.out.println("asdf");
+        if (!QueryView.getChosenRef().equals(EMPTY_STRING) && !QueryView.getChosenQry().equals(EMPTY_STRING)) {
             for (Query qry : model.getSelectedRef().getQueries()) {
                 if (qry.getID().equals(ReferenceView.getChosenQry())) {
                     qry.reOrientate();
                 }
             }
-//            String refqryId = ReferenceView.getChosenRef() + "-" + ReferenceView.getChosenQry();
-//            QryContig sortedContig = SortOrientation.sortOneOrientation(UserRefData.getQueries(refqryId), UserRefData.getReferences(ReferenceView.getChosenRef()));
-//            UserRefData.getQueries().put(refqryId, sortedContig);
-            repaint();
         }
-
+        repaint();
     }
 
     private void closeActionPerformed(java.awt.event.ActionEvent evt) {
