@@ -106,7 +106,6 @@ public class MapOpticsModel {
         if (refID.isEmpty()) {
             selectedRef = null;
         }
-
         for (Reference reference : references) {
             if (reference.getRefID().equals(refID)) {
                 selectedRef = reference;

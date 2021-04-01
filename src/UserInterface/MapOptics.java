@@ -2035,32 +2035,102 @@ public class MapOptics extends JFrame {
         String qrySearch = qryIdSearch.getText();
         String region = regionSearch.getText();
         String type = Objects.requireNonNull(regionType.getSelectedItem()).toString();
+        List<String> refcontig = new ArrayList<>();
+        List<String> qrycontig = new ArrayList<>();
+        String currentref=model.getSelectedRefID();
         // check if qry Id or ref Id exist otherwise give error message
         if (!refSearch.equals(EMPTY_STRING)) {
+            int coln=0;
 
-
-        /*
-
-            if (model.getReferences().contains(refSearch)) {
-                QueryView.setChosenRef(refSearch);
+          for(int i=0;i<refContigTable.getRowCount();i++){
+             String refID = refContigTable.getValueAt(i,coln).toString();
+             refcontig.add(refID);
+          }
+          if(!refcontig.contains(refSearch)){
+              JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+          }else{refMatch =true;}
         }else{
-                JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-            }*/
+            JOptionPane.showMessageDialog(null, "Please provide a reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
 
-
-        if (!qrySearch.equals(EMPTY_STRING)) {
-            /*if (model.getReferences().contains(refSearch)) {
-                QueryView.setChosenRef(refSearch);
-            }else{
-                JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+        if (!qrySearch.equals(EMPTY_STRING) & refMatch==true) {
+            changeRef(refSearch);
+            int col=0;
+            for(int i=0;i<qryContigTable.getRowCount();i++){
+                String qryID = qryContigTable.getValueAt(i,col).toString();
+               qrycontig.add(qryID);
             }
-            }*/
+            if(!qrycontig.contains(qrySearch)){
+                changeRef(currentref);
+                JOptionPane.showMessageDialog(null, "No such qry ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            }else{
+                qryMatch =true;}
         }
+        //then display the qryview
+        if(refMatch&qryMatch) {
 
-        changeRef(refSearch);
-        changeQry(qrySearch);
-        repaint();
+      if(region.equals("")){
+          changeRef(refSearch);
+          changeQry(qrySearch);
+          repaint();
+
+      }else{
+          String[] regions = region.split("-");
+          int regionstart = Integer.parseInt(regions[0]);
+          if(regionstart<0){
+              JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+          }else{
+              QueryView.setRegionscale(regions);
+              if(type.equals("Query")){
+                  changeRef(refSearch);
+                  changeQry(qrySearch);
+                  QueryView.setRegionView(true);
+                  QueryView.setQrySequenceView(true);
+
+              }else if(type.equals("Reference")){
+                  changeRef(refSearch);
+                  changeQry(qrySearch);
+                  QueryView.setRegionView(true);
+                  QueryView.setRefSequenceView(true);
+              };
+              repaint();
+      }
+      }
+       /*
+       if (qrySearch.equals(EMPTY_STRING)) {
+                changeRef(refSearch);
+                changeQry(qrySearch);
+            }else{
+                String[] regions = region.split("-");
+                int regionstart = Integer.parseInt(regions[0]);
+                if(regionstart<0){
+                    JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                }else{
+                QueryView.setRegionscale(regions);
+                if(type.equals("Query")){
+                    changeRef(refSearch);
+                    changeQry(qrySearch);
+                    QueryView.setRegionView(true);
+                    QueryView.setQrySequenceView(true);
+
+                }else if(type.equals("Reference")){
+                    changeRef(refSearch);
+                    changeQry(qrySearch);
+                    QueryView.setRegionView(true);
+                    QueryView.setRefSequenceView(true);
+                };
+            }
+
+            }
+        */
+
+
+
+
+
+        }else{
+            //do nothing
+        }
 
     }
 
@@ -3216,7 +3286,7 @@ public class MapOptics extends JFrame {
         ReferenceView.setChosenRef(refId);
 
         //QUERY VIEW TAB
-        QueryView.setRegionView(false);
+        //QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);
         SearchRegionData.resetData();
         QueryView.setChosenRef(refId);
