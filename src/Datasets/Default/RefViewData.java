@@ -55,6 +55,7 @@ public class RefViewData {
         // start ref rectangle with offset 0,0 size length, 50
         double lowestOffsetX = 0.0;
         double highestOffSetX = ref.getLength();
+        double highestOffsetY = 0.0;
         int refAlignIndex = model.isReversed() ? 1 : 0;
         int qryAlignIndex = model.isReversed() ? 0 : 1;
         List<Rectangle2D> rects = new ArrayList<>();
@@ -102,7 +103,13 @@ public class RefViewData {
         moveRectangle.getAllQueryinfo(ref.getQueries());
         moveRectangle.sortingOverlaps();
 
-
+        for (Query qry : ref.getQueries()) {
+            Rectangle2D qryRect = qry.getRectangle();
+            double maxY = qryRect.getY() + qryRect.getHeight();
+            if (maxY > highestOffsetY) {
+                highestOffsetY = maxY;
+            }
+        }
 
 
         // Slot in method with lowestOffSetX, highestOffsetY
@@ -124,7 +131,8 @@ public class RefViewData {
             }
         }
 
-        model.totalRectangleWidth((highestOffSetX - lowestOffsetX));
+        model.setRectangleTotalWidth((highestOffSetX - lowestOffsetX));
+        model.setRectangleTotalHeight(highestOffsetY - refRect.getY());
     }
 
     public static void setData() {
