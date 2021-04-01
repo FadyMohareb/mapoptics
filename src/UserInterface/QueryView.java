@@ -242,15 +242,19 @@ public class QueryView extends JPanel {
                     Rectangle2D qryRect = qry.getRectangle();
                     scale = qryRect.getWidth()/ (this.getWidth() * 0.9);
 
-
+                    //find the start and end pos of the alignment in ref contig
+                    double Start= ref.getRefAlignPos(chosenQry)[0];
+                    double End = ref.getRefAlignPos(chosenQry)[1];
+                    double alignlen= End-Start;
 
                     //set scale
                     g2d.setColor(Color.BLACK);
                     Map<Integer, Double> refSites = ref.getSites();
                     Set<Integer> refAlignments = ref.getAlignmentSites();
-                    Map<Integer, List<Double>> qrySites = qry.getSites();
+                    Map<Integer, Double> qrySites = qry.getQryViewSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
                     List <Integer> refalignments = new ArrayList();
+
                     for (int site : qry.getSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
                             refalignments.add(qryAlignments.get(site).get(0));
@@ -268,32 +272,38 @@ public class QueryView extends JPanel {
                                 }
                             }
                         } }}
-                    for (int site : qry.getSites().keySet()) {
+                    for (int site : qry.getQryViewSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
+
                             if(WinoffX2==0){
-                                WinoffX2= (qrySites.get(site).get(0))/scale;
+                                WinoffX2= (qrySites.get(site))/scale;
                                 break;
                             }else{
-                                if((qrySites.get(site).get(0) / scale)< WinoffX2){
-                                    WinoffX2=  qrySites.get(site).get(0)/scale;break;
+                                if((qrySites.get(site)/ scale)< WinoffX2){
+                                    WinoffX2=  qrySites.get(site)/scale;break;
                                 }
 
                             }
-
                         }
                     }
-                     if(ref.getLength()>qry.getLength()){
-                           refx= (int) (WinoffX-WinoffX2);
-                       }else{
-                             refx= -(int) (WinoffX2-WinoffX);
+                    boolean isFlipped = qry.isFlipped();
+                    System.out.println(isFlipped);
+                    if(isFlipped==false){
+                        if (ref.getLength() > qry.getLength()) {
+                            refx = (int) (WinoffX - WinoffX2);
+                        } else {
+                            refx = -(int) (WinoffX2 - WinoffX);
+                        }
+                    }else{
+                        if (ref.getLength() > qry.getLength()) {
+                            refx = (int) (WinoffX - WinoffX2+alignlen/scale);
+                        } else {
+                            refx = -(int) ((WinoffX2 - WinoffX)-alignlen/scale);
+                        }
+                    }
 
-                         }
 
 
-                    //find the start and end pos of the alignment in ref contig
-                    double Start= ref.getRefAlignPos(chosenQry)[0];
-                    double End = ref.getRefAlignPos(chosenQry)[1];
-                    double alignlen= End-Start;
                     //set rectangles
                     Rectangle2D qryScaled=zoomQryRectangle(qryRect);
                     Rectangle2D refScaled=zoomRectangle(refRect,Start,End);
@@ -329,7 +339,7 @@ public class QueryView extends JPanel {
                     int qryHeight = (int) qryScaled.getHeight();
 
 
-                    for (int site : qry.getSites().keySet()) {
+                    for (int site : qry.getQryViewSites().keySet()) {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
@@ -339,7 +349,7 @@ public class QueryView extends JPanel {
                             g2d.setColor(BLACK);
                         }
 
-                        int position = (int) ((qrySites.get(site).get(0) / scale)+this.getWidth() / 20);
+                        int position = (int) ((qrySites.get(site)/ scale)+this.getWidth() / 20);
                         g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
                         g2d.setColor(BLACK);
                         // Draw alignment
