@@ -68,11 +68,11 @@ public class SortOverlap {
         Double alignEnd = contig_outline.getMinX()+lastAlign;
 
         rectInputs.add(contig_outline.getMinX());
-        System.out.println("Query min Rect X = "+contig_outline);
+//        System.out.println("Query min Rect X = "+contig_outline);
         rectInputs.add(alignStart);
-        System.out.println("Query align Start = "+alignStart);
+//        System.out.println("Query align Start = "+alignStart);
         rectInputs.add(alignEnd);
-        System.out.println("Query align End = "+alignEnd);
+//        System.out.println("Query align End = "+alignEnd);
 
         return rectInputs;
 
@@ -130,9 +130,9 @@ public class SortOverlap {
             });
 
             for (int i = 0; i < n; i++) {
-                System.out.print("AlignStart: "+ arr[i].x + " AlignEnd: " + arr[i].y + " Original Rect i: "+ arr[i].z + " ");
+//                System.out.print("AlignStart: "+ arr[i].x + " AlignEnd: " + arr[i].y + " Original Rect i: "+ arr[i].z + " ");
             }
-            System.out.println();
+//            System.out.println();
 
         }
     }
@@ -142,7 +142,7 @@ public class SortOverlap {
         HashMap<Integer, ArrayList<Double>> contigInfo = getAllQueryinfo(queries);
         // length of array
         int n = contigInfo.size();
-        System.out.println("Number of queries is ="+n);
+//        System.out.println("Number of queries is ="+n);
 
         // Array of Pair
         Pair rects[] = new Pair[n];
@@ -191,17 +191,17 @@ public class SortOverlap {
                     if (rects[i].y >= rects[j].x && j < rects.length - 1) {
                         // Want to add rectangles that overlap sequentially to list
                         Overlaps.add(rects[j]);
-                        System.out.println("Overlaps between rectangle i="+i+ " original rect number = "+rects[i].z+
-                                " and j= "+j+ " original rect number " +rects[j].z+
-                                " total overlaps: "+ Overlaps.size());
+//                        System.out.println("Overlaps between rectangle i="+i+ " original rect number = "+rects[i].z+
+//                                " and j= "+j+ " original rect number " +rects[j].z+
+//                                " total overlaps: "+ Overlaps.size());
 
                         } else{
                         // Add surrounding rectangles for how far overlaps can move
                         if(j < rects.length-1){
                             Overlaps.add(rects[j + 1]);
-                            System.out.println("Overlaps between rectangle i="+i+ " original rect number = "+rects[i].z+
-                                    " and j= "+j+ " original rect number " +rects[j].z+
-                                    " total overlaps: "+ Overlaps.size());
+//                            System.out.println("Overlaps between rectangle i="+i+ " original rect number = "+rects[i].z+
+//                                    " and j= "+j+ " original rect number " +rects[j].z+
+//                                    " total overlaps: "+ Overlaps.size());
                             overlapping.put(i, Overlaps);
 
 
@@ -242,10 +242,10 @@ public class SortOverlap {
                Pair RectInterest = overlappingRects.get(k);
                Query original_qry = queries.get(RectInterest.z);
                Rectangle2D original_rect = original_qry.getRectangle();
-               System.out.println("Original Rectangle dimensions "+original_rect);
+//               System.out.println("Original Rectangle dimensions "+original_rect);
                Rectangle2D new_rect = new Rectangle2D.Double(original_rect.getX(), original_rect.getY()+52,
                        original_rect.getWidth(), original_rect.getHeight());
-                 System.out.println("New Rectangle dimensions "+new_rect);
+//                 System.out.println("New Rectangle dimensions "+new_rect);
                original_qry.setRectangle(new_rect);
                Pair RectLeft = overlappingRects.get(k-1);
                double space_left = RectInterest.x - RectLeft.y;
@@ -258,10 +258,10 @@ public class SortOverlap {
                  Pair RectInterest = overlappingRects.get(k);
                  Query original_qry = queries.get(RectInterest.z);
                  Rectangle2D original_rect = original_qry.getRectangle();
-                 System.out.println("Original Rectangle dimensions "+original_rect);
+//                 System.out.println("Original Rectangle dimensions "+original_rect);
                  Rectangle2D new_rect = new Rectangle2D.Double(original_rect.getX(), original_rect.getY()+52,
                          original_rect.getWidth(), original_rect.getHeight());
-                 System.out.println("New Rectangle dimensions "+new_rect);
+//                 System.out.println("New Rectangle dimensions "+new_rect);
                  original_qry.setRectangle(new_rect);
                //Pair RectRight = overlappingRects.get(k+1);
                //double space_right = RectRight.x - RectInterest.y;
@@ -272,10 +272,10 @@ public class SortOverlap {
                  Pair RectInterest = overlappingRects.get(k);
                  Query original_qry = queries.get(RectInterest.z);
                  Rectangle2D original_rect = original_qry.getRectangle();
-                 System.out.println("Original Rectangle dimensions "+original_rect);
+//                 System.out.println("Original Rectangle dimensions "+original_rect);
                  Rectangle2D new_rect = new Rectangle2D.Double(original_rect.getX(), original_rect.getY()+52,
                          original_rect.getWidth(), original_rect.getHeight());
-                 System.out.println("New Rectangle dimensions "+new_rect);
+//                 System.out.println("New Rectangle dimensions "+new_rect);
                  original_qry.setRectangle(new_rect);
            }
 
@@ -347,7 +347,7 @@ public class SortOverlap {
          */
 
         qryRects = new Rectangle2D[qryIds.length];
-        System.out.println("Query Rects = "+qryRects);
+//        System.out.println("Query Rects = "+qryRects);
 
         qryStarts = new Double[qryIds.length];
         qryEnds = new Double[qryIds.length];
@@ -361,7 +361,7 @@ public class SortOverlap {
             refqryId = refId + "-" + qryIds[i];
             qryRects[i] = queries.get(refqryId).getRectangle().getBounds2D();
             qryRectLabels.add(qryRects[i]);
-            System.out.println("Contig Rectangle = " + i+ " "+qryRectLabels);
+//            System.out.println("Contig Rectangle = " + i+ " "+qryRectLabels);
 
             qryStarts[i] = queries.get(refqryId).getQryAlignStart();
             qryEnds[i] = queries.get(refqryId).getQryAlignEnd();
@@ -372,7 +372,7 @@ public class SortOverlap {
             }
 
 
-            System.out.println("Contig Rectangle = " + i+ " "+qryRectLabels);
+//            System.out.println("Contig Rectangle = " + i+ " "+qryRectLabels);
 
             qryLabels[i] = labels;
             queryMap.put(i, qryRectLabels);
