@@ -61,6 +61,7 @@ public class MapOptics extends JFrame {
     private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
     private javax.swing.JCheckBox confidenceSetting;
     private javax.swing.JButton exportQryButton, exportRefButton;
+    private javax.swing.JToggleButton svDisplay;
     private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
     private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
@@ -274,6 +275,7 @@ public class MapOptics extends JFrame {
         JSeparator jSeparator1 = new JSeparator();
         JLabel jLabel3 = new JLabel();
         JButton reOrientate = new JButton();
+        svDisplay = new JToggleButton();
         JButton deleteContig = new JButton();
         JButton resetButton = new JButton();
         JButton alignLeft = new JButton();
@@ -1146,6 +1148,9 @@ public class MapOptics extends JFrame {
         reOrientate.setText("reOrientate");
         reOrientate.addActionListener(this::reOrientateActionPerformed);
 
+        svDisplay.setText("SV");
+        svDisplay.addActionListener(this::svDisplayActionPerformed);
+
         deleteContig.setText("delete");
         deleteContig.addActionListener(this::deleteContigActionPerformed);
 
@@ -1185,6 +1190,7 @@ public class MapOptics extends JFrame {
                                                 .addComponent(confidenceSetting)
                                                 .addComponent(overlapSetting)
                                                 .addComponent(jLabel3)
+                                                .addComponent(svDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(reOrientate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(deleteContig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(resetButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1222,6 +1228,8 @@ public class MapOptics extends JFrame {
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(svDisplay)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(reOrientate)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1363,6 +1371,8 @@ public class MapOptics extends JFrame {
                                 .addContainerGap()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                .addComponent(svDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(qryorientate)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(search, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1417,7 +1427,9 @@ public class MapOptics extends JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(search)
-                                        .addComponent(qryorientate))
+                                        .addComponent(qryorientate)
+                                        .addComponent(svDisplay)
+                                )
                                 .addContainerGap())
         );
 
@@ -1718,6 +1730,13 @@ public class MapOptics extends JFrame {
         }
     }
 
+    public void svDisplayActionPerformed(java.awt.event.ActionEvent evt) {
+        // when SV button is selected
+        boolean checked = svDisplay.isSelected();
+        QueryView.setSvDisplay(checked);
+        repaint();
+    }
+
     private void browseXmapActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for xmap file
         // Opens a dialog box for user to choose directory of file
@@ -1987,9 +2006,9 @@ public class MapOptics extends JFrame {
 
     private void confidenceSettingActionPerformed(java.awt.event.ActionEvent evt) {
         // when check box ticked, colour query contigs by confidence score
-        boolean checked = confidenceSetting.isSelected();
-        QueryView.setConfidenceView(checked);
-        ReferenceView.setConfidenceView(checked);
+        boolean clicked = confidenceSetting.isSelected();
+        QueryView.setConfidenceView(clicked);
+        ReferenceView.setConfidenceView(clicked);
         repaint();
     }
 
@@ -2338,7 +2357,8 @@ public class MapOptics extends JFrame {
     private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {
 
         // when mouse is hovered over, display the position
-        if (!model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
+        if (!(model.getSelectedRef() == null) &&
+                !model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
                 && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
             double positionScale;
             String position = "";
