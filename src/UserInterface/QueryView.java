@@ -1,6 +1,6 @@
 package UserInterface;
 
-import Algorithms.Variant;
+import Algorithms.Variants;
 import DataTypes.LabelInfo;
 import DataTypes.Query;
 import DataTypes.Reference;
@@ -36,6 +36,7 @@ public class QueryView extends JPanel {
     private static boolean regionView = false;
     private static boolean refSequenceView = false;
     private static boolean qrySequenceView = false;
+    private static boolean svDisplay = false;
     private static String position = "";
     private static int mouseX = 0;
     private static int mouseY = 0;
@@ -92,6 +93,10 @@ public class QueryView extends JPanel {
 
     public static void setQrySequenceView(boolean qrySequenceView) {
         QueryView.qrySequenceView = qrySequenceView;
+    }
+
+    public static void setSvDisplay(boolean svDisplay) {
+        QueryView.svDisplay = svDisplay;
     }
 
     public static boolean isRegionView() {
@@ -261,6 +266,7 @@ public class QueryView extends JPanel {
                             refalignments.add(qryAlignments.get(site).get(0));
                             //System.out.println(Integer.toString(qryAlignments.get(site).get(0)));
                         }}
+
                     for (int site : refSites.keySet()) {
                         if (refalignments.contains(site)) {
                             if (refAlignments.contains(site)) {
@@ -310,17 +316,31 @@ public class QueryView extends JPanel {
                     ref.setQryViewRect(refScaled);
                     drawContig(g2d, refScaled, chosenRef);
 
+                    // Set up variables for displaying SV
+                    if (svDisplay) {
+                        String hitEnum = qry.getHitEnum();
+                        Variants variant = new Variants(hitEnum);
 
+                    }
 
                     //draw reference labels
                     for (int site : refSites.keySet()) {
-
-                        g2d.setColor(Color.black);
+                        //g2d.setColor(Color.BLACK);
                         if (refalignments.contains(site)) {
-                            if (refAlignments.contains(site)) {
-                                g2d.setColor(GREEN);
+                            if (!svDisplay) {
+                                if (refAlignments.contains(site)) {
+                                    g2d.setColor(GREEN);
+                                } else {
+                                    g2d.setColor(BLACK);
+                                }
                             } else {
-                                g2d.setColor(BLACK);
+                                // if SV display selected
+                                if (refAlignments.contains(site)) {
+                                    g2d.setColor(GREEN);
+                                } else {
+                                    // deletion in query
+                                    g2d.setColor(Color.BLUE);
+                                }
                             }
                             //System.out.println(Double.toString(refSites.get(site)));
                     }
@@ -338,11 +358,14 @@ public class QueryView extends JPanel {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
-                            g2d.setColor(GREEN);
+                            if (!svDisplay) {
+                                g2d.setColor(GREEN);
+                            } else {
+                                g2d.setColor(Color.GREEN);
+                            }
 
                         } else {
-                            // Highlight single label insertions red
-                            g2d.setColor(Color.RED);
+                            g2d.setColor(BLACK);
                         }
 
                         int position = (int) ((qrySites.get(site).get(0) / scale)+this.getWidth() / 20);
@@ -584,7 +607,24 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
             g2d.setStroke(defaultStroke);
         }
     }
-*/
+    */
+
+    private void drawSV(Graphics2D g2d, Stroke defaultStroke) {
+        Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{6, 2}, 2);
+        Stroke dotted = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1, new float[]{1, 2}, 2);
+        double confidence = Double.parseDouble(RawFileData.getAlignmentInfo(chosenRef + "-" + chosenQry).getConfidence());
+        g2d.setColor(Color.black);
+        int lowConf = 20;
+        int highConf = 40;
+        if (confidence < 20) {
+            g2d.setStroke(dotted);
+        } else if (confidence >= lowConf && confidence < highConf) {
+            g2d.setStroke(dashed);
+        } else {
+            g2d.setStroke(defaultStroke);
+        }
+    }
+
     private void initComponents() {
 
         setPreferredSize(new java.awt.Dimension(0, 0));
