@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * @author Josie
@@ -257,10 +258,6 @@ public class QueryView extends JPanel {
                     Map<Integer, List<Double>> qrySites = qry.getSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
                     List <Integer> refalignments = new ArrayList<>();
-                    String hitEnum = qry.getHitEnum();
-                    Variant variant = new Variant(hitEnum);
-                    variant.setQryAlignsCigar(qryAlignments);
-                    Map<Integer, String> qryAlignsCigar = variant.getQryAlignsCigar();
                     for (int site : qry.getSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
                             refalignments.add(qryAlignments.get(site).get(0));
@@ -317,38 +314,32 @@ public class QueryView extends JPanel {
                     drawContig(g2d, refScaled, chosenRef);
 
                     // Set up variables for displaying SV
-                    if (svDisplay) {
-                        String hitEnum = qry.getHitEnum();
-                        Variants variant = new Variants(hitEnum);
+                    String hitEnum = qry.getHitEnum();
+                    Variants variant = new Variants(hitEnum);
+                    variant.parseHitEnum();
 
-                    }
+                    // Extract aligned ref sites with selected qry
+                    List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
+                            refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
 
                     //draw reference labels
+                    // loop through all site in ref contig
                     for (int site : refSites.keySet()) {
-                        //g2d.setColor(Color.BLACK);
-                        if (refalignments.contains(site)) {
-                            if (!svDisplay) {
-                                if (refAlignments.contains(site)) {
-                                    g2d.setColor(GREEN);
-                                } else {
-                                    g2d.setColor(BLACK);
-                                }
-                            } else {
-                                // if SV display selected
-                                if (refAlignments.contains(site)) {
-                                    g2d.setColor(GREEN);
-                                } else {
-                                    // deletion in query
-                                    g2d.setColor(Color.BLUE);
-                                }
-                            }
+                        // Color green sites that are aligned to selected qry
+                        if (qryRefSites.contains(site)) {
+                            g2d.setColor(GREEN);
+                        } else {
+                            g2d.setColor(BLACK);
+                        }
                             //System.out.println(Double.toString(refSites.get(site)));
-                    }
-                        if(refSites.get(site)>=Start &refSites.get(site)<=End){
+
+
                         int position = (int) (((refSites.get(site) / scale) + this.getWidth() / 20));
-                        g2d.drawLine(position-refx, (int) refScaled.getMinY(), position-refx, (int) refScaled.getMaxY());
-                       }}
-                    // For each query, draw sites and alignments
+                        g2d.drawLine(position-refx, (int) refScaled.getMinY(), position-refx,
+                                (int) refScaled.getMaxY());
+                    }
+
+                    // For each query, draw rectangle, sites and alignments
 
                     int qryOffSetY = (int) qryScaled.getY();
                     int qryHeight = (int) qryScaled.getHeight();
@@ -358,11 +349,7 @@ public class QueryView extends JPanel {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
-                            if (!svDisplay) {
-                                g2d.setColor(GREEN);
-                            } else {
-                                g2d.setColor(Color.GREEN);
-                            }
+                            g2d.setColor(GREEN);
 
                         } else {
                             g2d.setColor(BLACK);
@@ -370,16 +357,10 @@ public class QueryView extends JPanel {
 
                         int position = (int) ((qrySites.get(site).get(0) / scale)+this.getWidth() / 20);
                         g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
-                        //g2d.setColor(BLACK);
+                        g2d.setColor(BLACK);
                         // Draw alignment
                         if (match) {
                             for (int i : qryAlignments.get(site)) {
-                                // check if qryAlignment is insertion and if so, color red
-                                if (qryAlignsCigar.get(site).equals("I")) {
-                                    g2d.setColor(Color.RED);
-                                } else {
-                                    g2d.setColor(BLACK);
-                                }
                                 int refPositionX = (int) (((refSites.get(i))/ scale) + this.getWidth() /20 -refx);
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
                                 g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
@@ -401,7 +382,6 @@ public class QueryView extends JPanel {
                             g2d.drawString(String.format("%.1f", labelpos), (int)(labelpos/scale + this.getWidth()/20), 290);
 
                         }
-//
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
                     g2d.setFont(font);
