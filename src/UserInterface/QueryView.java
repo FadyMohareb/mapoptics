@@ -282,6 +282,7 @@ public class QueryView extends JPanel {
                         } }}
                     for (int site : qry.getQryViewSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
+
                             if(WinoffX2==0){
                                 WinoffX2= (qrySites.get(site))/scale;
                                 break;
@@ -291,11 +292,10 @@ public class QueryView extends JPanel {
                                 }
 
                             }
-
                         }
                     }
                     boolean isFlipped = qry.isFlipped();
-                    System.out.println(isFlipped);
+                    //System.out.println(isFlipped);
                     if(isFlipped==false){
                         if (ref.getLength() > qry.getLength()) {
                             refx = (int) (WinoffX - WinoffX2);
@@ -310,9 +310,11 @@ public class QueryView extends JPanel {
                         }
                     }
 
+
+
                     //set rectangles
-                    Rectangle2D qryScaled=zoomQryRectangle(qryRect);
-                    Rectangle2D refScaled=zoomRectangle(refRect,Start,End);
+                    Rectangle2D qryScaled = zoomQryRectangle(qryRect);
+                    Rectangle2D refScaled = zoomRectangle(refRect,Start,End);
 
                     // draw query contig
                     qry.setQryViewRect(qryScaled);
@@ -330,37 +332,74 @@ public class QueryView extends JPanel {
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
                             refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
 
+                    variant.colorCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
+                    Map<Integer, String> refCig = variant.getCigRefSites();
+                    Map<Integer, String> qryCig = variant.getCigQrySites();
+
                     //draw reference labels
-                    // loop through all site in ref contig
+                    // In SV mode, refsites that are deletions are coloured blue whereas matches are coloured green.
+                    // loop through all sites in ref contig
                     for (int site : refSites.keySet()) {
                         // Color green sites that are aligned to selected qry
                         if (qryRefSites.contains(site)) {
-                            g2d.setColor(GREEN);
+                            // If in SV display color as appropriate
+                            if (svDisplay && refCig.containsKey(site)) {
+                                if (refCig.get(site).equals("D")) {
+                                    g2d.setColor(Color.BLUE);
+                                } else if (refCig.get(site).equals("M")) {
+                                    g2d.setColor(GREEN);
+                                }
+                            } else {
+                                g2d.setColor(GREEN);
+                            }
+
                         } else {
-                            g2d.setColor(BLACK);
+                            if (svDisplay && refCig.containsKey(site)) {
+                                if (refCig.get(site).equals("D")) {
+                                    g2d.setColor(Color.BLUE);
+                                } else {
+                                    g2d.setColor(BLACK);
+                                }
+                            } else {
+                                g2d.setColor(BLACK);
+                            }
                         }
-                            //System.out.println(Double.toString(refSites.get(site)));
+                        //System.out.println(Double.toString(refSites.get(site)));
 
+                        if (refSites.get(site)>=Start &refSites.get(site)<=End){
+                            int position = (int) (((refSites.get(site) / scale) + this.getWidth() / 20));
+                            g2d.drawLine(position-refx, (int) refScaled.getMinY(), position-refx, (int) refScaled.getMaxY());
 
-                        int position = (int) (((refSites.get(site) / scale) + this.getWidth() / 20));
-                        g2d.drawLine(position-refx, (int) refScaled.getMinY(), position-refx,
-                                (int) refScaled.getMaxY());
-                    }
-
-                    // For each query, draw rectangle, sites and alignments
-
+                       }}
+                    // For each query, draw sites and alignments
                     int qryOffSetY = (int) qryScaled.getY();
                     int qryHeight = (int) qryScaled.getHeight();
 
-
-                    for (int site : qry.getSites().keySet()) {
+                    // In SV display mode, qrysite labels are coloured red if insertions and green if they are a
+                    // match
+                    for (int site : qry.getQryViewSites().keySet()) {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
+                            // If SV display mode color insertions as red and matches green
+                            if (svDisplay && qryCig.containsKey(site)) {
+                                if (qryCig.get(site).equals("I")) {
+                                    g2d.setColor(Color.RED);
+                                } else if (qryCig.get(site).equals("M")) {
+                                    g2d.setColor(GREEN);
+                                }
+                            }
                             g2d.setColor(GREEN);
-
                         } else {
-                            g2d.setColor(BLACK);
+                            if (svDisplay && qryCig.containsKey(site)) {
+                                if (qryCig.get(site).equals("I")) {
+                                    g2d.setColor(Color.RED);
+                                } else {
+                                    g2d.setColor(BLACK);
+                                }
+                            } else {
+                                g2d.setColor(BLACK);
+                            }
                         }
 
                         int position = (int) ((qrySites.get(site)/ scale)+this.getWidth() / 20);
