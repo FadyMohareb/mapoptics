@@ -3,7 +3,6 @@ package UserInterface;
 import DataTypes.Query;
 import Algorithms.Variants;
 import DataTypes.LabelInfo;
-import DataTypes.Query;
 import DataTypes.Reference;
 import Datasets.Default.RawFileData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
@@ -261,8 +260,7 @@ public class QueryView extends JPanel {
                     Set<Integer> refAlignments = ref.getAlignmentSites();
                     Map<Integer, Double> qrySites = qry.getQryViewSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-                    List <Integer> refalignments = new ArrayList();
-
+                    List <Integer> refalignments = new ArrayList<>();
                     for (int site : qry.getSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
                             refalignments.add(qryAlignments.get(site).get(0));
@@ -282,7 +280,6 @@ public class QueryView extends JPanel {
                         } }}
                     for (int site : qry.getQryViewSites().keySet()) {
                         if (qryAlignments.containsKey(site)) {
-
                             if(WinoffX2==0){
                                 WinoffX2= (qrySites.get(site))/scale;
                                 break;
@@ -292,6 +289,7 @@ public class QueryView extends JPanel {
                                 }
 
                             }
+
                         }
                     }
                     boolean isFlipped = qry.isFlipped();
@@ -309,7 +307,6 @@ public class QueryView extends JPanel {
                             refx = -(int) ((WinoffX2 - WinoffX)-alignlen/scale);
                         }
                     }
-
 
 
                     //set rectangles
@@ -388,8 +385,9 @@ public class QueryView extends JPanel {
                                 } else if (qryCig.get(site).equals("M")) {
                                     g2d.setColor(GREEN);
                                 }
+                            } else {
+                                g2d.setColor(GREEN);
                             }
-                            g2d.setColor(GREEN);
                         } else {
                             if (svDisplay && qryCig.containsKey(site)) {
                                 if (qryCig.get(site).equals("I")) {
