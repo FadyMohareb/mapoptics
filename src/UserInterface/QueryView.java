@@ -251,7 +251,7 @@ public class QueryView extends JPanel {
                         if (refSequenceView) {
                             Double reflen = ref.getLength();
                             if (Integer.parseInt(regions[1]) >= reflen) {
-                                scale = (reflen - Integer.parseInt(regions[0])) / this.getWidth() * 0.9;
+                                scale = (reflen - Integer.parseInt(regions[0])) / (this.getWidth() * 0.9);
                                 Start = 0.0;
                                 End = reflen;
                             }else{
@@ -259,8 +259,21 @@ public class QueryView extends JPanel {
                                 Start = 0.0;
                                 End = reflen;
                             }
-                        }}
-                        System.out.println(refSequenceView);
+                        }else if(qrySequenceView){
+                            Double qrylen= qry.getLength();
+                            Double reflen = ref.getLength();
+                            if (Integer.parseInt(regions[1]) >= qrylen) {
+                                scale = (qrylen - Integer.parseInt(regions[0])) / (this.getWidth() * 0.9);
+                                Start = 0.0;
+                                End = reflen;
+                            }else{
+                                scale = (Integer.parseInt(regions[1]) - Integer.parseInt(regions[0])) / (this.getWidth()* 0.9);
+                                Start = 0.0;
+                                End = reflen;
+                            }
+                        }
+                    }
+
                         //set scale
                         g2d.setColor(Color.BLACK);
                         Map<Integer, Double> refSites = ref.getSites();
@@ -290,7 +303,7 @@ public class QueryView extends JPanel {
                                 }
                             }
                         }
-                        for (int site : qry.getQryViewSites().keySet()) {
+                        for (int site : qry.getQryViewSites().keySet()) {//get the position of first aligned site
                             if (qryAlignments.containsKey(site)) {
 
                                 if (WinoffX2 == 0) {
@@ -321,10 +334,17 @@ public class QueryView extends JPanel {
                             }
                         }
                         if(regionView==true&refSequenceView==true){
-                            regionOffX= (int) (Integer.parseInt(regions[0])/scale+refx);
+
+                            //regionOffX= (int)(refstart/scale)-(int)(WinoffX2/scale)-(int)(Integer.parseInt(regions[0])/scale);
+                            regionOffX= refx-(int)(Integer.parseInt(regions[0])/scale);
                             refx=(int) (Integer.parseInt(regions[0])/scale);
+
                         }
-                        System.out.println("regionview? "+regionView);
+                        else if(regionView==true&qrySequenceView==true){
+                            regionOffX= -(int)(Integer.parseInt(regions[0])/scale);
+                            refx=refx-regionOffX;
+                        }
+
                         //set rectangles
                         Rectangle2D qryScaled = zoomQryRectangle(qryRect,regionOffX);
                         Rectangle2D refScaled = zoomRectangle(refRect, Start, End);
@@ -370,7 +390,7 @@ public class QueryView extends JPanel {
                                 g2d.setColor(BLACK);
                             }
 
-                            int position = (int) ((qrySites.get(site) / scale) + this.getWidth() / 20 - regionOffX);
+                            int position = (int) ((qrySites.get(site) / scale) + this.getWidth() / 20 + regionOffX);
                             g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
                             g2d.setColor(BLACK);
                             // Draw alignment
@@ -462,7 +482,7 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
     private Rectangle2D zoomQryRectangle(Rectangle2D qryRect,int regionOffX){
 
         Rectangle2D qryRectScaled = new Rectangle2D.Double(
-                this.getWidth() /20-regionOffX,
+                this.getWidth() /20+regionOffX,
                 270,
                 qryRect.getWidth()/ scale,
                 qryRect.getHeight());
