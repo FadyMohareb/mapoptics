@@ -52,6 +52,30 @@ public class CalculateOverlaps {
         return overlaps;
     }
 
+    public static List<Double> getOverlapRegions(Reference ref) {
+
+        List<Double> regions = ref.getRegions();
+        List<Double> overlapRegions = new ArrayList<>();
+
+        for (int i = 0; i < regions.size(); i += 2) {
+            double start = regions.get(i);
+            double stop = regions.get(i + 1);
+            List<Double> queries = regions.subList(i + 2, regions.size());
+            for (int j = 0; j < queries.size(); j += 2) {
+                double queryStart = queries.get(j);
+                double queryStop = queries.get(j + 1);
+                if (start <= queryStart && queryStart <= stop) {
+                    List<Double> coordinates = new ArrayList<>(Arrays.asList(start, stop, queryStart, queryStop));
+                    Collections.sort(coordinates);
+                    overlapRegions.add(coordinates.get(1));
+                    overlapRegions.add(coordinates.get(2));
+                }
+            }
+        }
+
+        return overlapRegions;
+    }
+
     public static LinkedHashMap<String, Integer> countAllOverlaps(LinkedHashMap<String, RefContig> references,
                                                                   LinkedHashMap<String, QryContig> queries) {
         ArrayList<String> done = new ArrayList<>();
