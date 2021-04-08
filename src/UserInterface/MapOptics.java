@@ -14,6 +14,7 @@ import UserInterface.ModelsAndRenderers.MyChartRenderer;
 import UserInterface.ModelsAndRenderers.TableModels;
 import com.qoppa.pdfWriter.PDFDocument;
 import com.qoppa.pdfWriter.PDFPage;
+import opencsv.CSVWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -33,6 +34,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
@@ -304,6 +307,7 @@ public class MapOptics extends JFrame {
         JMenuItem manualConflict = new JMenuItem();
         JMenuItem saveConflictFile = new JMenuItem();
         JMenu jMenu2 = new JMenu();
+        JMenu saveQueryContigs = new JMenu();
         JMenuItem chooseImages = new JMenuItem();
         JMenuItem exportImages = new JMenuItem();
         JMenuItem close = new JMenuItem();
@@ -1583,6 +1587,12 @@ public class MapOptics extends JFrame {
 
         menuBar.add(jMenu4);
 
+        //setJMenuBar(menuBar);
+
+        saveQueryContigs.setText("Save Query Contigs");
+
+        menuBar.add(saveQueryContigs);
+
         setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1604,9 +1614,52 @@ public class MapOptics extends JFrame {
         // get selected contig from query table
         if (qryContigTable.getRowCount() != 0) {
             String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+            printqryContigTable();
                 changeQry(chosenQry);
 
         }
+    }
+
+    private void printqryContigTable(){
+
+        // Saves Query Contig table from Reference View to CSV output
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Enter File Name");
+
+        int userSelection = fileChooser.showSaveDialog(this);
+
+        if(userSelection == JFileChooser.APPROVE_OPTION){
+            File fileToSave = fileChooser.getSelectedFile();
+
+            try{
+                CSVWriter qryContigsOut = new CSVWriter(new FileWriter(fileToSave), ',');
+
+                String[] qryOut = new String[qryContigTable.getColumnCount()];
+                //List<String[]> allQryOut;
+                if (qryContigTable.getRowCount() != 0) {
+                    for(int i = 0; i< qryContigTable.getRowCount(); i++) {
+                        for (int j = 0; j < qryContigTable.getColumnCount(); j++) {
+
+                           qryOut[j] = qryContigTable.getValueAt(i, j).toString();
+
+                        }
+
+                        qryContigsOut.writeNext(qryOut);
+                    }
+                    qryContigsOut.close();
+                    System.out.println("Qry table look: " + qryOut);
+                }else{
+                    System.out.println("Not working Qry Table output");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
+
     }
 
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
@@ -2815,8 +2868,11 @@ public class MapOptics extends JFrame {
                 String chosenRef = qryViewRefTable.getValueAt(qryViewRefTable.getSelectedRow(), 0).toString();
                 changeRef(chosenRef);
                 repaint();
+
+
             }
         });
+
     }
 
     private void setLabelTable() {
@@ -3139,7 +3195,10 @@ public class MapOptics extends JFrame {
         }
 
 */
+
     }
+
+
 
 
 /*
