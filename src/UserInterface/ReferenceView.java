@@ -55,6 +55,7 @@ public class ReferenceView extends JPanel {
     private static final Color GREEN = new Color(97, 204, 10);
     private static final Color AMBER = new Color(255, 204, 0);
     private static final Color RED = new Color(204, 0, 0);
+    private static final Color YELLOW = new Color(255, 255, 0, 80);
     private static final Stroke DASHED = new BasicStroke(1, BasicStroke.CAP_BUTT,
             BasicStroke.JOIN_BEVEL, 0, new float[]{6, 2}, 2);
     private static final Stroke DOTTED = new BasicStroke(1, BasicStroke.CAP_BUTT,
@@ -317,6 +318,7 @@ public class ReferenceView extends JPanel {
                 Reference ref = model.getSelectedRef();
                 Map<Integer, Double> refSites = ref.getSites();
                 Set<Integer> refAlignments = ref.getAlignmentSites();
+                List<Double> overlapRegions = CalculateOverlaps.getOverlapRegions(ref);
 
 
                 // Draw reference rectangle and sites
@@ -341,6 +343,15 @@ public class ReferenceView extends JPanel {
 
                 int refOffSetY = (int) refRectScaled.getY();
                 int refHeight = (int) refRectScaled.getHeight();
+
+                if (overlapView) {
+                    for (int i = 0; i < overlapRegions.size(); i += 2) {
+                        g2d.setColor(YELLOW);
+                        int position = (int) ((int) (overlapRegions.get(i) / scaleX) + refRectScaled.getX());
+                        Rectangle2D overlap = new Rectangle2D.Double(position, refRectScaled.getY(), (overlapRegions.get(i+1) - overlapRegions.get(i)) / scaleX, refRectScaled.getHeight());
+                        g2d.fill(overlap);
+                    }
+                }
 
                 for (int site : refSites.keySet()) {
                     if (labelStyle.equals("match")) {
