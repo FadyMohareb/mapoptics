@@ -22,7 +22,7 @@ public class UserQryData {
         UserQryData.queries = new LinkedHashMap();
         UserQryData.qryConnections = new LinkedHashMap();
     }
-
+/*
     public static void setData() {
         // set all references from default dataset
         for (String refqryId : QueryViewData.getReferences().keySet()) {
@@ -69,7 +69,7 @@ public class UserQryData {
             }
         }
     }
-
+*/
     public static void resetDataToLastSaved() {
         String chosenRef = QueryView.getChosenRef();
         String[] connections;

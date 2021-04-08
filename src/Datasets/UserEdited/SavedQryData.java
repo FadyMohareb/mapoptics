@@ -20,7 +20,7 @@ public class SavedQryData {
         SavedQryData.queries = new LinkedHashMap();
         SavedQryData.qryConnections = new LinkedHashMap();
     }
-
+/*
     public static void setData() {
         // set all references to equal the default
         for (String refqryId : QueryViewData.getReferences().keySet()) {
@@ -41,7 +41,7 @@ public class SavedQryData {
             qryConnections.put(qryId, refIds);
         }
     }
-
+*/
     public static void saveAllData() {
         for (String refqryId : references.keySet()) {
             saveOneData(refqryId.split("-")[0]);
