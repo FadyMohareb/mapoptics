@@ -3062,6 +3062,7 @@ public class MapOptics extends JFrame {
     }
 
     // TODO: Can possibly delete
+
     private void fillRefTable(LinkedHashMap<String, Integer> numOverlaps) {
         // Format table to list all contigs with matches
         DefaultTableModel tmRefContigs = (DefaultTableModel) refContigTable.getModel();
@@ -3115,6 +3116,35 @@ public class MapOptics extends JFrame {
 
     private void fillQryViewRefTable(String qryId) {
         DefaultTableModel tmQryMatch = (DefaultTableModel) qryViewRefTable.getModel();
+        //Map<String,String[]> refData= (Map<String,String[]>) QueryViewData.getConnection();
+        // Empty table
+        tmQryMatch.setRowCount(0);
+        // Add rows to table
+        if (!qryId.equals(EMPTY_STRING)) {
+        Reference ref=model.getSelectedRef();
+        Query qry=ref.getQuery(qryId);
+        tmQryMatch.addRow(new Object[]{
+                ref.getRefID(),
+                qry.getOrientation(),
+                qry.getConfidence()
+        });}
+       /* for (String s:refData.keySet()){
+            if (!qryId.isEmpty()) {
+                tmQryMatch.addRow(new Object[]{
+                        s,
+                        refData.get(s)[0],
+                        refData.get(s)[1]
+                });
+            }
+        }
+
+*/
+    }
+
+
+/*
+    private void fillQryViewRefTable(String qryId) {
+        DefaultTableModel tmQryMatch = (DefaultTableModel) qryViewRefTable.getModel();
         // Empty table
         tmQryMatch.setRowCount(0);
         // Add rows to table
@@ -3129,7 +3159,7 @@ public class MapOptics extends JFrame {
         }
 
     }
-
+*/
 //    private void fillLabelTable(String qryId) {
 //        DefaultTableModel labelModel = (DefaultTableModel) labelTable.getModel();
 //        // Empty table
@@ -3237,6 +3267,7 @@ public class MapOptics extends JFrame {
         ChartPanel labDenseChartPanel = makeDensityChartPanel(model.getDensities(), selectedRow);
         labelDensityGraph.add(labDenseChartPanel, BorderLayout.CENTER);
         labelDensityGraph.setVisible(true);
+
     }
 
     private void resetData() {
@@ -3293,6 +3324,7 @@ public class MapOptics extends JFrame {
 
 
 
+
 //        SummaryView.setChosenRef(refId); // probably not needed
 
 
@@ -3305,13 +3337,14 @@ public class MapOptics extends JFrame {
         ReferenceView.setRefDataset(refDataset.getText());
         ReferenceView.setQryDataset(qryDataset.getText());
         ReferenceView.setChosenQry(qryId);
+       // QueryViewData.setQueryData(model,qryId);
         QueryView.setChosenQry(qryId);
         QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);
         SearchRegionData.resetData();
         fillLabelTable(qryId);
-//        fillQryViewRefTable(qryId);
-//        qryIdSearch.setText(qryId);
+        fillQryViewRefTable(qryId);
+        qryIdSearch.setText(qryId);
         repaint();
     }
 

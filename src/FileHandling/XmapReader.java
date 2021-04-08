@@ -197,6 +197,43 @@ public class XmapReader {
 
         return null;
     }
+    public static Map <String,String[]> getQueryData(MapOpticsModel model,String queryID) {
+
+
+        boolean isReversed = model.isReversed();
+        int queryIndex = isReversed ? 2 : 1;
+        int refIndex = isReversed ? 1 : 2;
+       // String refID = model.getSelectedRefID();
+        List<String> refIDs= new ArrayList<>();
+        Map <String,String[]> connection = new HashMap<>();
+       if(queryID !=""){
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(model.getXmapFile()));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("#") || line.isEmpty()) {
+                    continue;
+                }
+
+                String[] data = line.split("\t");
+
+                if (data[queryIndex].equals(queryID)) {
+                    String[] refinfo= {data[7], data[8]};
+                    connection.put(queryID,refinfo);
+                }
+            }
+
+            br.close();
+            return connection;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+       }
+        return null;
+    }
 
     private static void setAlignmentSites(Reference selectedRef, Map<Integer, Query> queries, boolean isReversed) {
 

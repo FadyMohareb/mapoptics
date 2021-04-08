@@ -19,7 +19,7 @@ public class SearchRegionData {
         SearchRegionData.ref = new RefContig();
         SearchRegionData.qry = new QryContig();
     }
-
+     // To do: can probably delete
     public static void setRegion(double shift, double zoom) {
         AffineTransform at = AffineTransform.getTranslateInstance(-shift, 0);
         AffineTransform at2 = AffineTransform.getScaleInstance(zoom, 1);

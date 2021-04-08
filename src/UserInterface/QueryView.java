@@ -474,7 +474,7 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
     Rectangle2D refRectScaled = new Rectangle2D.Double(
             (this.getWidth() /20+start/scale-refx),
             90,
-            (end-start)/scale,//refRect.getWidth()/ scale,
+            (end-start)/scale,
             refRect.getHeight());
     return refRectScaled;
 
