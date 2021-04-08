@@ -176,4 +176,8 @@ public class Reference {
     public double getChimQual() {
         return chimQual;
     }
+
+    public List<Double> getRegions() {
+        return regions;
+    }
 }
