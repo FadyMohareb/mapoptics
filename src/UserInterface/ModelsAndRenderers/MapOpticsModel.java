@@ -19,6 +19,7 @@ public class MapOpticsModel {
     private List<Double> densities;
     private List<Reference> references;
     private double rectangleTotalWidth;
+    private double rectangleTotalHeight;
 
     public MapOpticsModel() {
         isReversed = false;
@@ -118,11 +119,19 @@ public class MapOpticsModel {
         return selectedRef;
     }
 
-    public void totalRectangleWidth(double rectangleTotalWidth) {
+    public void setRectangleTotalWidth(double rectangleTotalWidth) {
         this.rectangleTotalWidth = rectangleTotalWidth;
     }
 
     public double getRectangleTotalWidth() {
         return rectangleTotalWidth;
+    }
+
+    public void setRectangleTotalHeight(double rectangleTotalHeight) {
+        this.rectangleTotalHeight = rectangleTotalHeight;
+    }
+
+    public double getRectangleTotalHeight() {
+        return rectangleTotalHeight;
     }
 }

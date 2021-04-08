@@ -20,6 +20,9 @@ public class Reference {
     private Set<Integer> alignmentSiteIds;
     private Rectangle2D refViewRect = null;
     private Rectangle2D qryViewRect = null;
+    private double coverage;
+    private double chimQual;
+
     public List<Integer> delQryIDs;
     public List<Integer> savedDelQryIDs;
     private Map<Integer, String> refAlignRegion;
@@ -199,4 +202,23 @@ public class Reference {
         }
     }
 
+    public void setCoverage(double coverage) {
+        this.coverage = coverage;
+    }
+
+    public void setChimQual(double chimQual) {
+        this.chimQual = chimQual;
+    }
+
+    public double getCoverage() {
+        return coverage;
+    }
+
+    public double getChimQual() {
+        return chimQual;
+    }
+
+    public List<Double> getRegions() {
+        return regions;
+    }
 }

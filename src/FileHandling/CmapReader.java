@@ -70,8 +70,12 @@ public class CmapReader {
             BufferedReader br = new BufferedReader(new FileReader(cmapFile));
             String line;
 
+            List<String> header = new ArrayList<>();
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("#") || line.isEmpty()) {
+                    if (line.startsWith("#h")) {
+                        Collections.addAll(header, line.split("\t"));
+                    }
                     continue;
                 }
 
@@ -85,6 +89,12 @@ public class CmapReader {
                         ref.setLength(Double.parseDouble(rowData[1]));
                         ref.setLabels(Integer.parseInt(rowData[2]));
                         ref.setDensity();
+                        ref.setCoverage(Double.parseDouble(rowData[header.indexOf("Coverage")]));
+                        if (header.contains("ChimQuality")) {
+                            ref.setChimQual(Double.parseDouble(rowData[header.indexOf("ChimQuality")]));
+                        } else {
+                            ref.setChimQual(0.0);
+                        }
                     }
 
                     ref.addSite(Integer.parseInt(rowData[3]), Double.parseDouble(rowData[5]));
