@@ -58,7 +58,7 @@ public class MapOptics extends JFrame {
     private double sumViewHeight = 0.0;
     private double sumViewWidth = 0.0;
 
-    private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader;
+    private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
     private javax.swing.JCheckBox confidenceSetting;
     private javax.swing.JButton exportQryButton, exportRefButton;
     private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
@@ -111,6 +111,10 @@ public class MapOptics extends JFrame {
 
         chimSettings.setVisible(false);
         chimSettings.pack();
+
+        saveQueries.setVisible(false);
+        saveQueries.pack();
+
         refDataset.setVisible(false);
         qryDataset.setVisible(false);
 
@@ -307,7 +311,9 @@ public class MapOptics extends JFrame {
         JMenuItem manualConflict = new JMenuItem();
         JMenuItem saveConflictFile = new JMenuItem();
         JMenu jMenu2 = new JMenu();
-        JMenu saveQueryContigs = new JMenu();
+        JMenu Save = new JMenu();
+        JMenuItem saveQueryContigs = new JMenuItem();
+        saveQueries = new javax.swing.JDialog();
         JMenuItem chooseImages = new JMenuItem();
         JMenuItem exportImages = new JMenuItem();
         JMenuItem close = new JMenuItem();
@@ -1509,6 +1515,9 @@ public class MapOptics extends JFrame {
                                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
+        saveQueries.setTitle("Save Query Contig table");
+        saveQueries.setLocation(new java.awt.Point(100, 100));
+
         tabPane.addTab("Query View", queryViewPane);
 
         jMenu1.setText("File");
@@ -1589,9 +1598,13 @@ public class MapOptics extends JFrame {
 
         //setJMenuBar(menuBar);
 
+        Save.setText("Save Tables");
         saveQueryContigs.setText("Save Query Contigs");
+        saveQueryContigs.addActionListener(this::saveQrySetActionPerformed);
 
-        menuBar.add(saveQueryContigs);
+        Save.add(saveQueryContigs);
+
+        menuBar.add(Save);
 
         setJMenuBar(menuBar);
 
@@ -1614,8 +1627,7 @@ public class MapOptics extends JFrame {
         // get selected contig from query table
         if (qryContigTable.getRowCount() != 0) {
             String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-            printqryContigTable();
-                changeQry(chosenQry);
+            changeQry(chosenQry);
 
         }
     }
@@ -1632,12 +1644,25 @@ public class MapOptics extends JFrame {
             File fileToSave = fileChooser.getSelectedFile();
 
             try{
+                // Uses CSV Writer class to write to user defined file
                 CSVWriter qryContigsOut = new CSVWriter(new FileWriter(fileToSave), ',');
 
+                // A string array for table headers
+                String[] header = new String[qryContigTable.getColumnCount()];
+
+                // A string array for table output
                 String[] qryOut = new String[qryContigTable.getColumnCount()];
                 //List<String[]> allQryOut;
+                // Check that table is populated
                 if (qryContigTable.getRowCount() != 0) {
+                    // Get column names and add as CSV header
+                    for (int name = 0; name < qryContigTable.getColumnCount(); name++) {
+                        header[name] = qryContigTable.getColumnName(name);
+                    }
+                    qryContigsOut.writeNext(header);
+
                     for(int i = 0; i< qryContigTable.getRowCount(); i++) {
+                        // Nest for loops to take values from table and add to CSV file
                         for (int j = 0; j < qryContigTable.getColumnCount(); j++) {
 
                            qryOut[j] = qryContigTable.getValueAt(i, j).toString();
@@ -1646,8 +1671,9 @@ public class MapOptics extends JFrame {
 
                         qryContigsOut.writeNext(qryOut);
                     }
+                    // Close CSV file
                     qryContigsOut.close();
-                    System.out.println("Qry table look: " + qryOut);
+
                 }else{
                     System.out.println("Not working Qry Table output");
                 }
@@ -1658,6 +1684,45 @@ public class MapOptics extends JFrame {
         }
 
 
+
+
+    }
+
+    private void exportTables (JTable saveTable, File saveLocation) throws IOException {
+        // Table to be exported to CSV
+        // Uses CSV Writer class to write to user defined file
+        CSVWriter qryContigsOut = new CSVWriter(new FileWriter(saveLocation), ',');
+
+        // A string array for table headers
+        String[] header = new String[saveTable.getColumnCount()];
+
+        // A string array for table output
+        String[] qryOut = new String[saveTable.getColumnCount()];
+        //List<String[]> allQryOut;
+        // Check that table is populated
+        if (saveTable.getRowCount() != 0) {
+            // Get column names and add as CSV header
+            for (int name = 0; name < saveTable.getColumnCount(); name++) {
+                header[name] = saveTable.getColumnName(name);
+            }
+            qryContigsOut.writeNext(header);
+
+            for(int i = 0; i< saveTable.getRowCount(); i++) {
+                // Nest for loops to take values from table and add to CSV file
+                for (int j = 0; j < saveTable.getColumnCount(); j++) {
+
+                    qryOut[j] = saveTable.getValueAt(i, j).toString();
+
+                }
+
+                qryContigsOut.writeNext(qryOut);
+            }
+            // Close CSV file
+            qryContigsOut.close();
+
+        }else{
+            System.out.println("Not working Qry Table output");
+        }
 
 
     }
@@ -2378,6 +2443,12 @@ public class MapOptics extends JFrame {
     private void chimqualSetActionPerformed(java.awt.event.ActionEvent evt) {
         // show chimeric quality settings
         chimSettings.setVisible(true);
+    }
+
+    private void saveQrySetActionPerformed(java.awt.event.ActionEvent evt) {
+        // show chimeric quality settings
+        //saveQueries.setVisible(true);
+        printqryContigTable();
     }
 
     private void saveConfThresholdsActionPerformed(java.awt.event.ActionEvent evt) {
