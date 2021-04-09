@@ -12,9 +12,9 @@ import UserInterface.ModelsAndRenderers.EditableHeaderRenderer;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 import UserInterface.ModelsAndRenderers.MyChartRenderer;
 import UserInterface.ModelsAndRenderers.TableModels;
+import com.opencsv.CSVWriter;
 import com.qoppa.pdfWriter.PDFDocument;
 import com.qoppa.pdfWriter.PDFPage;
-import opencsv.CSVWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -1654,7 +1654,11 @@ public class MapOptics extends JFrame {
                 // Uses CSV Writer class to write to user defined file
                 CSVWriter qryContigsOut = null;
                 try {
-                    qryContigsOut = new CSVWriter(new FileWriter(fileToSave), ',');
+                    if (fileToSave.getPath().endsWith(".csv")) {
+                        qryContigsOut = new CSVWriter(new FileWriter(fileToSave));
+                    } else {
+                        qryContigsOut = new CSVWriter(new FileWriter(fileToSave + ".csv"));
+                    }
 
                     // A string array for table headers
                     String[] header = new String[saveTable.getColumnCount()];
