@@ -313,6 +313,7 @@ public class MapOptics extends JFrame {
         JMenu jMenu2 = new JMenu();
         JMenu Save = new JMenu();
         JMenuItem saveQueryContigs = new JMenuItem();
+        JMenuItem saveQueryLabels = new JMenuItem();
         saveQueries = new javax.swing.JDialog();
         JMenuItem chooseImages = new JMenuItem();
         JMenuItem exportImages = new JMenuItem();
@@ -1598,11 +1599,15 @@ public class MapOptics extends JFrame {
 
         //setJMenuBar(menuBar);
 
-        Save.setText("Save Tables");
+        Save.setText("Export Tables");
         saveQueryContigs.setText("Save Query Contigs");
-        saveQueryContigs.addActionListener(this::saveQrySetActionPerformed);
+        saveQueryContigs.addActionListener(this::saveQryContigsSetActionPerformed);
+
+        saveQueryLabels.setText("Query Labels");
+        saveQueryLabels.addActionListener(this::saveQryLabelsSetActionPerformed);
 
         Save.add(saveQueryContigs);
+        Save.add(saveQueryLabels);
 
         menuBar.add(Save);
 
@@ -1636,55 +1641,56 @@ public class MapOptics extends JFrame {
 
     private void exportTables (JTable saveTable) {
         // Table to be exported to CSV
+        if (saveTable.getRowCount() != 0) {
+            // Saves Query Contig table from Reference View to CSV output
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Enter File Name");
 
-        // Saves Query Contig table from Reference View to CSV output
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Enter File Name");
+            int userSelection = fileChooser.showSaveDialog(this);
 
-        int userSelection = fileChooser.showSaveDialog(this);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
 
-        if(userSelection == JFileChooser.APPROVE_OPTION) {
-            File fileToSave = fileChooser.getSelectedFile();
+                // Uses CSV Writer class to write to user defined file
+                CSVWriter qryContigsOut = null;
+                try {
+                    qryContigsOut = new CSVWriter(new FileWriter(fileToSave), ',');
 
-            // Uses CSV Writer class to write to user defined file
-            CSVWriter qryContigsOut = null;
-            try {
-                qryContigsOut = new CSVWriter(new FileWriter(fileToSave), ',');
+                    // A string array for table headers
+                    String[] header = new String[saveTable.getColumnCount()];
 
-            // A string array for table headers
-            String[] header = new String[saveTable.getColumnCount()];
+                    // A string array for table output
+                    String[] qryOut = new String[saveTable.getColumnCount()];
+                    // Check that table is populated
 
-            // A string array for table output
-            String[] qryOut = new String[saveTable.getColumnCount()];
-            //List<String[]> allQryOut;
-            // Check that table is populated
-            if (saveTable.getRowCount() != 0) {
-                // Get column names and add as CSV header
-                for (int name = 0; name < saveTable.getColumnCount(); name++) {
-                    header[name] = saveTable.getColumnName(name);
-                }
-                qryContigsOut.writeNext(header);
-
-                for (int i = 0; i < saveTable.getRowCount(); i++) {
-                    // Nest for loops to take values from table and add to CSV file
-                    for (int j = 0; j < saveTable.getColumnCount(); j++) {
-
-                        qryOut[j] = saveTable.getValueAt(i, j).toString();
-
+                    // Get column names and add as CSV header
+                    for (int name = 0; name < saveTable.getColumnCount(); name++) {
+                        header[name] = saveTable.getColumnName(name);
                     }
+                    qryContigsOut.writeNext(header);
 
-                    qryContigsOut.writeNext(qryOut);
+                    for (int i = 0; i < saveTable.getRowCount(); i++) {
+                        // Nest for loops to take values from table and add to CSV file
+                        for (int j = 0; j < saveTable.getColumnCount(); j++) {
+
+                            qryOut[j] = saveTable.getValueAt(i, j).toString();
+
+                        }
+
+                        qryContigsOut.writeNext(qryOut);
+                    }
+                    // Close CSV file
+                    qryContigsOut.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                // Close CSV file
-                qryContigsOut.close();
+            }
+        }else {
+                JOptionPane.showMessageDialog(this, "Table is not populated please select " +
+                        "a reference", "Error in Export Table", JOptionPane.ERROR_MESSAGE);
+            }
 
-            } else {
-                System.out.println("Not working Qry Table output");
-            }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
 
 
     }
@@ -2407,10 +2413,16 @@ public class MapOptics extends JFrame {
         chimSettings.setVisible(true);
     }
 
-    private void saveQrySetActionPerformed(java.awt.event.ActionEvent evt) {
+    private void saveQryContigsSetActionPerformed(java.awt.event.ActionEvent evt) {
         // show chimeric quality settings
         //saveQueries.setVisible(true);
         exportTables(qryContigTable);
+    }
+
+    private void saveQryLabelsSetActionPerformed(java.awt.event.ActionEvent evt) {
+        // show chimeric quality settings
+        //saveQueries.setVisible(true);
+        exportTables(labelTable);
     }
 
     private void saveConfThresholdsActionPerformed(java.awt.event.ActionEvent evt) {
