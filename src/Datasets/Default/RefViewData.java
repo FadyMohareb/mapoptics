@@ -10,7 +10,10 @@ import FileHandling.XmapReader;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
     @author Josie
@@ -107,8 +110,18 @@ public class RefViewData {
         for (Query qry : ref.getQueries()) {
             Rectangle2D qryRect = qry.getRectangle();
             double maxY = qryRect.getY() + qryRect.getHeight();
+            double minX = qryRect.getX();
+            double maxX = minX + qryRect.getWidth();
+
             if (maxY > highestOffsetY) {
                 highestOffsetY = maxY;
+            }
+            if (minX < lowestOffsetX) {
+                lowestOffsetX = minX;
+            }
+
+            if (maxX > highestOffSetX) {
+                highestOffSetX = maxX;
             }
         }
 
