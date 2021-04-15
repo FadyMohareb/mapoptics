@@ -76,10 +76,11 @@ public class TableModels {
     private static final DefaultTableModel SV_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
-            return switch (column) {
-                case 3, 4, 5, 6, 7, 11 -> Double.class;
-                default -> String.class;
-            };
+            if (column > 0 && column < 8) {
+                return Integer.class;
+            } else {
+                return String.class;
+            }
         }
 
         @Override

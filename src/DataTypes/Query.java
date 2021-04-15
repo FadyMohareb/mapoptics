@@ -1,6 +1,5 @@
 package DataTypes;
 
-import UserInterface.QueryView;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;

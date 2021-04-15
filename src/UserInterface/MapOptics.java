@@ -1,9 +1,7 @@
 package UserInterface;
 
-import Algorithms.DetectSV;
 import DataTypes.Query;
 import DataTypes.Reference;
-import DataTypes.SV;
 import Datasets.Default.QueryViewData;
 import Datasets.Default.RawFileData;
 import Datasets.Default.RefViewData;
@@ -14,7 +12,6 @@ import UserInterface.ModelsAndRenderers.EditableHeaderRenderer;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 import UserInterface.ModelsAndRenderers.MyChartRenderer;
 import UserInterface.ModelsAndRenderers.TableModels;
-import com.opencsv.CSVWriter;
 import com.qoppa.pdfWriter.PDFDocument;
 import com.qoppa.pdfWriter.PDFPage;
 import org.apache.commons.io.FilenameUtils;
@@ -32,13 +29,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
@@ -61,9 +55,9 @@ public class MapOptics extends JFrame {
     private double sumViewHeight = 0.0;
     private double sumViewWidth = 0.0;
 
-    private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
+    private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader;
     private javax.swing.JCheckBox confidenceSetting;
-    private javax.swing.JButton exportQryButton, exportRefButton, exportSVButton;
+    private javax.swing.JButton exportQryButton, exportRefButton;
     private javax.swing.JToggleButton svDisplay;
     private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
@@ -78,10 +72,8 @@ public class MapOptics extends JFrame {
     private UserInterface.QueryView queryView;
     private UserInterface.ReferenceView referenceView;
     private UserInterface.SummaryView summaryView;
-    private UserInterface.SVView svView;
 
     private static final String EMPTY_STRING = "";
-    private DetectSV detectSV;
 
     public MapOptics() {
         System.setProperty("sun.java2d.opengl", "true");
@@ -93,9 +85,9 @@ public class MapOptics extends JFrame {
 
         setRefContigTable();
         setQryContigTable();
+        setSVTable();
         setLabelTable();
         setQryViewRefTable();
-        setSVTable();
         setImageTable();
         setConflictsTable();
 
@@ -118,10 +110,6 @@ public class MapOptics extends JFrame {
 
         chimSettings.setVisible(false);
         chimSettings.pack();
-
-        saveQueries.setVisible(false);
-        saveQueries.pack();
-
         refDataset.setVisible(false);
         qryDataset.setVisible(false);
 
@@ -293,6 +281,11 @@ public class MapOptics extends JFrame {
         JLayeredPane queryViewPane = new JLayeredPane();
         JSplitPane jSplitPane1 = new JSplitPane();
         JLayeredPane jLayeredPane1 = new JLayeredPane();
+
+        // Add SV Table
+        JScrollPane refViewSVTableScroll = new JScrollPane();
+        svTable = new javax.swing.JTable();
+
         queryView = new UserInterface.QueryView( model);
         exportQryButton = new javax.swing.JButton();
         JPanel jPanel1 = new JPanel();
@@ -310,18 +303,6 @@ public class MapOptics extends JFrame {
         JScrollPane jScrollPane1 = new JScrollPane();
         qryViewRefTable = new javax.swing.JTable();
         JScrollPane queryViewTableScroll = new JScrollPane();
-        // Add SV View
-        svView = new UserInterface.SVView(model);
-        JLayeredPane svPane = new JLayeredPane();
-        JSplitPane jSplitPane4 = new JSplitPane();
-        JScrollPane svViewTableScroll = new JScrollPane();
-        exportSVButton = new javax.swing.JButton();
-        JPanel rightPanel1 = new JPanel();
-        JPanel leftPanel1 = new JPanel();
-        svTable = new javax.swing.JTable();
-        JPanel alignmentNamePanel1 = new JPanel();
-        JLabel svRefLabel = new JLabel();
-        JLabel svQryLabel = new JLabel();
         labelTable = new javax.swing.JTable();
         JMenuBar menuBar = new JMenuBar();
         JMenu jMenu1 = new JMenu();
@@ -331,10 +312,6 @@ public class MapOptics extends JFrame {
         JMenuItem manualConflict = new JMenuItem();
         JMenuItem saveConflictFile = new JMenuItem();
         JMenu jMenu2 = new JMenu();
-        JMenu Save = new JMenu();
-        JMenuItem saveQueryContigs = new JMenuItem();
-        JMenuItem saveQueryLabels = new JMenuItem();
-        saveQueries = new javax.swing.JDialog();
         JMenuItem chooseImages = new JMenuItem();
         JMenuItem exportImages = new JMenuItem();
         JMenuItem close = new JMenuItem();
@@ -1166,7 +1143,7 @@ public class MapOptics extends JFrame {
         reOrientate.setText("reOrientate");
         reOrientate.addActionListener(this::reOrientateActionPerformed);
 
-        svDisplay.setText("CIGAR");
+        svDisplay.setText("SV");
         svDisplay.addActionListener(this::svDisplayActionPerformed);
 
         deleteContig.setText("delete");
@@ -1304,9 +1281,31 @@ public class MapOptics extends JFrame {
                 qryContigTableMouseClicked();
             }
         });
+
+        // Add SV tabpane to refview alongside query contigs table
+        svTable.setAutoCreateRowSorter(true);
+        svTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null}
+                },
+                new String [] {
+                        "Title 1", "Title 2", "Title 3", "Title 4"
+                }
+        ));
+        svTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        svTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                svTableMouseClicked();
+            }
+        });
         refViewTableScroll.setViewportView(qryContigTable);
+        refViewSVTableScroll.setViewportView(svTable);
 
         tabPaneFiles.addTab("Query Contigs", refViewTableScroll);
+        tabPaneFiles.addTab("SVs", refViewSVTableScroll);
 
         jSplitPane2.setRightComponent(tabPaneFiles);
 
@@ -1546,150 +1545,7 @@ public class MapOptics extends JFrame {
                                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
-        saveQueries.setTitle("Save Query Contig table");
-        saveQueries.setLocation(new java.awt.Point(100, 100));
-
         tabPane.addTab("Query View", queryViewPane);
-
-        // SV view
-        jSplitPane4.setDividerLocation(240);
-        jSplitPane4.setDividerSize(6);
-        jSplitPane4.setContinuousLayout(true);
-        jSplitPane4.setOneTouchExpandable(true);
-        jSplitPane4.setSize(new java.awt.Dimension(244, 244));
-
-        rightPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
-
-
-        svRefLabel.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
-        svRefLabel.setText("Reference Dataset:");
-
-        svQryLabel.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
-        svQryLabel.setText("Query Dataset:");
-
-
-        svView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        svView.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                svViewComponentResized();
-            }
-        });
-
-
-
-        javax.swing.GroupLayout svViewLayout = new javax.swing.GroupLayout(svView);
-        svView.setLayout(svViewLayout);
-
-        exportSVButton.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 10)); // NOI18N
-        exportSVButton.setText("Export Image");
-        exportSVButton.addActionListener(this::exportSVButtonActionPerformed);
-        exportSVButton.setText("Export Image");
-
-        svViewLayout.setHorizontalGroup(
-                svViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, svViewLayout.createSequentialGroup()
-                                .addContainerGap(1295, Short.MAX_VALUE)
-                                .addComponent(exportSVButton)
-                                .addContainerGap())
-        );
-        svViewLayout.setVerticalGroup(
-                svViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(svViewLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(exportSVButton)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        svView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        svView.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
-                svViewMouseMoved(evt);
-            }
-        });
-        svView.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                svViewMouseClicked(evt);
-            }
-        });
-        svView.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                referenceViewComponentResized();
-            }
-        });
-
-        javax.swing.GroupLayout rightPanelLayout1 = new javax.swing.GroupLayout(rightPanel1);
-        rightPanel1.setLayout(rightPanelLayout1);
-        rightPanelLayout1.setHorizontalGroup(
-                rightPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(svView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        rightPanelLayout1.setVerticalGroup(
-                rightPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(rightPanelLayout1.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(svView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addContainerGap())
-        );
-
-        jSplitPane4.setRightComponent(rightPanel1);
-
-        leftPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
-
-        svTable.setAutoCreateRowSorter(true);
-        svTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String [] {
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
-        svTable.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        svTable.setMinimumSize(new java.awt.Dimension(600, 640));
-        svTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        svTable.setShowGrid(false);
-        svTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                svTableMouseClicked();
-            }
-        });
-        svViewTableScroll.setViewportView(svTable);
-
-        javax.swing.GroupLayout leftPanelLayout1 = new javax.swing.GroupLayout(leftPanel1);
-        leftPanel1.setLayout(leftPanelLayout1);
-        leftPanelLayout1.setHorizontalGroup(
-                leftPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(leftPanelLayout1.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(svViewTableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-                                .addContainerGap())
-        );
-        leftPanelLayout1.setVerticalGroup(
-                leftPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(svViewTableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1096, Short.MAX_VALUE)
-        );
-
-        jSplitPane4.setLeftComponent(leftPanel1);
-
-        svPane.setLayer(jSplitPane4, javax.swing.JLayeredPane.DEFAULT_LAYER);
-
-        javax.swing.GroupLayout svPaneLayout = new javax.swing.GroupLayout(svPane);
-        svPane.setLayout(svPaneLayout);
-        svPaneLayout.setHorizontalGroup(
-                svPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, svPaneLayout.createSequentialGroup()
-                                .addComponent(jSplitPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1597, Short.MAX_VALUE)
-                                .addContainerGap())
-        );
-        svPaneLayout.setVerticalGroup(
-                svPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jSplitPane4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1100, Short.MAX_VALUE)
-        );
-
-        tabPane.addTab("SV View", svPane);
 
         jMenu1.setText("File");
 
@@ -1767,20 +1623,6 @@ public class MapOptics extends JFrame {
 
         menuBar.add(jMenu4);
 
-        //setJMenuBar(menuBar);
-
-        Save.setText("Export Tables");
-        saveQueryContigs.setText("Save Query Contigs");
-        saveQueryContigs.addActionListener(this::saveQryContigsSetActionPerformed);
-
-        saveQueryLabels.setText("Query Labels");
-        saveQueryLabels.addActionListener(this::saveQryLabelsSetActionPerformed);
-
-        Save.add(saveQueryContigs);
-        Save.add(saveQueryLabels);
-
-        menuBar.add(Save);
-
         setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1797,99 +1639,25 @@ public class MapOptics extends JFrame {
         pack();
     }
 
-    private void svViewMouseClicked(MouseEvent evt) {
-    }
-
-    private void svViewMouseMoved(MouseEvent evt) {
-        SVView.setSVView(true);
-    }
-
-    private void exportSVButtonActionPerformed(ActionEvent actionEvent) {
-    }
-
-
-
-
-
-    private void svTableMouseClicked() {
-        String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
-        model.setSelectedRefID(chosenRef);
-        changeSV(chosenRef);
-    }
-
-    private void svViewComponentResized() {
-    }
-
 
     private void qryContigTableMouseClicked() {
         // get selected contig from query table
         if (qryContigTable.getRowCount() != 0) {
             String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-            changeQry(chosenQry);
+                changeQry(chosenQry);
 
         }
     }
 
+    private void svTableMouseClicked() {
+        // get selected SV from SV table
+        /*
+        if (qryContigTable.getRowCount() != 0) {
+            String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+            changeQry(chosenQry);
+        }
 
-
-    private void exportTables (JTable saveTable) {
-        // Table to be exported to CSV
-        if (saveTable.getRowCount() != 0) {
-            // Saves Query Contig table from Reference View to CSV output
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Enter File Name");
-
-            int userSelection = fileChooser.showSaveDialog(this);
-
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                File fileToSave = fileChooser.getSelectedFile();
-
-                // Uses CSV Writer class to write to user defined file
-                CSVWriter qryContigsOut = null;
-                try {
-                    if (fileToSave.getPath().endsWith(".csv")) {
-                        qryContigsOut = new CSVWriter(new FileWriter(fileToSave));
-                    } else {
-                        qryContigsOut = new CSVWriter(new FileWriter(fileToSave + ".csv"));
-                    }
-
-                    // A string array for table headers
-                    String[] header = new String[saveTable.getColumnCount()];
-
-                    // A string array for table output
-                    String[] qryOut = new String[saveTable.getColumnCount()];
-                    // Check that table is populated
-
-                    // Get column names and add as CSV header
-                    for (int name = 0; name < saveTable.getColumnCount(); name++) {
-                        header[name] = saveTable.getColumnName(name);
-                    }
-                    qryContigsOut.writeNext(header);
-
-                    for (int i = 0; i < saveTable.getRowCount(); i++) {
-                        // Nest for loops to take values from table and add to CSV file
-                        for (int j = 0; j < saveTable.getColumnCount(); j++) {
-
-                            qryOut[j] = saveTable.getValueAt(i, j).toString();
-
-                        }
-
-                        qryContigsOut.writeNext(qryOut);
-                    }
-                    // Close CSV file
-                    qryContigsOut.close();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }else {
-                JOptionPane.showMessageDialog(this, "Table is not populated please select " +
-                        "a reference", "Error in Export Table", JOptionPane.ERROR_MESSAGE);
-            }
-
-
-
+         */
     }
 
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1988,6 +1756,7 @@ public class MapOptics extends JFrame {
                 model.setQryFile(new File(qryPath));
                 model.setRefFile(new File(refPath));
                 model.setXmapFile(new File(xmapPath));
+
                 refDataset.setVisible(true);
                 qryDataset.setVisible(true);
                 String refCmapDataset = FilenameUtils.getName(refPath);
@@ -2324,102 +2093,32 @@ public class MapOptics extends JFrame {
         String qrySearch = qryIdSearch.getText();
         String region = regionSearch.getText();
         String type = Objects.requireNonNull(regionType.getSelectedItem()).toString();
-        List<String> refcontig = new ArrayList<>();
-        List<String> qrycontig = new ArrayList<>();
-        String currentref=model.getSelectedRefID();
         // check if qry Id or ref Id exist otherwise give error message
         if (!refSearch.equals(EMPTY_STRING)) {
-            int coln=0;
 
-          for(int i=0;i<refContigTable.getRowCount();i++){
-             String refID = refContigTable.getValueAt(i,coln).toString();
-             refcontig.add(refID);
-          }
-          if(!refcontig.contains(refSearch)){
-              JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-          }else{refMatch =true;}
+
+        /*
+
+            if (model.getReferences().contains(refSearch)) {
+                QueryView.setChosenRef(refSearch);
         }else{
-            JOptionPane.showMessageDialog(null, "Please provide a reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            }*/
         }
 
-        if (!qrySearch.equals(EMPTY_STRING) & refMatch==true) {
-            changeRef(refSearch);
-            int col=0;
-            for(int i=0;i<qryContigTable.getRowCount();i++){
-                String qryID = qryContigTable.getValueAt(i,col).toString();
-               qrycontig.add(qryID);
-            }
-            if(!qrycontig.contains(qrySearch)){
-                changeRef(currentref);
-                JOptionPane.showMessageDialog(null, "No such qry ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+
+        if (!qrySearch.equals(EMPTY_STRING)) {
+            /*if (model.getReferences().contains(refSearch)) {
+                QueryView.setChosenRef(refSearch);
             }else{
-                qryMatch =true;}
-        }
-        //then display the qryview
-        if(refMatch&qryMatch) {
-
-      if(region.equals("")){
-          changeRef(refSearch);
-          changeQry(qrySearch);
-          repaint();
-
-      }else{
-          String[] regions = region.split("-");
-          int regionstart = Integer.parseInt(regions[0]);
-          if(regionstart<0){
-              JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-          }else{
-              QueryView.setRegionscale(regions);
-              if(type.equals("Query")){
-                  changeRef(refSearch);
-                  changeQry(qrySearch);
-                  QueryView.setRegionView(true);
-                  QueryView.setQrySequenceView(true);
-
-              }else if(type.equals("Reference")){
-                  changeRef(refSearch);
-                  changeQry(qrySearch);
-                  QueryView.setRegionView(true);
-                  QueryView.setRefSequenceView(true);
-              };
-              repaint();
-      }
-      }
-       /*
-       if (qrySearch.equals(EMPTY_STRING)) {
-                changeRef(refSearch);
-                changeQry(qrySearch);
-            }else{
-                String[] regions = region.split("-");
-                int regionstart = Integer.parseInt(regions[0]);
-                if(regionstart<0){
-                    JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                }else{
-                QueryView.setRegionscale(regions);
-                if(type.equals("Query")){
-                    changeRef(refSearch);
-                    changeQry(qrySearch);
-                    QueryView.setRegionView(true);
-                    QueryView.setQrySequenceView(true);
-
-                }else if(type.equals("Reference")){
-                    changeRef(refSearch);
-                    changeQry(qrySearch);
-                    QueryView.setRegionView(true);
-                    QueryView.setRefSequenceView(true);
-                };
+                JOptionPane.showMessageDialog(null, "No such reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             }
-
-            }
-        */
-
-
-
-
-
-        }else{
-            //do nothing
+            }*/
         }
+
+        changeRef(refSearch);
+        changeQry(qrySearch);
+        repaint();
 
     }
 
@@ -2615,18 +2314,6 @@ public class MapOptics extends JFrame {
     private void chimqualSetActionPerformed(java.awt.event.ActionEvent evt) {
         // show chimeric quality settings
         chimSettings.setVisible(true);
-    }
-
-    private void saveQryContigsSetActionPerformed(java.awt.event.ActionEvent evt) {
-        // show chimeric quality settings
-        //saveQueries.setVisible(true);
-        exportTables(qryContigTable);
-    }
-
-    private void saveQryLabelsSetActionPerformed(java.awt.event.ActionEvent evt) {
-        // show chimeric quality settings
-        //saveQueries.setVisible(true);
-        exportTables(labelTable);
     }
 
     private void saveConfThresholdsActionPerformed(java.awt.event.ActionEvent evt) {
@@ -3076,6 +2763,58 @@ public class MapOptics extends JFrame {
                 }
                 // get selected contig
                 String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+                // model.setSelectedRow(chosenQry);
+                changeQry(chosenQry);
+                repaint();
+            }
+        });
+    }
+    // Set SV table columns properties
+    private void setSVTable() {
+        DefaultTableModel svModel = TableModels.getSVModel();
+        svModel.addColumn("Ref ID1");
+        svModel.addColumn("Ref ID2");
+        svModel.addColumn("Ref Start");
+        svModel.addColumn("Ref End");
+        svModel.addColumn("Qry ID");
+        svModel.addColumn("Qry Start");
+        svModel.addColumn("Qry End");
+        svModel.addColumn("Size");
+
+        svTable.setModel(svModel);
+        svTable.setUpdateSelectionOnSort(true);
+        svTable.getRowSorter().toggleSortOrder(0);
+
+        svTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "qryUp");
+        svTable.getActionMap().put("qryUp", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (svTable.getSelectedRow() != 0) {
+                    svTable.setRowSelectionInterval(svTable.getSelectedRow() - 1, svTable.getSelectedRow() - 1);
+                }
+                /* Needs to be edited for SV
+                // get selected contig
+                String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
+//                model.setSelectedRow(chosenQry);
+                changeQry(chosenQry);
+                repaint();
+
+                 */
+            }
+        });
+        qryContigTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "qryDown");
+        qryContigTable.getActionMap().put("qryDown", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (qryContigTable.getSelectedRow() != qryContigTable.getRowCount() - 1) {
+                    qryContigTable.setRowSelectionInterval(qryContigTable.getSelectedRow() + 1, qryContigTable.getSelectedRow() + 1);
+                }
+                // get selected contig
+                String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
 //                model.setSelectedRow(chosenQry);
                 changeQry(chosenQry);
                 repaint();
@@ -3117,66 +2856,9 @@ public class MapOptics extends JFrame {
                 String chosenRef = qryViewRefTable.getValueAt(qryViewRefTable.getSelectedRow(), 0).toString();
                 changeRef(chosenRef);
                 repaint();
-
-
-            }
-        });
-
-    }
-    private void setSVTable() {
-        DefaultTableModel svModel = TableModels.getSVModel();
-        svModel.addColumn("Query ID");
-        svModel.addColumn("RefContig ID1");
-        svModel.addColumn("RefContig ID2");
-        svModel.addColumn("Qry Start Pos");
-        svModel.addColumn("Qry End Pos");
-        svModel.addColumn("Ref Start Pos");
-        svModel.addColumn("Ref End Pos");
-        svModel.addColumn("Xmap ID1");
-        svModel.addColumn("Xmap ID2");
-        svModel.addColumn("Confidence");
-        svModel.addColumn("Type");
-        svModel.addColumn("SV Size");
-        svModel.addColumn("Orientation");
-
-        svTable.setModel(svModel);
-        svTable.setUpdateSelectionOnSort(true);
-        svTable.getRowSorter().toggleSortOrder(0);
-
-        svTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "refUp");
-        svTable.getActionMap().put("refUp", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (svTable.getSelectedRow() != 0) {
-                    svTable.setRowSelectionInterval(svTable.getSelectedRow() - 1, svTable.getSelectedRow() - 1);
-                }
-                // get selected ref and qry contigs from the selected SV
-                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
-                String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
-                changeRef(chosenRef);
-                changeQry(chosenQry);
-                repaint();
-            }
-        });
-        svTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "refDown");
-        svTable.getActionMap().put("refDown", new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (svTable.getSelectedRow() != svTable.getRowCount() - 1) {
-                    svTable.setRowSelectionInterval(svTable.getSelectedRow() + 1, svTable.getSelectedRow() + 1);
-                }
-                // get selected contig
-                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
-                SVView.setChosenRef(chosenRef);
-                repaint();
             }
         });
     }
-
 
     private void setLabelTable() {
         DefaultTableModel labelModel = TableModels.getLabelModel();
@@ -3420,34 +3102,7 @@ public class MapOptics extends JFrame {
         }
     }
 
-    private void fillSVTable() {
-        // Format table to list all SV detected
-        DefaultTableModel tmSV = (DefaultTableModel) svTable.getModel();
-        // Empty table
-        DetectSV detectSV = new DetectSV(model);
-        detectSV.setSVList();
-
-        // Add rows to table
-        for (SV sv : detectSV.getSVList()) {
-            tmSV.addRow(new Object[]{
-                    sv.getQryID(),
-                    sv.getRefID1(),
-                    sv.getRefID2(),
-                    sv.getQryStartPos(),
-                    sv.getQryEndPos(),
-                    sv.getRefStartPos(),
-                    sv.getRefEndPos(),
-                    sv.getXmapID1(),
-                    sv.getXmapID2(),
-                    sv.getConfidence(),
-                    sv.getSVSize(),
-                    sv.getOrientation()
-            });
-        }
-    }
-
     // TODO: Can possibly delete
-
     private void fillRefTable(LinkedHashMap<String, Integer> numOverlaps) {
         // Format table to list all contigs with matches
         DefaultTableModel tmRefContigs = (DefaultTableModel) refContigTable.getModel();
@@ -3501,38 +3156,6 @@ public class MapOptics extends JFrame {
 
     private void fillQryViewRefTable(String qryId) {
         DefaultTableModel tmQryMatch = (DefaultTableModel) qryViewRefTable.getModel();
-        //Map<String,String[]> refData= (Map<String,String[]>) QueryViewData.getConnection();
-        // Empty table
-        tmQryMatch.setRowCount(0);
-        // Add rows to table
-        if (!qryId.equals(EMPTY_STRING)) {
-        Reference ref=model.getSelectedRef();
-        Query qry=ref.getQuery(qryId);
-        tmQryMatch.addRow(new Object[]{
-                ref.getRefID(),
-                qry.getOrientation(),
-                qry.getConfidence()
-        });}
-       /* for (String s:refData.keySet()){
-            if (!qryId.isEmpty()) {
-                tmQryMatch.addRow(new Object[]{
-                        s,
-                        refData.get(s)[0],
-                        refData.get(s)[1]
-                });
-            }
-        }
-
-*/
-
-    }
-
-
-
-
-/*
-    private void fillQryViewRefTable(String qryId) {
-        DefaultTableModel tmQryMatch = (DefaultTableModel) qryViewRefTable.getModel();
         // Empty table
         tmQryMatch.setRowCount(0);
         // Add rows to table
@@ -3547,7 +3170,7 @@ public class MapOptics extends JFrame {
         }
 
     }
-*/
+
 //    private void fillLabelTable(String qryId) {
 //        DefaultTableModel labelModel = (DefaultTableModel) labelTable.getModel();
 //        // Empty table
@@ -3638,11 +3261,8 @@ public class MapOptics extends JFrame {
 //        fillRefTable(numOverlaps);
 
         SummaryViewData.setSummaryData(model);
-        DetectSV detectSV = new DetectSV(model);
-        detectSV.setSVList();
-        fillSVTable();
-        fillRefTable();
 
+        fillRefTable();
 
 
         // Displays graph of reference contigs
@@ -3658,7 +3278,6 @@ public class MapOptics extends JFrame {
         ChartPanel labDenseChartPanel = makeDensityChartPanel(model.getDensities(), selectedRow);
         labelDensityGraph.add(labDenseChartPanel, BorderLayout.CENTER);
         labelDensityGraph.setVisible(true);
-
     }
 
     private void resetData() {
@@ -3677,8 +3296,6 @@ public class MapOptics extends JFrame {
 
         changeQry(EMPTY_STRING);
         changeRef(EMPTY_STRING);
-
-        SVView.setSVList();
     }
 
     private void changeRef(String refId) {
@@ -3710,15 +3327,15 @@ public class MapOptics extends JFrame {
         ReferenceView.setChosenRef(refId);
 
         //QUERY VIEW TAB
-        //QueryView.setRegionView(false);
+        QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);
         SearchRegionData.resetData();
         QueryView.setChosenRef(refId);
 
 
+
 //        SummaryView.setChosenRef(refId); // probably not needed
-        // SV View
-        SVView.setChosenRef(refId);
+
 
 
 
@@ -3729,60 +3346,13 @@ public class MapOptics extends JFrame {
         ReferenceView.setRefDataset(refDataset.getText());
         ReferenceView.setQryDataset(qryDataset.getText());
         ReferenceView.setChosenQry(qryId);
-       // QueryViewData.setQueryData(model,qryId);
         QueryView.setChosenQry(qryId);
         QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);
         SearchRegionData.resetData();
         fillLabelTable(qryId);
-        fillQryViewRefTable(qryId);
-        qryIdSearch.setText(qryId);
-        SVView.setChosenQry(qryId);
-        repaint();
-    }
-
-    private void changeSV(String refId) {
-        model.setSelectedRefID(refId);
-
-        //SUMMARY VIEW TAB
-        // Redraw the graph with contig marked
-        referencesGraph.removeAll();
-        ChartPanel chartPanel1 = makeLengthChartPanel(model.getLengths(), refId);
-        referencesGraph.add(chartPanel1, BorderLayout.CENTER);
-        referencesGraph.setVisible(true);
-
-        // Redraw the graph with contig marked
-        labelDensityGraph.removeAll();
-        ChartPanel chartPanel2 = makeDensityChartPanel(model.getDensities(), refId);
-        labelDensityGraph.add(chartPanel2, BorderLayout.CENTER);
-        labelDensityGraph.setVisible(true);
-        refIdSearch.setText(refId);
-
-        // TODO: Read and set alignment data for a specific row
-        //REFERENCE VIEW TAB
-        if (!refId.isEmpty()) {
-            RefViewData.setReferenceData(model);
-        }
-
-        fillQryTable(refId);
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
-        ReferenceView.setChosenRef(refId);
-
-        //QUERY VIEW TAB
-        //QueryView.setRegionView(false);
-        QueryView.setChosenLabel(EMPTY_STRING);
-        SearchRegionData.resetData();
-        QueryView.setChosenRef(refId);
-
-
-
-
-//        SummaryView.setChosenRef(refId); // probably not needed
-
-
-
-
+//        fillQryViewRefTable(qryId);
+//        qryIdSearch.setText(qryId);
         repaint();
     }
 

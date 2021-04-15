@@ -1,24 +1,25 @@
 package UserInterface;
 
-import Algorithms.SortSequence;
-import DataTypes.*;
+import DataTypes.Query;
+import Algorithms.Variants;
+import DataTypes.LabelInfo;
+import DataTypes.Reference;
 import Datasets.Default.RawFileData;
-import Datasets.Default.RefViewData;
-import Datasets.UserEdited.SearchRegionData;
-import Datasets.UserEdited.UserQryData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * @author Josie
  */
 public class QueryView extends JPanel {
-
 
     /**
      * Creates new form SingleAlignment
@@ -36,11 +37,11 @@ public class QueryView extends JPanel {
     private static boolean regionView = false;
     private static boolean refSequenceView = false;
     private static boolean qrySequenceView = false;
+    private static boolean svDisplay = false;
     private static String position = "";
     private static int mouseX = 0;
     private static int mouseY = 0;
     private double scale=1000;
-    private static String[] regions;
 
 
     public static void setChosenRef(String chosenRef) {
@@ -93,6 +94,10 @@ public class QueryView extends JPanel {
 
     public static void setQrySequenceView(boolean qrySequenceView) {
         QueryView.qrySequenceView = qrySequenceView;
+    }
+
+    public static void setSvDisplay(boolean svDisplay) {
+        QueryView.svDisplay = svDisplay;
     }
 
     public static boolean isRegionView() {
@@ -229,199 +234,199 @@ public class QueryView extends JPanel {
                 Reference ref=null ;
                 Query qry=null;
 
-
+                if (regionView) {
+                    // draw only region searched
+                   // ref = SearchRegionData.getRef();
+                    //qry = SearchRegionData.getQry();
+                } else {
                     // draw relative to query alignment
                      ref = model.getSelectedRef();
                      qry = ref.getQuery(chosenQry);
+                }
+
                 if (qry != null) {
                     Rectangle2D refRect = new Rectangle2D.Double(0, 20, ref.getLength(), 50);
                     Rectangle2D qryRect = qry.getRectangle();
+                    scale = qryRect.getWidth()/ (this.getWidth() * 0.9);
 
                     //find the start and end pos of the alignment in ref contig
-                    double Start = ref.getRefAlignPos(chosenQry)[0];
+                    double Start= ref.getRefAlignPos(chosenQry)[0];
                     double End = ref.getRefAlignPos(chosenQry)[1];
-                    double alignlen = End - Start;
-                    int regionOffX=0;
-                    if(regionView==false) {
-                        scale = qryRect.getWidth() / (this.getWidth() * 0.9);}
-                    else if(regions[0].equals("")){
-                        scale = qryRect.getWidth() / (this.getWidth() * 0.9);
-                    }
-                    else{
-                        if (refSequenceView) {
-                            Double reflen = ref.getLength();
-                            if (Integer.parseInt(regions[1]) >= reflen) {
-                                scale = (reflen - Integer.parseInt(regions[0])) / (this.getWidth() * 0.9);
-                                Start = 0.0;
-                                End = reflen;
-                            }else{
-                                scale = (Integer.parseInt(regions[1]) - Integer.parseInt(regions[0])) / this.getWidth() ;
-                                Start = 0.0;
-                                End = reflen;
-                            }
-                        }else if(qrySequenceView){
-                            Double qrylen= qry.getLength();
-                            Double reflen = ref.getLength();
-                            if (Integer.parseInt(regions[1]) >= qrylen) {
-                                scale = (qrylen - Integer.parseInt(regions[0])) / (this.getWidth() * 0.9);
-                                Start = 0.0;
-                                End = reflen;
-                            }else{
-                                scale = (Integer.parseInt(regions[1]) - Integer.parseInt(regions[0])) / (this.getWidth()* 0.9);
-                                Start = 0.0;
-                                End = reflen;
-                            }
-                        }
-                    }
+                    double alignlen= End-Start;
 
-                        //set scale
-                        g2d.setColor(Color.BLACK);
-                        Map<Integer, Double> refSites = ref.getSites();
-                        Set<Integer> refAlignments = ref.getAlignmentSites();
-                        Map<Integer, Double> qrySites = qry.getQryViewSites();
-                        Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-                        List<Integer> refalignments = new ArrayList();
+                    //set scale
+                    g2d.setColor(Color.BLACK);
+                    Map<Integer, Double> refSites = ref.getSites();
+                    Set<Integer> refAlignments = ref.getAlignmentSites();
+                    Map<Integer, Double> qrySites = qry.getQryViewSites();
+                    Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
+                    List <Integer> refalignments = new ArrayList<>();
+                    for (int site : qry.getSites().keySet()) {
+                        if (qryAlignments.containsKey(site)) {
+                            refalignments.add(qryAlignments.get(site).get(0));
+                            //System.out.println(Integer.toString(qryAlignments.get(site).get(0)));
+                        }}
+                    for (int site : refSites.keySet()) {
+                        if (refalignments.contains(site)) {
+                            if (refAlignments.contains(site)) {
+                                if(WinoffX==0){
+                                    WinoffX= refSites.get(site)/scale;//get ref position
 
-                        for (int site : qry.getSites().keySet()) {
-                            if (qryAlignments.containsKey(site)) {
-                                refalignments.add(qryAlignments.get(site).get(0));
-                                //System.out.println(Integer.toString(qryAlignments.get(site).get(0)));
-                            }
-                        }
-                        for (int site : refSites.keySet()) {
-                            if (refalignments.contains(site)) {
-                                if (refAlignments.contains(site)) {
-                                    if (WinoffX == 0) {
-                                        WinoffX = refSites.get(site) / scale;//get ref position
-
-                                    } else {
-                                        if ((refSites.get(site) / scale) < WinoffX) {
-                                            WinoffX = refSites.get(site);
-                                            break;
-                                        }
-                                    }
+                                }else{
+                                    if((refSites.get(site) / scale)< WinoffX){
+                                    WinoffX= refSites.get(site);break;
                                 }
                             }
-                        }
-                        for (int site : qry.getQryViewSites().keySet()) {//get the position of first aligned site
-                            if (qryAlignments.containsKey(site)) {
-
-                                if (WinoffX2 == 0) {
-                                    WinoffX2 = (qrySites.get(site)) / scale;
-                                    break;
-                                } else {
-                                    if ((qrySites.get(site) / scale) < WinoffX2) {
-                                        WinoffX2 = qrySites.get(site) / scale;
-                                        break;
-                                    }
-
+                        } }}
+                    for (int site : qry.getQryViewSites().keySet()) {
+                        if (qryAlignments.containsKey(site)) {
+                            if(WinoffX2==0){
+                                WinoffX2= (qrySites.get(site))/scale;
+                                break;
+                            }else{
+                                if((qrySites.get(site)/ scale)< WinoffX2){
+                                    WinoffX2=  qrySites.get(site)/scale;break;
                                 }
-                            }
-                        }
-                        boolean isFlipped = qry.isFlipped();
 
-                        if (isFlipped == false) {
-                            if (ref.getLength() > qry.getLength()) {
-                                refx = (int) (WinoffX - WinoffX2);
-                            } else {
-                                refx = -(int) (WinoffX2 - WinoffX);
                             }
+
+                        }
+                    }
+                    boolean isFlipped = qry.isFlipped();
+                    //System.out.println(isFlipped);
+                    if(isFlipped==false){
+                        if (ref.getLength() > qry.getLength()) {
+                            refx = (int) (WinoffX - WinoffX2);
                         } else {
-                            if (ref.getLength() > qry.getLength()) {
-                                refx = (int) (WinoffX - WinoffX2 + alignlen / scale);
-                            } else {
-                                refx = -(int) ((WinoffX2 - WinoffX) - alignlen / scale);
-                            }
+                            refx = -(int) (WinoffX2 - WinoffX);
                         }
-                        if(regionView==true&refSequenceView==true){
-
-                            //regionOffX= (int)(refstart/scale)-(int)(WinoffX2/scale)-(int)(Integer.parseInt(regions[0])/scale);
-                            regionOffX= refx-(int)(Integer.parseInt(regions[0])/scale);
-                            refx=(int) (Integer.parseInt(regions[0])/scale);
-
+                    }else{
+                        if (ref.getLength() > qry.getLength()) {
+                            refx = (int) (WinoffX - WinoffX2+alignlen/scale);
+                        } else {
+                            refx = -(int) ((WinoffX2 - WinoffX)-alignlen/scale);
                         }
-                        else if(regionView==true&qrySequenceView==true){
-                            regionOffX= -(int)(Integer.parseInt(regions[0])/scale);
-                            refx=refx-regionOffX;
-                        }
-
-                        //set rectangles
-                        Rectangle2D qryScaled = zoomQryRectangle(qryRect,regionOffX);
-                        Rectangle2D refScaled = zoomRectangle(refRect, Start, End);
-
-                        // draw query contig
-                        qry.setQryViewRect(qryScaled);
-                        drawContig(g2d, qryScaled, chosenQry);
-                        // draw reference contig
-                        ref.setQryViewRect(refScaled);
-                        drawContig(g2d, refScaled, chosenRef);
+                    }
 
 
-                        //draw reference labels
-                        for (int site : refSites.keySet()) {
+                    //set rectangles
+                    Rectangle2D qryScaled = zoomQryRectangle(qryRect);
+                    Rectangle2D refScaled = zoomRectangle(refRect,Start,End);
 
-                            g2d.setColor(Color.black);
-                            if (refalignments.contains(site)) {
-                                if (refAlignments.contains(site)) {
+                    // draw query contig
+                    qry.setQryViewRect(qryScaled);
+                    drawContig(g2d, qryScaled, chosenQry);
+                    // draw reference contig
+                    ref.setQryViewRect(refScaled);
+                    drawContig(g2d, refScaled, chosenRef);
+
+                    // Set up variables for displaying SV
+                    String hitEnum = qry.getHitEnum();
+                    Variants variant = new Variants(hitEnum);
+                    variant.parseHitEnum();
+
+                    // Extract aligned ref sites with selected qry
+                    List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
+                            refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
+
+                    variant.colorCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
+                    Map<Integer, String> refCig = variant.getCigRefSites();
+                    Map<Integer, String> qryCig = variant.getCigQrySites();
+
+                    //draw reference labels
+                    // In SV mode, refsites that are deletions are coloured blue whereas matches are coloured green.
+                    // loop through all sites in ref contig
+                    for (int site : refSites.keySet()) {
+                        // Color green sites that are aligned to selected qry
+                        if (qryRefSites.contains(site)) {
+                            // If in SV display color as appropriate
+                            if (svDisplay && refCig.containsKey(site)) {
+                                if (refCig.get(site).equals("D")) {
+                                    g2d.setColor(Color.BLUE);
+                                } else if (refCig.get(site).equals("M")) {
                                     g2d.setColor(GREEN);
+                                }
+                            } else {
+                                g2d.setColor(GREEN);
+                            }
+
+                        } else {
+                            if (svDisplay && refCig.containsKey(site)) {
+                                if (refCig.get(site).equals("D")) {
+                                    g2d.setColor(Color.BLUE);
                                 } else {
                                     g2d.setColor(BLACK);
                                 }
-                                //System.out.println(Double.toString(refSites.get(site)));
-                            }
-                            if (refSites.get(site) >= Start & refSites.get(site) <= End) {
-                                int position = (int) (((refSites.get(site) / scale) + this.getWidth() / 20));
-                                g2d.drawLine(position - refx, (int) refScaled.getMinY(), position - refx, (int) refScaled.getMaxY());
-                            }
-                        }
-                        // For each query, draw sites and alignments
-
-                        int qryOffSetY = (int) qryScaled.getY();
-                        int qryHeight = (int) qryScaled.getHeight();
-
-
-                        for (int site : qry.getQryViewSites().keySet()) {
-                            boolean match = false;
-                            if (qryAlignments.containsKey(site)) {
-                                match = true;
-                                g2d.setColor(GREEN);
-
                             } else {
                                 g2d.setColor(BLACK);
                             }
+                        }
+                        //System.out.println(Double.toString(refSites.get(site)));
 
-                            int position = (int) ((qrySites.get(site) / scale) + this.getWidth() / 20 + regionOffX);
-                            g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
-                            g2d.setColor(BLACK);
-                            // Draw alignment
-                            if (match) {
-                                for (int i : qryAlignments.get(site)) {
-                                    int refPositionX = (int) (((refSites.get(i)) / scale) + this.getWidth() / 20 - refx);
-                                    int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
-                                    g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
+                        if (refSites.get(site)>=Start &refSites.get(site)<=End){
+                            int position = (int) (((refSites.get(site) / scale) + this.getWidth() / 20));
+                            g2d.drawLine(position-refx, (int) refScaled.getMinY(), position-refx, (int) refScaled.getMaxY());
+
+                       }}
+                    // For each query, draw sites and alignments
+                    int qryOffSetY = (int) qryScaled.getY();
+                    int qryHeight = (int) qryScaled.getHeight();
+
+                    // In SV display mode, qrysite labels are coloured red if insertions and green if they are a
+                    // match
+                    for (int site : qry.getQryViewSites().keySet()) {
+                        boolean match = false;
+                        if (qryAlignments.containsKey(site)) {
+                            match = true;
+                            // If SV display mode color insertions as red and matches green
+                            if (svDisplay && qryCig.containsKey(site)) {
+                                if (qryCig.get(site).equals("I")) {
+                                    g2d.setColor(Color.RED);
+                                } else if (qryCig.get(site).equals("M")) {
+                                    g2d.setColor(GREEN);
                                 }
+                            } else {
+                                g2d.setColor(GREEN);
+                            }
+                        } else {
+                            if (svDisplay && qryCig.containsKey(site)) {
+                                if (qryCig.get(site).equals("I")) {
+                                    g2d.setColor(Color.RED);
+                                } else {
+                                    g2d.setColor(BLACK);
+                                }
+                            } else {
+                                g2d.setColor(BLACK);
                             }
                         }
+
+                        int position = (int) ((qrySites.get(site)/ scale)+this.getWidth() / 20);
+                        g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
+                        g2d.setColor(BLACK);
+                        // Draw alignment
+                        if (match) {
+                            for (int i : qryAlignments.get(site)) {
+                                int refPositionX = (int) (((refSites.get(i))/ scale) + this.getWidth() /20 -refx);
+                                int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
+                                g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
+                            }
+                        }
+                    }
                         // draw scalebars
-                        drawScaleBar(g2d, refScaled, Start, End, true);
-                        drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX), Start, End, false);
+                        drawScaleBar(g2d, refScaled,Start,End,true);
+                        drawScaleBar(g2d, zoomQryRectangle(qryRect),Start,End, false);
                         if (!chosenLabel.equals("")) {
                             // draw chosen label
-                            Double labelpos = 0.0;
-                            if (isFlipped == false) {//if it is reorientated
-                                labelpos = qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
-                            } else {
-                                labelpos = qry.getLength() - qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
-                            }
+
+                            Double labelpos= qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
                             g2d.setColor(Color.red);
-                            g2d.drawLine((int) ((int) (labelpos / scale + this.getWidth() / 20)),
+                            g2d.drawLine((int) ((int)(labelpos/scale+ this.getWidth()/20)),
                                     250,
-                                    (int) (labelpos / scale + this.getWidth() / 20),
+                                    (int)(labelpos/scale+this.getWidth()/20),
                                     290);
-                            g2d.drawString(String.format("%.1f", labelpos), (int) (labelpos / scale + this.getWidth() / 20), 290);
+                            g2d.drawString(String.format("%.1f", labelpos), (int)(labelpos/scale + this.getWidth()/20), 290);
 
-
-                    }
+                        }
 //
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
@@ -451,7 +456,7 @@ public class QueryView extends JPanel {
             Font font = new Font("Tahoma", Font.ITALIC, 12);
             g2d.setColor(Color.red);
             g2d.setFont(font);
-
+            e.printStackTrace(); // test for errors
             g2d.drawString("ERROR DRAWING ALIGNMENT".concat(e.toString()), this.getWidth() / 2 - 115, this.getHeight() / 2);
         }
 
@@ -474,15 +479,15 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
     Rectangle2D refRectScaled = new Rectangle2D.Double(
             (this.getWidth() /20+start/scale-refx),
             90,
-            (end-start)/scale,
+            (end-start)/scale,//refRect.getWidth()/ scale,
             refRect.getHeight());
     return refRectScaled;
 
 }
-    private Rectangle2D zoomQryRectangle(Rectangle2D qryRect,int regionOffX){
+    private Rectangle2D zoomQryRectangle(Rectangle2D qryRect){
 
         Rectangle2D qryRectScaled = new Rectangle2D.Double(
-                this.getWidth() /20+regionOffX,
+                this.getWidth() /20,
                 270,
                 qryRect.getWidth()/ scale,
                 qryRect.getHeight());
@@ -516,7 +521,6 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
             int count = 0;
             int numScales = (int) rect.getWidth() / 100;
             double length =  model.getSelectedRef().getQuery(chosenQry).getLength();
-
             if (numScales != 0) {
                 for (int i = 0; i < numScales + 1; i++) {
                     g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 20, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 25);
@@ -529,9 +533,6 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
                 g2d.drawLine((int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() + this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() + this.getHeight() / 20);
                 g2d.drawString(String.format("%.2f", (double) length / 1000) + " kb", (int) (rect.getMinX() + rect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) length / 1000) + " kb") / 2), (int) rect.getMinY() + this.getHeight() / 20 + 14);
             }
-
-
-
         }
 
     }
@@ -569,9 +570,7 @@ private Rectangle2D zoomRectangle(Rectangle2D refRect,Double start,Double end){
 
         }
     }
-    public static void setRegionscale(String[] regions){
-        QueryView.regions=regions;
-    }
+
 
 
 /*
