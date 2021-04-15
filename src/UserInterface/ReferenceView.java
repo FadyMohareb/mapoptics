@@ -44,7 +44,8 @@ public class ReferenceView extends JPanel {
     private static int highCov = 50;
     private static int lowQual = 20;
     private static int highQual = 90;
-    private double scaleMultiplier = 0.9;
+    private double scaleMultiplier = 1.0d;
+//    private double defaultScale = 0.9;
     private int windowOffX = 0;
     private int windowOffY = 0;
     private final MapOpticsModel model;
@@ -148,7 +149,7 @@ public class ReferenceView extends JPanel {
     }
 
     public void zoomIn() {
-        if (scaleMultiplier < 50) {
+        if (scaleMultiplier < 35) {
             scaleMultiplier *= 1.2;
 //            windowOffX += scaleMultiplier;
 //            windowOffX = (int) ((windowOffX + (this.getWidth() / 2)) * scaleMultiplier);
@@ -163,7 +164,7 @@ public class ReferenceView extends JPanel {
     }
 
     public void reCenter() {
-        scaleMultiplier = 0.9;
+        scaleMultiplier = 1.0;
         windowOffX = 0;
         windowOffY = 0;
     }
@@ -314,7 +315,8 @@ public class ReferenceView extends JPanel {
                 g2d.drawString(model.getRefFile().getName(), refStringLen + 20, 20);
                 g2d.drawString(model.getQryFile().getName(), qryStringLen + 20, 40);
 
-                double scaleX = model.getRectangleTotalWidth() / (this.getWidth() * scaleMultiplier);
+                double defaultScale = model.getRectangleTotalWidth() / (this.getWidth() * 0.9);
+                double scaleX = defaultScale / scaleMultiplier;
                 double scaleY = model.getRectangleTotalHeight() / ((this.getHeight() - yOff) * 0.7);
                 Reference ref = model.getSelectedRef();
                 Map<Integer, Double> refSites = ref.getSites();
@@ -325,10 +327,17 @@ public class ReferenceView extends JPanel {
                 // Draw reference rectangle and sites
                 Rectangle2D refRectScaled;
                 Rectangle2D refRectRaw = ref.getRectangle();
+
+                double refOff = (((refRectRaw.getX() / defaultScale)
+                        + windowOffX - (this.getWidth() / 2.0))
+                        * scaleMultiplier) + (this.getWidth() / 2.0);
+
+                double refWidth = refRectRaw.getWidth() / scaleX;
+
                 refRectScaled = new Rectangle2D.Double(
-                        (refRectRaw.getX() / scaleX) + (this.getWidth() / 20.0) + windowOffX,
+                        refOff + (this.getWidth() / 20.0),
                         (refRectRaw.getY() / scaleY) + (this.getHeight() / 6.66) + yOff + windowOffY,
-                        refRectRaw.getWidth() / scaleX,
+                        refWidth,
                         refRectRaw.getHeight() / scaleY);
 
                 ref.setRefViewRect(refRectScaled);
@@ -361,15 +370,6 @@ public class ReferenceView extends JPanel {
                         } else {
                             g2d.setColor(BLACK);
                         }
-//                    } else if (labelStyle.equals("coverage")) {
-//                        Double coverage = ref.getCoverage();
-//                        if (coverage < lowCov) {
-//                            g2d.setColor(new Color(204, 0, 0));
-//                        } else if (lowCov <= coverage && coverage <= highCov) {
-//                            g2d.setColor(new Color(255, 204, 0));
-//                        } else if (coverage > highCov){
-//                            g2d.setColor(GREEN);
-//                        }
                     } else {
                         g2d.setColor(BLACK);
                     }
@@ -387,17 +387,26 @@ public class ReferenceView extends JPanel {
                     if (ref.getDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
                         Font fontI = new Font("Tahoma", Font.ITALIC, 12);
                         g2d.setFont(fontI);
-                        g2d.setColor(new Color(204, 0, 0));
+                        g2d.setColor(RED);
                         g2d.drawString("Chosen contig was deleted", 30, 70);
+                        g2d.setFont(defaultFont);
                         continue;
                     }
 
                     Rectangle2D qryRectScaled;
                     Rectangle2D qryRectRaw = qry.getRectangle();
+
+                    double qryOff = (((qryRectRaw.getX() / defaultScale)
+                            + windowOffX - (this.getWidth() / 2.0))
+                            * scaleMultiplier) + (this.getWidth() / 2.0);
+
+                    double qryWidth = qryRectRaw.getWidth() / scaleX;
+
                     qryRectScaled = new Rectangle2D.Double(
-                            (qryRectRaw.getX() / scaleX) + (this.getWidth() / 20.0) + windowOffX + qry.getRefViewOffsetX(),
+
+                            qryOff + (this.getWidth() / 20.0) + qry.getRefViewOffsetX(),
                             (qryRectRaw.getY() / scaleY) + (this.getHeight() / 6.66) + yOff + windowOffY + qry.getRefViewOffsetY(),
-                            qryRectRaw.getWidth() / scaleX,
+                            qryWidth,
                             qryRectRaw.getHeight() / scaleY);
 
                         qry.setRefViewRect(qryRectScaled);
@@ -508,6 +517,7 @@ public class ReferenceView extends JPanel {
             e.printStackTrace();
         }
     }
+
 //    @Override
 //    public void paintComponent(Graphics g) {
 //        super.paintComponent(g);
@@ -897,7 +907,7 @@ public class ReferenceView extends JPanel {
 
 //                    UserRefData.getQueries().put(draggedShapeId, qry);
                 } else if (!chosenRef.isEmpty()){
-                    windowOffX += deltaX;
+                    windowOffX += deltaX / (scaleMultiplier * 0.9);
                     windowOffY += deltaY;
                     // move everything
                     // move reference
