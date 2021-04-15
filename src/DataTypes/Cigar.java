@@ -1,10 +1,14 @@
-package Algorithms;
+package DataTypes;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Variants {
+public class Cigar {
+    /*
+    * @author Anisha
+    *
+    * */
 
     private final String hitEnum;
     private final List<String> parsedCigar;
@@ -13,7 +17,7 @@ public class Variants {
 
 
 
-    public Variants(String hitEnum) {
+    public Cigar(String hitEnum) {
         this.hitEnum = hitEnum;
         parsedCigar = new ArrayList<>();
         cigRefSites = new HashMap<>();
@@ -43,7 +47,7 @@ public class Variants {
         }
     }
 
-    public void colorCigSites(Map<Integer, Double> refSites, Set<Integer> qrySites, Double startPos,
+    public void mapCigSites(Map<Integer, Double> refSites, Set<Integer> qrySites, Double startPos,
                               Double endPos) {
         // Loop through cigar string, ref and qry sites
         // convert sets to lists for easier access
@@ -88,10 +92,7 @@ public class Variants {
         return cigQrySites;
     }
 
-    // loop throught the alignments in pairs and compute the distances within each alignment pair
-    // on the ref side and qry side then compare distances
-    // draw SV region filled polygon
-    // add SV metrics to other class
-
+    public void colorCigSites(Map<Integer, Double> refSites, Set<Integer> keySet, double start, double end) {
     }
+}
 
