@@ -1,7 +1,9 @@
 package UserInterface;
 
+import Algorithms.DetectSV;
 import DataTypes.Query;
 import DataTypes.Reference;
+import DataTypes.SV;
 import Datasets.Default.QueryViewData;
 import Datasets.Default.RawFileData;
 import Datasets.Default.RefViewData;
@@ -12,9 +14,9 @@ import UserInterface.ModelsAndRenderers.EditableHeaderRenderer;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 import UserInterface.ModelsAndRenderers.MyChartRenderer;
 import UserInterface.ModelsAndRenderers.TableModels;
+import com.opencsv.CSVWriter;
 import com.qoppa.pdfWriter.PDFDocument;
 import com.qoppa.pdfWriter.PDFPage;
-import com.opencsv.CSVWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -30,6 +32,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
@@ -60,13 +63,13 @@ public class MapOptics extends JFrame {
 
     private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
     private javax.swing.JCheckBox confidenceSetting;
-    private javax.swing.JButton exportQryButton, exportRefButton;
+    private javax.swing.JButton exportQryButton, exportRefButton, exportSVButton;
     private javax.swing.JToggleButton svDisplay;
     private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
     private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
     private javax.swing.JPanel labelDensityGraph, referencesGraph;
-    private javax.swing.JTable labelTable, qryContigTable, qryViewRefTable, refContigTable;
+    private javax.swing.JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
     private javax.swing.JCheckBox overlapSetting;
     private javax.swing.JComboBox<String> refOrQry, regionType;
     private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch;
@@ -75,8 +78,10 @@ public class MapOptics extends JFrame {
     private UserInterface.QueryView queryView;
     private UserInterface.ReferenceView referenceView;
     private UserInterface.SummaryView summaryView;
+    private UserInterface.SVView svView;
 
     private static final String EMPTY_STRING = "";
+    private DetectSV detectSV;
 
     public MapOptics() {
         System.setProperty("sun.java2d.opengl", "true");
@@ -90,6 +95,7 @@ public class MapOptics extends JFrame {
         setQryContigTable();
         setLabelTable();
         setQryViewRefTable();
+        setSVTable();
         setImageTable();
         setConflictsTable();
 
@@ -304,6 +310,18 @@ public class MapOptics extends JFrame {
         JScrollPane jScrollPane1 = new JScrollPane();
         qryViewRefTable = new javax.swing.JTable();
         JScrollPane queryViewTableScroll = new JScrollPane();
+        // Add SV View
+        svView = new UserInterface.SVView(model);
+        JLayeredPane svPane = new JLayeredPane();
+        JSplitPane jSplitPane4 = new JSplitPane();
+        JScrollPane svViewTableScroll = new JScrollPane();
+        exportSVButton = new javax.swing.JButton();
+        JPanel rightPanel1 = new JPanel();
+        JPanel leftPanel1 = new JPanel();
+        svTable = new javax.swing.JTable();
+        JPanel alignmentNamePanel1 = new JPanel();
+        JLabel svRefLabel = new JLabel();
+        JLabel svQryLabel = new JLabel();
         labelTable = new javax.swing.JTable();
         JMenuBar menuBar = new JMenuBar();
         JMenu jMenu1 = new JMenu();
@@ -1148,7 +1166,7 @@ public class MapOptics extends JFrame {
         reOrientate.setText("reOrientate");
         reOrientate.addActionListener(this::reOrientateActionPerformed);
 
-        svDisplay.setText("SV");
+        svDisplay.setText("CIGAR");
         svDisplay.addActionListener(this::svDisplayActionPerformed);
 
         deleteContig.setText("delete");
@@ -1533,6 +1551,146 @@ public class MapOptics extends JFrame {
 
         tabPane.addTab("Query View", queryViewPane);
 
+        // SV view
+        jSplitPane4.setDividerLocation(240);
+        jSplitPane4.setDividerSize(6);
+        jSplitPane4.setContinuousLayout(true);
+        jSplitPane4.setOneTouchExpandable(true);
+        jSplitPane4.setSize(new java.awt.Dimension(244, 244));
+
+        rightPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
+
+
+        svRefLabel.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
+        svRefLabel.setText("Reference Dataset:");
+
+        svQryLabel.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
+        svQryLabel.setText("Query Dataset:");
+
+
+        svView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        svView.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                svViewComponentResized();
+            }
+        });
+
+
+
+        javax.swing.GroupLayout svViewLayout = new javax.swing.GroupLayout(svView);
+        svView.setLayout(svViewLayout);
+
+        exportSVButton.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 10)); // NOI18N
+        exportSVButton.setText("Export Image");
+        exportSVButton.addActionListener(this::exportSVButtonActionPerformed);
+        exportSVButton.setText("Export Image");
+
+        svViewLayout.setHorizontalGroup(
+                svViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, svViewLayout.createSequentialGroup()
+                                .addContainerGap(1295, Short.MAX_VALUE)
+                                .addComponent(exportSVButton)
+                                .addContainerGap())
+        );
+        svViewLayout.setVerticalGroup(
+                svViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(svViewLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(exportSVButton)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        svView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        svView.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                svViewMouseMoved(evt);
+            }
+        });
+        svView.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                svViewMouseClicked(evt);
+            }
+        });
+        svView.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                referenceViewComponentResized();
+            }
+        });
+
+        javax.swing.GroupLayout rightPanelLayout1 = new javax.swing.GroupLayout(rightPanel1);
+        rightPanel1.setLayout(rightPanelLayout1);
+        rightPanelLayout1.setHorizontalGroup(
+                rightPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(svView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        rightPanelLayout1.setVerticalGroup(
+                rightPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(rightPanelLayout1.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(svView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
+        );
+
+        jSplitPane4.setRightComponent(rightPanel1);
+
+        leftPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
+
+        svTable.setAutoCreateRowSorter(true);
+        svTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null}
+                },
+                new String [] {
+                        "Title 1", "Title 2", "Title 3", "Title 4"
+                }
+        ));
+        svTable.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        svTable.setMinimumSize(new java.awt.Dimension(600, 640));
+        svTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        svTable.setShowGrid(false);
+        svTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                svTableMouseClicked();
+            }
+        });
+        svViewTableScroll.setViewportView(svTable);
+
+        javax.swing.GroupLayout leftPanelLayout1 = new javax.swing.GroupLayout(leftPanel1);
+        leftPanel1.setLayout(leftPanelLayout1);
+        leftPanelLayout1.setHorizontalGroup(
+                leftPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(leftPanelLayout1.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(svViewTableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
+                                .addContainerGap())
+        );
+        leftPanelLayout1.setVerticalGroup(
+                leftPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(svViewTableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1096, Short.MAX_VALUE)
+        );
+
+        jSplitPane4.setLeftComponent(leftPanel1);
+
+        svPane.setLayer(jSplitPane4, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout svPaneLayout = new javax.swing.GroupLayout(svPane);
+        svPane.setLayout(svPaneLayout);
+        svPaneLayout.setHorizontalGroup(
+                svPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, svPaneLayout.createSequentialGroup()
+                                .addComponent(jSplitPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1597, Short.MAX_VALUE)
+                                .addContainerGap())
+        );
+        svPaneLayout.setVerticalGroup(
+                svPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jSplitPane4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1100, Short.MAX_VALUE)
+        );
+
+        tabPane.addTab("SV View", svPane);
+
         jMenu1.setText("File");
 
         loadMaps.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
@@ -1637,6 +1795,29 @@ public class MapOptics extends JFrame {
         );
 
         pack();
+    }
+
+    private void svViewMouseClicked(MouseEvent evt) {
+    }
+
+    private void svViewMouseMoved(MouseEvent evt) {
+        SVView.setSVView(true);
+    }
+
+    private void exportSVButtonActionPerformed(ActionEvent actionEvent) {
+    }
+
+
+
+
+
+    private void svTableMouseClicked() {
+        String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
+        model.setSelectedRefID(chosenRef);
+        changeSV(chosenRef);
+    }
+
+    private void svViewComponentResized() {
     }
 
 
@@ -1807,7 +1988,6 @@ public class MapOptics extends JFrame {
                 model.setQryFile(new File(qryPath));
                 model.setRefFile(new File(refPath));
                 model.setXmapFile(new File(xmapPath));
-
                 refDataset.setVisible(true);
                 qryDataset.setVisible(true);
                 String refCmapDataset = FilenameUtils.getName(refPath);
@@ -2943,6 +3123,60 @@ public class MapOptics extends JFrame {
         });
 
     }
+    private void setSVTable() {
+        DefaultTableModel svModel = TableModels.getSVModel();
+        svModel.addColumn("Query ID");
+        svModel.addColumn("RefContig ID1");
+        svModel.addColumn("RefContig ID2");
+        svModel.addColumn("Qry Start Pos");
+        svModel.addColumn("Qry End Pos");
+        svModel.addColumn("Ref Start Pos");
+        svModel.addColumn("Ref End Pos");
+        svModel.addColumn("Xmap ID1");
+        svModel.addColumn("Xmap ID2");
+        svModel.addColumn("Confidence");
+        svModel.addColumn("Type");
+        svModel.addColumn("SV Size");
+        svModel.addColumn("Orientation");
+
+        svTable.setModel(svModel);
+        svTable.setUpdateSelectionOnSort(true);
+        svTable.getRowSorter().toggleSortOrder(0);
+
+        svTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "refUp");
+        svTable.getActionMap().put("refUp", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (svTable.getSelectedRow() != 0) {
+                    svTable.setRowSelectionInterval(svTable.getSelectedRow() - 1, svTable.getSelectedRow() - 1);
+                }
+                // get selected ref and qry contigs from the selected SV
+                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
+                String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
+                changeRef(chosenRef);
+                changeQry(chosenQry);
+                repaint();
+            }
+        });
+        svTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "refDown");
+        svTable.getActionMap().put("refDown", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (svTable.getSelectedRow() != svTable.getRowCount() - 1) {
+                    svTable.setRowSelectionInterval(svTable.getSelectedRow() + 1, svTable.getSelectedRow() + 1);
+                }
+                // get selected contig
+                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
+                SVView.setChosenRef(chosenRef);
+                repaint();
+            }
+        });
+    }
+
 
     private void setLabelTable() {
         DefaultTableModel labelModel = TableModels.getLabelModel();
@@ -3186,6 +3420,32 @@ public class MapOptics extends JFrame {
         }
     }
 
+    private void fillSVTable() {
+        // Format table to list all SV detected
+        DefaultTableModel tmSV = (DefaultTableModel) svTable.getModel();
+        // Empty table
+        DetectSV detectSV = new DetectSV(model);
+        detectSV.setSVList();
+
+        // Add rows to table
+        for (SV sv : detectSV.getSVList()) {
+            tmSV.addRow(new Object[]{
+                    sv.getQryID(),
+                    sv.getRefID1(),
+                    sv.getRefID2(),
+                    sv.getQryStartPos(),
+                    sv.getQryEndPos(),
+                    sv.getRefStartPos(),
+                    sv.getRefEndPos(),
+                    sv.getXmapID1(),
+                    sv.getXmapID2(),
+                    sv.getConfidence(),
+                    sv.getSVSize(),
+                    sv.getOrientation()
+            });
+        }
+    }
+
     // TODO: Can possibly delete
 
     private void fillRefTable(LinkedHashMap<String, Integer> numOverlaps) {
@@ -3378,8 +3638,11 @@ public class MapOptics extends JFrame {
 //        fillRefTable(numOverlaps);
 
         SummaryViewData.setSummaryData(model);
-
+        DetectSV detectSV = new DetectSV(model);
+        detectSV.setSVList();
+        fillSVTable();
         fillRefTable();
+
 
 
         // Displays graph of reference contigs
@@ -3414,9 +3677,71 @@ public class MapOptics extends JFrame {
 
         changeQry(EMPTY_STRING);
         changeRef(EMPTY_STRING);
+
+        SVView.setSVList();
     }
 
     private void changeRef(String refId) {
+        model.setSelectedRefID(refId);
+
+        //SUMMARY VIEW TAB
+        // Redraw the graph with contig marked
+        referencesGraph.removeAll();
+        ChartPanel chartPanel1 = makeLengthChartPanel(model.getLengths(), refId);
+        referencesGraph.add(chartPanel1, BorderLayout.CENTER);
+        referencesGraph.setVisible(true);
+
+        // Redraw the graph with contig marked
+        labelDensityGraph.removeAll();
+        ChartPanel chartPanel2 = makeDensityChartPanel(model.getDensities(), refId);
+        labelDensityGraph.add(chartPanel2, BorderLayout.CENTER);
+        labelDensityGraph.setVisible(true);
+        refIdSearch.setText(refId);
+
+        // TODO: Read and set alignment data for a specific row
+        //REFERENCE VIEW TAB
+        if (!refId.isEmpty()) {
+            RefViewData.setReferenceData(model);
+        }
+
+        fillQryTable(refId);
+        ReferenceView.setRefDataset(refDataset.getText());
+        ReferenceView.setQryDataset(qryDataset.getText());
+        ReferenceView.setChosenRef(refId);
+
+        //QUERY VIEW TAB
+        //QueryView.setRegionView(false);
+        QueryView.setChosenLabel(EMPTY_STRING);
+        SearchRegionData.resetData();
+        QueryView.setChosenRef(refId);
+
+
+//        SummaryView.setChosenRef(refId); // probably not needed
+        // SV View
+        SVView.setChosenRef(refId);
+
+
+
+        repaint();
+    }
+
+    private void changeQry(String qryId) {
+        ReferenceView.setRefDataset(refDataset.getText());
+        ReferenceView.setQryDataset(qryDataset.getText());
+        ReferenceView.setChosenQry(qryId);
+       // QueryViewData.setQueryData(model,qryId);
+        QueryView.setChosenQry(qryId);
+        QueryView.setRegionView(false);
+        QueryView.setChosenLabel(EMPTY_STRING);
+        SearchRegionData.resetData();
+        fillLabelTable(qryId);
+        fillQryViewRefTable(qryId);
+        qryIdSearch.setText(qryId);
+        SVView.setChosenQry(qryId);
+        repaint();
+    }
+
+    private void changeSV(String refId) {
         model.setSelectedRefID(refId);
 
         //SUMMARY VIEW TAB
@@ -3458,21 +3783,6 @@ public class MapOptics extends JFrame {
 
 
 
-        repaint();
-    }
-
-    private void changeQry(String qryId) {
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
-        ReferenceView.setChosenQry(qryId);
-       // QueryViewData.setQueryData(model,qryId);
-        QueryView.setChosenQry(qryId);
-        QueryView.setRegionView(false);
-        QueryView.setChosenLabel(EMPTY_STRING);
-        SearchRegionData.resetData();
-        fillLabelTable(qryId);
-        fillQryViewRefTable(qryId);
-        qryIdSearch.setText(qryId);
         repaint();
     }
 
