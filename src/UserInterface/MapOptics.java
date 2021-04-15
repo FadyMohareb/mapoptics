@@ -2140,6 +2140,8 @@ public class MapOptics extends JFrame {
     }
 
     private void searchActionPerformed(java.awt.event.ActionEvent evt) {
+        // clear
+
         // set IDs of reference and query to that searched
         boolean refMatch = false;
         boolean qryMatch = false;
@@ -2147,7 +2149,8 @@ public class MapOptics extends JFrame {
         String refSearch = refIdSearch.getText();
         String qrySearch = qryIdSearch.getText();
         String region = regionSearch.getText();
-        String type = Objects.requireNonNull(regionType.getSelectedItem()).toString();
+        String type = null;
+        type = Objects.requireNonNull(regionType.getSelectedItem()).toString();
         List<String> refcontig = new ArrayList<>();
         List<String> qrycontig = new ArrayList<>();
         String currentref=model.getSelectedRefID();
@@ -2183,142 +2186,59 @@ public class MapOptics extends JFrame {
         if(refMatch&qryMatch) {
 
             if(region.equals("")){
+                QueryView.setRegionView(false);
                 changeRef(refSearch);
                 changeQry(qrySearch);
                 repaint();
 
             }else{
                 String[] regions = region.split("-");
+                System.out.println(regions[0]+" "+regions[1]);
                 int regionstart = Integer.parseInt(regions[0]);
-                if(regionstart<0){
+                int regionend = Integer.parseInt(regions[1]);
+                if(regionstart<0 || regionstart>regionend){
                     JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 }else{
                     QueryView.setRegionscale(regions);
                     if(type.equals("Query")){
+
                         changeRef(refSearch);
                         changeQry(qrySearch);
-                        QueryView.setRegionView(true);
-                        QueryView.setQrySequenceView(true);
+                        Reference ref = model.getSelectedRef();
+                        Query qry = ref.getQuery(qrySearch);
+                        if(regionstart >= qry.getLength()||regionend>= qry.getLength())
+                        {
+                            JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                        }else{
+                            QueryView.setRegionView(true);
+                            QueryView.setReferenceViewSelect(false);
+                            QueryView.setQryViewSelect(true);
+                        }
+
+
 
                     }else if(type.equals("Reference")){
                         changeRef(refSearch);
                         changeQry(qrySearch);
-                        QueryView.setRegionView(true);
-                        QueryView.setRefSequenceView(true);
+                        Reference ref = model.getSelectedRef();
+                        Query qry = ref.getQuery(qrySearch);
+                        if(regionstart >= ref.getLength()||regionend>= ref.getLength())
+                        {
+                            JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                        }else{
+                            QueryView.setRegionView(true);
+                            QueryView.setQryViewSelect(false);
+                            QueryView.setReferenceViewSelect(true);}
                     };
                     repaint();
                 }
             }
-       /*
-       if (qrySearch.equals(EMPTY_STRING)) {
-                changeRef(refSearch);
-                changeQry(qrySearch);
-            }else{
-                String[] regions = region.split("-");
-                int regionstart = Integer.parseInt(regions[0]);
-                if(regionstart<0){
-                    JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                }else{
-                QueryView.setRegionscale(regions);
-                if(type.equals("Query")){
-                    changeRef(refSearch);
-                    changeQry(qrySearch);
-                    QueryView.setRegionView(true);
-                    QueryView.setQrySequenceView(true);
-
-                }else if(type.equals("Reference")){
-                    changeRef(refSearch);
-                    changeQry(qrySearch);
-                    QueryView.setRegionView(true);
-                    QueryView.setRefSequenceView(true);
-                };
-            }
-
-            }
-        */
-
-
-
-
 
         }else{
             //do nothing
         }
 
     }
-
-        /*
-
-        // check if qry Id or ref Id exist otherwise give error message
-        if (!refSearch.equals(EMPTY_STRING)) {
-            for (String refId : RawFileData.getRefContigs().keySet()) {
-                if (refId.equals(refSearch)) {
-                    changeRef(refId);
-                    refMatch = true;
-                }
-            }
-        }
-        if (!qrySearch.equals(EMPTY_STRING)) {
-            for (String qryId : RawFileData.getQryContigs().keySet()) {
-                if (qryId.equals(qrySearch)) {
-                    changeQry(qryId);
-                    qryMatch = true;
-                }
-            }
-        }
-
-        if (refMatch && qryMatch) {
-            if (!region.equals(EMPTY_STRING)) {
-                try {
-                    String[] regions = region.split("-");
-                    if (type.equals("Query")) {
-                        double actualWidth = RawFileData.getQryContigs(qrySearch).getContigLen();
-                        if (Double.parseDouble(regions[0]) >= 0 && Double.parseDouble(regions[1]) <= actualWidth) {
-                            regionMatch = true;
-                            double rectWidth = UserQryData.getQueries(refSearch + "-" + qrySearch).getRectangle().getWidth();
-                            double scale = rectWidth / actualWidth;
-                            // shift relative to start pos
-                            double shift = 100 + (Double.parseDouble(regions[0]) * scale);
-                            // zoom relative to width
-                            double zoom = queryView.getWidth() / (Double.parseDouble(regions[1]) * scale - Double.parseDouble(regions[0]) * scale);
-                            SearchRegionData.setRegion(shift, zoom);
-                            QueryView.setRegionView(true);
-                            repaint();
-                        }
-                    } else if (type.equals("Reference")) {
-                        double actualWidth = RawFileData.getRefContigs(refSearch).getContigLen();
-                        if (Double.parseDouble(regions[0]) >= 0 && Double.parseDouble(regions[1]) <= actualWidth) {
-                            regionMatch = true;
-                            double rectWidth = UserQryData.getReferences(refSearch + "-" + qrySearch).getRectangle().getWidth();
-                            double scale = rectWidth / actualWidth;
-                            // shift relative to start pos
-                            double shift = 100 - UserQryData.getQueries(refSearch + "-" + qrySearch).getRefAlignStart() + UserQryData.getQueries(refSearch + "-" + qrySearch).getQryAlignStart() + (Double.parseDouble(regions[0]) * scale);
-                            // zoom relative to width
-                            double zoom = queryView.getWidth() / (Double.parseDouble(regions[1]) * scale - Double.parseDouble(regions[0]) * scale);
-                            SearchRegionData.setRegion(shift, zoom);
-                            QueryView.setRegionView(true);
-                            repaint();
-                        }
-                    }
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Region is not formatted correctly", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }
-
-        if (!refMatch) {
-            JOptionPane.showMessageDialog(null, "No match with Reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-        }
-
-        if (!qryMatch) {
-            JOptionPane.showMessageDialog(null, "No match with Query ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-        }
-
-        if (!regionMatch) {
-            JOptionPane.showMessageDialog(null, "Region out of bounds", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-        }
-
-         */
 
 
     private void referenceViewMouseMoved(java.awt.event.MouseEvent evt) {
@@ -2363,67 +2283,42 @@ public class MapOptics extends JFrame {
         // when mouse is hovered over, display the position
         if (!model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
                 && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
-            double positionScale;
+            double positionScale=0.0;
             String position = "";
 
             String qryId = QueryView.getChosenQry();
+
+            Double refstart = QueryViewData.getRefStart();
+
+            //get qryrectangle
             Rectangle2D ref = model.getSelectedRef().getQryViewRect();
             if (ref.contains(evt.getPoint())) {
+                //get the information of the displayed region from QueryViewData
+                positionScale =QueryViewData.getRefLen() / ref.getWidth();
                 // display position
-                positionScale = model.getSelectedRef().getLength() / ref.getWidth();
-                position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale);
+                position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale+refstart);
             }
             Rectangle2D qryRect;
 
             Reference ref1 = model.getSelectedRef();
             Query qry= ref1.getQuery(qryId);
             qryRect = qry.getQryViewRect();
+
             if (qryRect.contains(evt.getPoint())) {
                 // display position
                 positionScale = qry.getLength() / qryRect.getWidth();
                 position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
             }
 
-
             QueryView.setPosition(position);
             QueryView.setMouseX(evt.getX());
             QueryView.setMouseY(evt.getY());
 
             queryView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
 
-
-
-
-            /*Rectangle2D ref;
-            Rectangle2D qry;
-            if (QueryView.isRegionView()) {
-                ref = SearchRegionData.getRef().getRectangle();
-                qry = SearchRegionData.getQry().getRectangle();
-            } else {
-                ref = UserQryData.getReferences(refId + "-" + qryId).getRectangle();
-                qry = UserQryData.getQueries(refId + "-" + qryId).getRectangle();
-            }
-            if (ref.contains(evt.getPoint())) {
-                // display position
-                positionScale = RawFileData.getRefContigs(refId).getContigLen() / ref.getWidth();
-                position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale);
-            }
-
-            if (qry.contains(evt.getPoint())) {
-                // display position
-                positionScale = RawFileData.getQryContigs(qryId).getContigLen() / qry.getWidth();
-                position = String.format("%.2f", (evt.getPoint().getX() - qry.getMinX()) * positionScale);
-            }
-
-            QueryView.setPosition(position);
-            QueryView.setMouseX(evt.getX());
-            QueryView.setMouseY(evt.getY());
-
-            queryView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
-
-             */
         }
     }
+
 
     private void confidenceSetActionPerformed(java.awt.event.ActionEvent evt) {
         // show confidence settings
@@ -2686,7 +2581,7 @@ public class MapOptics extends JFrame {
                 LinkedHashMap<String, String> sequences = FastaReader.readFasta(fastaFile.getText(), names);
 
                 // add sequences to contigs
-                QueryView.setRefSequenceView(true);
+                QueryView.setReferenceViewSelect(true);
                 UserQryData.addSequences(names, sequences, "ref");
 
             } else if (refQry.equals("Query")) {
@@ -2701,7 +2596,7 @@ public class MapOptics extends JFrame {
                 LinkedHashMap<String, String> sequences = FastaReader.readFasta(fastaFile.getText(), names);
 
                 // add sequences to contigs
-                QueryView.setQrySequenceView(true);
+                QueryView.setQryViewSelect(true);
                 UserQryData.addSequences(names, sequences, "qry");
             }
             repaint();
@@ -3407,8 +3302,8 @@ public class MapOptics extends JFrame {
         RefViewData.resetData();
         SummaryViewData.resetData();
         QueryViewData.resetData();
-        QueryView.setQrySequenceView(false);
-        QueryView.setRefSequenceView(false);
+        QueryView.setQryViewSelect(false);
+        QueryView.setReferenceViewSelect(false);
 
         UserRefData.resetData();
         UserQryData.resetData();

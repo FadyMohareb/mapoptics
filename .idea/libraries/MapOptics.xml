@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MapOptics">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/MapOptics.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
