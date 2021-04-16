@@ -346,7 +346,7 @@ public class QueryView extends JPanel {
                             g2d.setColor(BLACK);
                         }
 
-                        int position = (int) ((qrySites.get(site) / scale) + this.getWidth()/20+ regionOffX);
+                        int position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
                         //if(position>=0 &position<=WindowWidth){
                         g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
                         //}
@@ -355,7 +355,7 @@ public class QueryView extends JPanel {
                         // Draw alignment
                         if (match) {
                             for (int i : qryAlignments.get(site)) {
-                                int refPositionX = (int) (((refSites.get(i)) / scale) + this.getWidth()/20 - refx);
+                                int refPositionX = (int) (((refSites.get(i)) / scale) + refOffX - refx);
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
                                 // if(refPositionX>=0&refPositionX<=this.getWidth()&position>=0 &position<=this.getWidth()){
                                 g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
@@ -462,14 +462,15 @@ public class QueryView extends JPanel {
                 230,
                 qryRect.getWidth()/ scale,
                 qryRect.getHeight());
-      /* if(qryRectScaled.getWidth()>this.getWidth()){
+        if(regionView&referenceViewSelect){
             qryRectScaled= new Rectangle2D.Double(
-                    0,
+                    regionOffX,
                     230,
-                    this.getWidth(),
+                    qryRect.getWidth()/ scale,
                     qryRect.getHeight());
+
             return qryRectScaled;
-        }*/
+        }
         return qryRectScaled;
     }
 
