@@ -23,8 +23,8 @@ public class Reference {
     private double coverage;
     private double chimQual;
 
-    public List<Integer> delQryIDs;
-    public List<Integer> savedDelQryIDs;
+    private List<Integer> delQryIDs;
+    private List<Integer> savedDelQryIDs;
     private Map<Integer, String> refAlignRegion;
 
     public Reference(String refID) {
@@ -173,9 +173,8 @@ public class Reference {
     public List<Integer> getDelQryIDs() { return delQryIDs; }
 
     // Add method for storing deleted query IDs
-    public void setDelQryIDs(List<Integer> delQryIDs, Integer queryID) {
+    public void setDelQryIDs(Integer queryID) {
         delQryIDs.add(queryID);
-        this.delQryIDs = delQryIDs;
     }
 
     public List<Integer> getSavedDelQryIDs() { return savedDelQryIDs; }
