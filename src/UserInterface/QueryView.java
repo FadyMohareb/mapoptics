@@ -20,11 +20,12 @@ public class QueryView extends JPanel {
     /**
      * Creates new form SingleAlignment
      */
-    public QueryView(MapOpticsModel model) {
-        this.model = model;
-        initComponents();
-    }
-
+    private final MapOpticsModel model;
+    private static final Color LIGHT_GREY = new Color(244, 244, 244);
+    private static final Color GREY = new Color(192, 192, 192);
+    private static final Color DARK_GREY = new Color(80, 80, 80);
+    private static final Color BLACK = new Color(30, 30, 30);
+    private static final Color GREEN = new Color(97, 204, 10);
     private static String chosenRef = "";
     private static String chosenQry = "";
     private static String chosenLabel = "";
@@ -36,10 +37,23 @@ public class QueryView extends JPanel {
     private static String position = "";
     private static int mouseX = 0;
     private static int mouseY = 0;
-    private double scale=1000;
+    private double scale=1000.0;
+    private double regionOffX;
     private static String[] regions;
+    private double WinoffX;
+    private double WinoffX2;
+    private double refx;
+    private double qryRegionstart;
+    private double qryRegionend;
+    private double refOffX;
+    private double alignlen;
+    private double Start;
+    private double End;
 
-
+    public QueryView(MapOpticsModel model) {
+        this.model = model;
+        initComponents();
+    }
     public static void setChosenRef(String chosenRef) {
         QueryView.chosenRef = chosenRef;
     }
@@ -96,20 +110,7 @@ public class QueryView extends JPanel {
         return regionView;
     }
 
-    private final MapOpticsModel model;
-    private static final Color LIGHT_GREY = new Color(244, 244, 244);
-    private static final Color GREY = new Color(192, 192, 192);
-    private static final Color DARK_GREY = new Color(80, 80, 80);
-    private static final Color BLACK = new Color(30, 30, 30);
-    private static final Color GREEN = new Color(97, 204, 10);
-    private double WinoffX;
-    private double WinoffX2;
-    private int refx;
-    private double qryRegionstart;
-    private double qryRegionend;
-    private boolean RefRect;
-    private boolean QryRect;
-    private double refOffX;
+
     @Override
 
     public void paintComponent(Graphics g) {
@@ -122,7 +123,6 @@ public class QueryView extends JPanel {
         // draw alignment of single reference and contig
         try {
             if (!"".equals(chosenQry)) {
-
                 Font defaultFont = g2d.getFont();
                 Font fontB = new Font("Tahoma", Font.BOLD, 12);
                 g2d.setFont(fontB);
@@ -136,13 +136,14 @@ public class QueryView extends JPanel {
 
                 WinoffX=0;
                 WinoffX2=0;
-                refx=0;
+                refx=0.0;
+                alignlen=0;
+                Start=0 ;
+                End=0 ;
                 qryRegionstart=0;
                 qryRegionend=0;
                 Reference ref=null ;
                 Query qry=null;
-                RefRect=true;
-                QryRect=true;
                 refOffX=this.getWidth() / 20;// the minX of refrectangle
 
                 // draw relative to query alignment
@@ -151,164 +152,36 @@ public class QueryView extends JPanel {
                 if (qry != null) {
                     Rectangle2D refRect = new Rectangle2D.Double(0, 20, ref.getLength(), 50);
                     Rectangle2D qryRect = qry.getRectangle();
-
-                    //find the start and end pos of the alignment in ref contig
-                    double Start=0 ;
-                    double End=0 ;
-                    double AlignStart= ref.getRefAlignPos(chosenQry)[0];
-                    double AlignEnd= ref.getRefAlignPos(chosenQry)[1];
-                    double alignlen = AlignEnd - AlignStart;
-                    int regionOffX=0;
-                    if(regionView==false) {
-                        scale = qryRect.getWidth() / (this.getWidth() * 0.9);
-                        Start=AlignStart;
-                        End=AlignEnd;
-                    }
-                    else if(regions[0].equals("")){
-                        scale = qryRect.getWidth() / (this.getWidth() * 0.9);
-                        Start=AlignStart;
-                        End=AlignEnd;
-                    }
-                    else{
-
-                        if (referenceViewSelect) {refOffX=0;
-                            Double reflen = ref.getLength();
-                            if (Integer.parseInt(regions[1]) >= reflen) {
-                                scale = (reflen - Integer.parseInt(regions[0])) / (this.getWidth() );
-                                Start = Double.parseDouble(regions[0]);
-                                End = Double.parseDouble(regions[1]);
-                            }else{
-                                scale = (Integer.parseInt(regions[1]) - Integer.parseInt(regions[0])) / this.getWidth() ;
-                                Start = Double.parseDouble(regions[0]);
-                                End = Double.parseDouble(regions[1]);
-                            }
-                            if(Integer.parseInt(regions[1])<=AlignStart||Integer.parseInt(regions[0])>=AlignEnd ){
-                                QryRect=false;
-                            }
-                        }else if(qryViewSelect){
-                            Double qrylen= qry.getLength();
-                            Double reflen = ref.getLength();
-                            double qryAlignStart= ref.getRefAlignPos(chosenQry)[0];
-                            double qryAlignEnd= ref.getRefAlignPos(chosenQry)[1];
-                            if (Integer.parseInt(regions[1]) >= qrylen) {
-                                scale = (qrylen - Integer.parseInt(regions[0])) / (this.getWidth() );
-                                qryRegionstart=Double.parseDouble(regions[0]);
-                                qryRegionend=qry.getLength();
-                                Start = 0.0;
-                                End = reflen;
-                            }else{
-                                scale = (Integer.parseInt(regions[1]) - Integer.parseInt(regions[0])) / (this.getWidth());
-                                qryRegionstart=Double.parseDouble(regions[0]);
-                                qryRegionend=Double.parseDouble(regions[1]);
-                                Start = 0.0;
-                                End = reflen;
-                            }
-                            if(Integer.parseInt(regions[1])<=qryAlignStart||Integer.parseInt(regions[0])>=qryAlignEnd){
-                                RefRect=false;
-                            }
-                        }
-                    }
-
-                    //set scale
-                    g2d.setColor(Color.BLACK);
+                    //set scale parameters
+                    setScaleParameters(ref,qry,refRect,qryRect);
+                    setZoomParameters(ref, qry);
+                    //add this scale to QueryViewData
+                    QueryViewData.setSelectedRefLen(End - Start);
+                    //get sites information
                     Map<Integer, Double> refSites = ref.getSites();
                     Set<Integer> refAlignments = ref.getAlignmentSites();
                     Map<Integer, Double> qrySites = qry.getQryViewSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
                     List<Integer> refalignments = new ArrayList();
-                    //add this scale to QueryViewData
-                    QueryViewData.setSelectedRefLen(End - Start);
-                    //find the first alignment position on reference contig and query contig
-                    //for reference contig
-                    for (int site : qry.getSites().keySet()) {
-                        if (qryAlignments.containsKey(site)) {
-                            refalignments.add(qryAlignments.get(site).get(0));
-                        }
-                    }
-                    for (int site : refSites.keySet()) {
-                        if (refalignments.contains(site)) {
-                            if (refAlignments.contains(site)) {
-                                if (WinoffX == 0) {
-                                    WinoffX = refSites.get(site) / scale;//get ref position
-
-                                } else {
-                                    if ((refSites.get(site) / scale) < WinoffX) {
-                                        WinoffX = refSites.get(site);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //for query contig
-                    for (int site : qry.getQryViewSites().keySet()) {//get the position of first aligned site
-                        if (qryAlignments.containsKey(site)) {
-
-                            if (WinoffX2 == 0) {
-                                WinoffX2 = (qrySites.get(site)) / scale;
-                                break;
-                            } else {
-                                if ((qrySites.get(site) / scale) < WinoffX2) {
-                                    WinoffX2 = qrySites.get(site) / scale;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    //check the reorientation
-                    boolean isFlipped = qry.isFlipped();
-
-                    if (isFlipped == false) {
-                        if (ref.getLength() > qry.getLength()) {
-                            refx = (int) (WinoffX - WinoffX2);
-                        } else {
-                            refx = -(int) (WinoffX2 - WinoffX);
-                        }
-                    } else {
-                        if (ref.getLength() > qry.getLength()) {
-                            refx = (int) (WinoffX - WinoffX2 + alignlen / scale);
-                        } else {
-                            refx = -(int) ((WinoffX2 - WinoffX) - alignlen / scale);
-                        }
-                    }
-                    //check if it is regionView
-                    if(regionView==true& referenceViewSelect ==true){//if search reference
-
-                        regionOffX= refx-(int)(Integer.parseInt(regions[0])/scale);
-                        refx=(int) (Integer.parseInt(regions[0])/scale);
-
-                    }
-                    else if(regionView==true& qryViewSelect ==true){//if search query
-                        regionOffX= -(int)(Integer.parseInt(regions[0])/scale);
-                        refx=refx-regionOffX+1;
-                    }
-                    //check if display rectangles and set rectangles
+                    // set rectangles
                     Rectangle2D qryScaled;
                     Rectangle2D refScaled;
-                    /*if(QryRect){
-                         //set rectangles
-                          qryScaled = zoomQryRectangle(qryRect,regionOffX);
-                     }else{
-                         qryScaled = new Rectangle2D.Double(0, 90, 0, refRect.getHeight());
-                     }
-                    if(RefRect){
-                        //set rectangles
-                        refScaled = zoomRectangle(refRect, Start, End);
-                    }else{
-                        refScaled = new Rectangle2D.Double(0, 90, 0, refRect.getHeight());
-                    }*/
+                    // add to QueryViewData
                     qryScaled = zoomQryRectangle(qryRect,regionOffX);
-                    refScaled = zoomRectangle(refRect, Start, End);
+                    refScaled = zoomRectangle(refRect);
                     QueryViewData.setRefStart(Start);
                     QueryViewData.setQryStart(regionOffX);
-                    //QueryViewData.getQryLen();
 
                     // draw query contig
-                    qry.setQryViewRect(qryScaled);
+                    qry.setQryViewRect(new Rectangle2D.Double(refOffX+regionOffX, 230, qryRect.getWidth()/ scale, qryRect.getHeight()));
                     drawContig(g2d, qryScaled, chosenQry);
 
                     // draw reference contig
-                    ref.setQryViewRect(refScaled);
+                    if(Start!=0){
+                        ref.setQryViewRect(new Rectangle2D.Double(refOffX+Start/scale-refx, 90, (End-Start)/scale, refRect.getHeight()));
+                    }else{
+                        ref.setQryViewRect(new Rectangle2D.Double(refOffX-refx, 90, (End-Start)/scale, refRect.getHeight()));
+                    }
                     drawContig(g2d, refScaled, chosenRef);
 
                     //draw reference labels
@@ -325,7 +198,7 @@ public class QueryView extends JPanel {
                         }
                         if (refSites.get(site) >= Start & refSites.get(site) <= End) {
                             int position = (int) (((refSites.get(site) / scale) + refOffX));
-                            int scaledpos=position-refx;
+                            int scaledpos=(int)(position-refx);
                             if(scaledpos>=0&scaledpos<=WindowWidth){
                                 g2d.drawLine(scaledpos, (int) refScaled.getMinY(), scaledpos, (int) refScaled.getMaxY());
                             }}
@@ -334,7 +207,6 @@ public class QueryView extends JPanel {
 
                     int qryOffSetY = (int) qryScaled.getY();
                     int qryHeight = (int) qryScaled.getHeight();
-
 
                     for (int site : qry.getQryViewSites().keySet()) {
                         boolean match = false;
@@ -347,9 +219,9 @@ public class QueryView extends JPanel {
                         }
 
                         int position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
-                        //if(position>=0 &position<=WindowWidth){
-                        g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
-                        //}
+                        if(position>=0 &position<=WindowWidth){
+                            g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
+                        }
 
                         g2d.setColor(BLACK);
                         // Draw alignment
@@ -357,33 +229,17 @@ public class QueryView extends JPanel {
                             for (int i : qryAlignments.get(site)) {
                                 int refPositionX = (int) (((refSites.get(i)) / scale) + refOffX - refx);
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
-                                // if(refPositionX>=0&refPositionX<=this.getWidth()&position>=0 &position<=this.getWidth()){
-                                g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
-                                //}
+                                if(refPositionX>=0&refPositionX<=this.getWidth()&position>=0 &position<=this.getWidth()){
+                                    g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
+                                }
                             }
                         }
                     }
                     // draw scalebars
                     drawScaleBar(g2d, refScaled, Start, End, true);
-                    if(QryRect){
-                        drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX), Start, End, false);}
-                    if (!chosenLabel.equals("")&!regionView) {
-                        // draw chosen label
-                        Double labelpos = 0.0;
-                        if (isFlipped == false) {//if it is reorientated
-                            labelpos = qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
-                        } else {
-                            labelpos = qry.getLength() - qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
-                        }
-                        g2d.setColor(Color.red);
-                        g2d.drawLine((int) ((int) (labelpos / scale + this.getWidth() / 20)),
-                                230,
-                                (int) (labelpos / scale + this.getWidth() / 20),
-                                290);
-                        g2d.drawString(String.format("%.1f", labelpos), (int) (labelpos / scale + this.getWidth() / 20), 290);
-
-                    }
-//
+                    drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX), Start, End, false);
+                    //display chosen label
+                    drawChosenLabel(g2d,qry,qry.isFlipped());
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
                     g2d.setFont(font);
@@ -395,9 +251,8 @@ public class QueryView extends JPanel {
                 g2d.setFont(font);
                 g2d.drawString("Choose a query contig from REFERENCE VIEW", this.getWidth() / 2 - 115, this.getHeight() / 2);
             }
-
+            //display mouse position
             if (!"".equals(position)) {
-
                 g2d.setColor(Color.white);
                 int stringLen = g2d.getFontMetrics().stringWidth(position);
                 g2d.fillRect(mouseX, mouseY, stringLen + 16, 14);
@@ -417,7 +272,138 @@ public class QueryView extends JPanel {
         }
 
     }
+    private void setZoomParameters(Reference ref,Query qry){
+        //get sites information
+        Map<Integer, Double> refSites = ref.getSites();
+        Set<Integer> refAlignments = ref.getAlignmentSites();
+        Map<Integer, Double> qrySites = qry.getQryViewSites();
+        Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
+        List<Integer> refalignments = new ArrayList();
+        //-------find the first align position ----
+        //for reference contig
+        for (int site : qry.getSites().keySet()) {
+            if (qryAlignments.containsKey(site)) {
+                refalignments.add(qryAlignments.get(site).get(0));
+            }
+        }
+        for (int site : refSites.keySet()) {
+            if (refalignments.contains(site)) {
+                if (refAlignments.contains(site)) {
+                    if (WinoffX == 0) {
+                        WinoffX = refSites.get(site) / scale;//get ref position
 
+                    } else {
+                        if ((refSites.get(site) / scale) < WinoffX) {
+                            WinoffX = refSites.get(site);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        //for query contig
+        for (int site : qry.getQryViewSites().keySet()) {//get the position of first aligned site
+            if (qryAlignments.containsKey(site)) {
+
+                if (WinoffX2 == 0) {
+                    WinoffX2 = (qrySites.get(site)) / scale;
+                    break;
+                } else {
+                    if ((qrySites.get(site) / scale) < WinoffX2) {
+                        WinoffX2 = qrySites.get(site) / scale;
+                        break;
+                    }
+                }
+            }
+        }
+        //check the reorientation
+        boolean isFlipped = qry.isFlipped();
+
+        if (isFlipped == false) {
+            if (ref.getLength() > qry.getLength()) {
+                refx = WinoffX - WinoffX2;
+            } else {
+                refx = - WinoffX2 - WinoffX;
+            }
+        } else {
+            if (ref.getLength() > qry.getLength()) {
+                refx = WinoffX - WinoffX2 + alignlen / scale;
+            } else {
+                refx = -((WinoffX2 - WinoffX) - alignlen / scale);
+            }
+        }
+        //check if it is regionView
+        if(regionView==true& referenceViewSelect ==true){//if search reference
+            qryRegionstart=Start-refx*scale;
+            qryRegionend=End-refx*scale;
+
+            if(Integer.parseInt(regions[0])!=0){
+                regionOffX=refx-Integer.parseInt(regions[0])/scale;
+                refx=Integer.parseInt(regions[0])/scale;
+            }else{
+                regionOffX=refx;
+                refx=0.0;}
+
+
+            if(qryRegionstart<=0){
+                qryRegionstart=0;
+            }
+            if(qryRegionend<=0){
+                qryRegionend=0;
+            }
+            if(qryRegionend>=qry.getLength()){
+                qryRegionend=qry.getLength();
+            }
+
+        }
+        else if(regionView==true& qryViewSelect ==true){//if search query
+            Start=qryRegionstart+refx*scale;
+            End=qryRegionend+refx*scale;
+            if(Integer.parseInt(regions[0])!=0){
+                regionOffX= -Integer.parseInt(regions[0])/scale;
+                refx=refx-regionOffX;
+            }else{
+                regionOffX=0.0;
+                refx=refx-regionOffX;
+            }
+
+        }
+    }
+    private void setScaleParameters(Reference ref,Query qry,Rectangle2D refRect,Rectangle2D qryRect){
+
+        //find the start and end pos of the alignment in ref contig
+        double AlignStart= ref.getRefAlignPos(chosenQry)[0];
+        double AlignEnd= ref.getRefAlignPos(chosenQry)[1];
+        alignlen = AlignEnd - AlignStart;
+        regionOffX=0.0;
+        if(regionView==false) {
+            scale = qryRect.getWidth() / (this.getWidth() * 0.9);
+            Start=AlignStart;
+            End=AlignEnd;
+        }
+        else if(regions[0].equals("")){
+            scale = qryRect.getWidth() / (this.getWidth() * 0.9);
+            Start=AlignStart;
+            End=AlignEnd;
+        }
+        else{
+            refOffX=0;
+            if (referenceViewSelect) {
+                scale = (Double.parseDouble(regions[1]) - Double.parseDouble(regions[0])) / this.getWidth() ;
+                Start = Double.parseDouble(regions[0]);
+                End = Double.parseDouble(regions[1]);
+            }else if(qryViewSelect){
+                Double reflen = ref.getLength();
+                qryRegionstart=Double.parseDouble(regions[0]);
+                qryRegionend=Double.parseDouble(regions[1]);
+                scale = (qryRegionend-qryRegionstart) / this.getWidth();
+                Start = 0.0;
+                End = reflen;
+            }
+        }
+
+
+    }
     private void drawContig(Graphics2D g2d, Rectangle2D rect, String id) {
         g2d.setColor(new Color(244, 244, 244));
         g2d.fill(rect);
@@ -426,54 +412,63 @@ public class QueryView extends JPanel {
         //g2d.drawLine((int) rect.getMinX(), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25);
         g2d.setColor(new Color(80, 80, 80));
     }
-    private Rectangle2D zoomRectangle(Rectangle2D refRect, Double start, Double end){
+    private Rectangle2D zoomRectangle(Rectangle2D refRect){
 
-        Rectangle2D refRectScaled = new Rectangle2D.Double(
-                (this.getWidth() /20+start/scale-refx),
-                90,
-                (end-start)/scale,
-                refRect.getHeight());
-        if(refRectScaled.getWidth()>this.getWidth()){
-            if(regionView&!referenceViewSelect){
-                refRectScaled = new Rectangle2D.Double(
-                        (this.getWidth() /20+start/scale-refx),
-                        90,
-                        refRect.getWidth()/scale,
-                        refRect.getHeight());
+        double x = 0.0;
+        double w=(End-Start)/scale;
+        double x1;
+        double w1;
+        if(regionView){
+            if(referenceViewSelect){
+                Rectangle2D refRectScaled = new Rectangle2D.Double(0, 90,this.getWidth(), refRect.getHeight());
                 return refRectScaled;
-
             }else{
-                refRectScaled= new Rectangle2D.Double(
-                        0,
-                        90,
-                        this.getWidth(),
-                        refRect.getHeight());
-                return refRectScaled;}
+                if(Start!=0){ x=Start/scale-refx;
+                }else{x=-refx;}
+
+            }
+
+        }else{
+            if(Start!=0){
+                x=this.getWidth() /20+Start/scale-refx;}else {
+                x=this.getWidth() /20-refx;
+            }
         }
+        if(x<0){
+            x1=0;
+        }else{
+            x1=x;}
+        if((x+w)>this.getWidth()){
+            w1=this.getWidth()-x1;
+        }else{
+            w1=w+x-x1;
+        }
+        Rectangle2D refRectScaled = new Rectangle2D.Double(x1, 90, w1, refRect.getHeight());
         return refRectScaled;
     }
 
-
-
-    private Rectangle2D zoomQryRectangle(Rectangle2D qryRect,int regionOffX){
-
-        Rectangle2D qryRectScaled = new Rectangle2D.Double(
-                this.getWidth() /20+regionOffX,
-                230,
-                qryRect.getWidth()/ scale,
-                qryRect.getHeight());
-        if(regionView&referenceViewSelect){
-            qryRectScaled= new Rectangle2D.Double(
-                    regionOffX,
-                    230,
-                    qryRect.getWidth()/ scale,
-                    qryRect.getHeight());
-
-            return qryRectScaled;
+    private Rectangle2D zoomQryRectangle(Rectangle2D qryRect,double regionOffX){
+        double x;
+        double w=qryRect.getWidth()/ scale;
+        double x1;
+        double w1;
+        if(regionView){
+            x=regionOffX;
+        }else{
+            x=this.getWidth() /20+regionOffX;
         }
+        if(x<0){
+            x1=0;
+        }else{
+            x1=x;}
+        if((x+w)>this.getWidth()){
+            w1=this.getWidth()-x1;
+        }else{
+            w1=w+x-x1;
+        }
+        Rectangle2D qryRectScaled= new Rectangle2D.Double(x1, 230, w1, qryRect.getHeight());
         return qryRectScaled;
     }
-
 
     private void drawScaleBar(Graphics2D g2d, Rectangle2D rect,double start, double end ,boolean ref) {
         g2d.setColor(Color.black);
@@ -493,13 +488,12 @@ public class QueryView extends JPanel {
                 g2d.drawString(String.format("%.2f", (double) 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) 0.0) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
                 g2d.drawLine((int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 20);
                 g2d.drawString(String.format("%.2f", (double) length / 1000) + " kb", (int) (rect.getMinX() + rect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) length / 1000) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
-
             }
         } else {
             int count;
             int numScales;
             double length;
-            if(regionView==true& qryViewSelect ==true){
+            if(regionView==true){
                 g2d.drawLine((int) rect.getMinX(), (int) rect.getMaxY() + this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMaxY() + this.getHeight() / 25);
                 count = (int)qryRegionstart;
                 numScales = (int) rect.getWidth() / 100;
@@ -525,18 +519,24 @@ public class QueryView extends JPanel {
         }
     }
 
+    private void drawChosenLabel(Graphics2D g2d,Query qry,Boolean isFlipped) {
+        if (!chosenLabel.equals("")&!regionView) {
+            // draw chosen label
+            Double labelpos = 0.0;
+            if (isFlipped == false) {//if it is reorientated
+                labelpos = qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
+            } else {
+                labelpos = qry.getLength() - qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
+            }
+            g2d.setColor(Color.red);
+            g2d.drawLine((int) ((int) (labelpos / scale + this.getWidth() / 20)),
+                    230,
+                    (int) (labelpos / scale + this.getWidth() / 20),
+                    290);
+            g2d.drawString(String.format("%.1f", labelpos), (int) (labelpos / scale + this.getWidth() / 20), 290);
 
-    private void drawChosenLabel(Graphics2D g2d, LabelInfo labelInfo, Rectangle2D label, boolean orientated) {
-        g2d.setColor(Color.red);
-        g2d.drawLine((int) label.getCenterX(), (int) label.getMaxY(), (int) label.getCenterX(), (int) label.getMaxY() + this.getHeight() / 10);
-        if (orientated) {
-            g2d.drawString(labelInfo.getLabelPos(), (int) label.getCenterX() - g2d.getFontMetrics().stringWidth(labelInfo.getLabelPos()) / 2, (int) label.getMaxY() + this.getHeight() / 10 + 14);
-        } else {
-            double position = RawFileData.getQryContigs(chosenQry).getContigLen() - Double.parseDouble(labelInfo.getLabelPos());
-            g2d.drawString(String.format("%.1f", position), (int) label.getCenterX() - g2d.getFontMetrics().stringWidth(labelInfo.getLabelPos()) / 2, (int) label.getMaxY() + this.getHeight() / 10 + 14);
         }
     }
-
 
     public static void setRegionscale(String[] regions){
         QueryView.regions=regions;

@@ -2193,10 +2193,10 @@ public class MapOptics extends JFrame {
 
             }else{
                 String[] regions = region.split("-");
-               // System.out.println(regions[0]+" "+regions[1]);
+                // System.out.println(regions[0]+" "+regions[1]);
                 int regionstart = Integer.parseInt(regions[0]);
                 int regionend = Integer.parseInt(regions[1]);
-                if(regionstart<0 || regionstart>regionend){
+                if(regionstart<0 || regionstart>=regionend){
                     JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 }else{
                     QueryView.setRegionscale(regions);
