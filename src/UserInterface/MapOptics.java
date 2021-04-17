@@ -2078,7 +2078,7 @@ public class MapOptics extends JFrame {
                 // convert selected qryID string to integer
                 int chosenQry = Integer.parseInt(ReferenceView.getChosenQry());
                 // populate deleted contigs list with deleted qryIDs
-                chosenRef.setDelQryIDs(chosenRef.getDelQryIDs(), chosenQry);
+                chosenRef.setDelQryIDs(chosenQry);
                 repaint();
             }
         }

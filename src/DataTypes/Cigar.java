@@ -62,22 +62,19 @@ public class Cigar {
         Iterator<String> cigIter = parsedCigar.iterator();
         Iterator<Integer> qryIter = qrySites.iterator();
         while (cigIter.hasNext()) {
-                switch (cigIter.next()) {
-                    case "M" -> {
-                        if (qryIter.hasNext() && refIter.hasNext()) {
-                            cigRefSites.put(refIter.next(), "M");
-                            cigQrySites.put(qryIter.next(), "M");
-                        }
-                    }
-                    case "D" -> {
-                        if (refIter.hasNext()) {
-                            cigRefSites.put(refIter.next(), "D");
-                        }
-                    }
-                    case "I" -> {
-                        if (qryIter.hasNext()) {
-                            cigQrySites.put(qryIter.next(), "I");
-                        }
+            String next = cigIter.next();
+            if ("M".equals(next)) {
+                if (qryIter.hasNext() && refIter.hasNext()) {
+                    cigRefSites.put(refIter.next(), "M");
+                    cigQrySites.put(qryIter.next(), "M");
+                }
+            } else if ("D".equals(next)) {
+                if (refIter.hasNext()) {
+                    cigRefSites.put(refIter.next(), "D");
+                }
+            } else if ("I".equals(next)) {
+                if (qryIter.hasNext()) {
+                    cigQrySites.put(qryIter.next(), "I");
                 }
             }
         }

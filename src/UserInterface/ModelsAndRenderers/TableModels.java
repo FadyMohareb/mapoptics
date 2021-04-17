@@ -16,10 +16,16 @@ public class TableModels {
     private static final DefaultTableModel LABEL_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
-            return switch (column) {
-                case 1, 2, 3, 4, 5 -> Double.class;
-                default -> String.class;
-            };
+            switch (column) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    return Double.class;
+                default:
+                    return String.class;
+            }
         }
 
         @Override
@@ -55,11 +61,17 @@ public class TableModels {
     private static final DefaultTableModel QRY_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
-            return switch (column) {
-                case 0, 5, 6 -> Integer.class;
-                case 1, 3 -> Double.class;
-                default -> String.class;
-            };
+            switch (column) {
+                case 0:
+                case 5:
+                case 6:
+                    return Integer.class;
+                case 1:
+                case 3:
+                    return Double.class;
+                default:
+                    return String.class;
+            }
         }
 
         @Override
@@ -97,11 +109,18 @@ public class TableModels {
     private static final DefaultTableModel REF_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
-            return switch (column) {
-                case 0, 2, 4, 5 -> Integer.class;
-                case 1, 3 -> Double.class;
-                default -> String.class;
-            };
+            switch (column) {
+                case 0:
+                case 2:
+                case 4:
+                case 5:
+                    return Integer.class;
+                case 1:
+                case 3:
+                    return Double.class;
+                default:
+                    return String.class;
+            }
         }
 
         @Override
