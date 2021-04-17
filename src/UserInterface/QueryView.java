@@ -49,6 +49,7 @@ public class QueryView extends JPanel {
     private double alignlen;
     private double Start;
     private double End;
+    private List<Integer> refalignments ;
 
     public QueryView(MapOpticsModel model) {
         this.model = model;
@@ -144,6 +145,7 @@ public class QueryView extends JPanel {
                 qryRegionend=0;
                 Reference ref=null ;
                 Query qry=null;
+                refalignments = new ArrayList();
                 refOffX=this.getWidth() / 20;// the minX of refrectangle
 
                 // draw relative to query alignment
@@ -162,7 +164,7 @@ public class QueryView extends JPanel {
                     Set<Integer> refAlignments = ref.getAlignmentSites();
                     Map<Integer, Double> qrySites = qry.getQryViewSites();
                     Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-                    List<Integer> refalignments = new ArrayList();
+
                     // set rectangles
                     Rectangle2D qryScaled;
                     Rectangle2D refScaled;
@@ -197,10 +199,9 @@ public class QueryView extends JPanel {
                             }
                         }
                         if (refSites.get(site) >= Start & refSites.get(site) <= End) {
-                            int position = (int) (((refSites.get(site) / scale) + refOffX));
-                            int scaledpos=(int)(position-refx);
-                            if(scaledpos>=0&scaledpos<=WindowWidth){
-                                g2d.drawLine(scaledpos, (int) refScaled.getMinY(), scaledpos, (int) refScaled.getMaxY());
+                            int position = (int) ((refSites.get(site) / scale) + refOffX-refx);
+                            if(position>=0&position<=WindowWidth){
+                                g2d.drawLine(position, (int) refScaled.getMinY(), position, (int) refScaled.getMaxY());
                             }}
                     }
                     // For each query, draw sites and alignments
@@ -278,7 +279,6 @@ public class QueryView extends JPanel {
         Set<Integer> refAlignments = ref.getAlignmentSites();
         Map<Integer, Double> qrySites = qry.getQryViewSites();
         Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-        List<Integer> refalignments = new ArrayList();
         //-------find the first align position ----
         //for reference contig
         for (int site : qry.getSites().keySet()) {
@@ -323,7 +323,7 @@ public class QueryView extends JPanel {
             if (ref.getLength() > qry.getLength()) {
                 refx = WinoffX - WinoffX2;
             } else {
-                refx = - WinoffX2 - WinoffX;
+                refx =  -(WinoffX2 - WinoffX);
             }
         } else {
             if (ref.getLength() > qry.getLength()) {

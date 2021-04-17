@@ -30,12 +30,16 @@ public class QueryViewData {
     //get query and ref connection
 
     public static void setQueryData(MapOpticsModel model,String qryID){
-        List<String> refIDs =(List<String>) XmapReader.getQueryData(model, qryID).keySet();
-        for (String s : refIDs) {
-            refIDs.add(s);
-            refInfo=XmapReader.getQueryData(model, qryID).get(s);
-            refData.put(s,refInfo);
-        };
+        if(XmapReader.getQueryData(model, qryID)!=null){
+            List<String> refIDs= new ArrayList<>();
+            refData= new HashMap<>();
+            for (String s : XmapReader.getQueryData(model, qryID).keySet()) {
+                refIDs.add(s);
+                refInfo=XmapReader.getQueryData(model, qryID).get(s);
+                refData.put(s,refInfo);
+            }
+        }else {refData=null;}
+
     }
     public static Map<String,String[]> getConnection(){
         return refData;

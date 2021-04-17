@@ -3139,30 +3139,35 @@ public class MapOptics extends JFrame {
     }
 
     private void fillQryViewRefTable(String qryId) {
+
         DefaultTableModel tmQryMatch = (DefaultTableModel) qryViewRefTable.getModel();
-        //Map<String,String[]> refData= (Map<String,String[]>) QueryViewData.getConnection();
+        Map<String,String[]> refData= (Map<String,String[]>) QueryViewData.getConnection();
         // Empty table
         tmQryMatch.setRowCount(0);
         // Add rows to table
-        if (!qryId.equals(EMPTY_STRING)) {
-            Reference ref=model.getSelectedRef();
-            Query qry=ref.getQuery(qryId);
-            tmQryMatch.addRow(new Object[]{
-                    ref.getRefID(),
-                    qry.getOrientation(),
-                    qry.getConfidence()
-            });}
-       /* for (String s:refData.keySet()){
+     //   if (!qryId.equals(EMPTY_STRING)) {
+      //      Reference ref=model.getSelectedRef();
+       //    Query qry=ref.getQuery(qryId);
+       //     tmQryMatch.addRow(new Object[]{
+       ////           ref.getRefID(),
+       //             qry.getOrientation(),
+        //            qry.getConfidence()
+       //     });
+       //     for (String s:refData.keySet()){System.out.println(s+"+"+refData.get(s)[0]+"+"+refData.get(s)[1]);}
+      //  }
+
+        if (!qryId.equals(EMPTY_STRING)&refData!=null) {
+        for (String s:refData.keySet()){
             if (!qryId.isEmpty()) {
                 tmQryMatch.addRow(new Object[]{
                         s,
                         refData.get(s)[0],
-                        refData.get(s)[1]
-                });
+                       Double.parseDouble(refData.get(s)[1])
+              });
             }
-        }
+        }}
 
-*/
+
 
     }
 
@@ -3365,7 +3370,7 @@ public class MapOptics extends JFrame {
         ReferenceView.setRefDataset(refDataset.getText());
         ReferenceView.setQryDataset(qryDataset.getText());
         ReferenceView.setChosenQry(qryId);
-        // QueryViewData.setQueryData(model,qryId);
+        if(qryId!=""){    QueryViewData.setQueryData(model,qryId);}
         QueryView.setChosenQry(qryId);
         QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);

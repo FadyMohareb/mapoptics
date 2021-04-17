@@ -221,7 +221,7 @@ public class XmapReader {
 
                 if (data[queryIndex].equals(queryID)) {
                     String[] refinfo= {data[7], data[8]};
-                    connection.put(queryID,refinfo);
+                    connection.put(data[refIndex],refinfo);
                 }
             }
 
