@@ -7,7 +7,6 @@ package DataTypes;
  * */
 
 abstract public class SV {
-    private String xmapID2;
     private double qryStartPos;
     private double qryEndPos;
     private double refStartPos;
@@ -19,6 +18,7 @@ abstract public class SV {
     private String refID2;
     private String type;
     private String xmapID1;
+    private String xmapID2;
     private String orientation;
 
 
