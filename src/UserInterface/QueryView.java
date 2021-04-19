@@ -1,12 +1,9 @@
 package UserInterface;
 
 import DataTypes.Query;
-import Algorithms.Variants;
-import DataTypes.LabelInfo;
 import DataTypes.Reference;
 import DataTypes.*;
 import Datasets.Default.QueryViewData;
-import Datasets.Default.RawFileData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
@@ -202,16 +199,16 @@ public class QueryView extends JPanel {
 
                     // Set up variables for displaying SV
                     String hitEnum = qry.getHitEnum();
-                    Variants variant = new Variants(hitEnum);
-                    variant.parseHitEnum();
+                    Cigar cig = new Cigar(hitEnum);
+                    cig.parseHitEnum();
 
                     // Extract aligned ref sites with selected qry
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
                             refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
 
-                    variant.colorCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
-                    Map<Integer, String> refCig = variant.getCigRefSites();
-                    Map<Integer, String> qryCig = variant.getCigQrySites();
+                    cig.colorCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
+                    Map<Integer, String> refCig = cig.getCigRefSites();
+                    Map<Integer, String> qryCig = cig.getCigQrySites();
 
 
                     //draw reference labels
