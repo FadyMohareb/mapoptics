@@ -2371,7 +2371,6 @@ public class MapOptics extends JFrame {
     }
 
     private void qryorientateActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
         // reorientate chosen contig
         System.out.println("asdf");
         if (!QueryView.getChosenRef().equals(EMPTY_STRING) && !QueryView.getChosenQry().equals(EMPTY_STRING)) {
