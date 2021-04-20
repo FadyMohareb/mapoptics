@@ -77,7 +77,7 @@ public class MapOpticsModel {
         this.densities = densities;
     }
 
-    public static String getSelectedRefID() {
+    public String getSelectedRefID() {
         return selectedRefID;
     }
 
