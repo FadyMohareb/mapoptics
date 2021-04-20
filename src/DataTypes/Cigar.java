@@ -89,7 +89,5 @@ public class Cigar {
         return cigQrySites;
     }
 
-    public void colorCigSites(Map<Integer, Double> refSites, Set<Integer> keySet, double start, double end) {
-    }
 }
 
