@@ -9,13 +9,18 @@ import java.util.Map;
 /*
 * @author Anisha
 *
-* Detects SV from alignments using user specified parameters.
+* Detects SV from alignments using user-specified parameters.
 * */
 
 public class DetectSV {
     private static List<Query> queries;
+    private final double digestionRate;
+    private final double cauchyScale;
+    private double resolutionLim;
+    private double cauchyMean;
+    private double minIndelRatio;
     private MapOpticsModel model;
-    private static List<Reference> references;
+    private static Reference chosenRef;
     private double LHRThresh;
     private int minSupport;
     private double minIndelSize;
@@ -30,19 +35,21 @@ public class DetectSV {
     private double pValueThresh;
     private double FPR;
     private double FNR;
-    private int minNumMolecules;
+    private int minCoverage;
 
     public DetectSV(MapOpticsModel model) {
         this.model = model;
-        references = model.getReferences();
+        chosenRef = model.getSelectedRef();
         this.minSupport = 0;
         this.minIndelSize = 500;
         this.maxIndelSize = 0;
         this.flankSig = 5;
         // research optimum default values
-        this.minNumMolecules = 2;
-        this.pValueThresh = 0;
-        this.LHRThresh = 0;
+        this.minCoverage = 10;
+        this.pValueThresh = 1e-09;
+        this.LHRThresh = 1e+06; // threshold for likelihood ratio for all SV hypotheses
+        this.digestionRate = 0.875;
+        this.cauchyScale = 0.0291;
         this.FPR = 0;
         this.FNR = 0;
     }
@@ -50,44 +57,33 @@ public class DetectSV {
 
     // apply user-defined parameters to SV detection model
     public void setParameters(double minIndelSize, double maxIndelSize, int flankSig, int minSupport,
-                              int minNumMolecules, double pValueThresh, double LHRThresh, double FPR, double FNR){
+                              int minCoverage, double pValueThresh, double LHRThresh, double FPR, double FNR,
+                              double minIndelRatio){
         this.minIndelSize = minIndelSize;
         this.maxIndelSize = maxIndelSize;
         this.flankSig = flankSig;
         this.minSupport = minSupport;
-        this.minNumMolecules = minNumMolecules;
+        this.minCoverage = minCoverage;
+        this.minIndelRatio = minIndelRatio;
         this.pValueThresh = pValueThresh;
         this.LHRThresh = LHRThresh;
         this.FPR = FPR;
         this.FNR = FNR;
     }
 
-    public List<Reference> getReferences() {
-        return references;
-    }
-
-    public static void setReferences(List<Reference> references) {
-        DetectSV.references = references;
-    }
-
-    public List<Query> getQueries() {
-        return queries;
-    }
-
-    public static void setQueries(List<Query> queries) {
-        DetectSV.queries = queries;
-    }
-
+   public static void setChosenRef(Reference chosenRef) {
+        DetectSV.chosenRef = chosenRef;
+   }
 
     public void detectIndels() {
-        for (Reference ref : references) {
-            model.setSelectedRef(ref.getRefID());
-            for (Query qry : ref.getQueries()) {
-                Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-                Indel.compareDiffs(qryAlignments, ref.getSites(), qry.getQryViewSites());
-            }
+        for (Query qry : chosenRef.getQueries()) {
+            List<Double> ratios = Indel.compareDiffs(qry.getAlignmentSites(), chosenRef.getSites(),
+                    qry.getQryViewSites());
+            System.out.println("qryID: " + qry.getID());
+            System.out.println(ratios + "");
         }
     }
+
 
     public List<Indel> getIndels() {
         return indels;
@@ -103,10 +99,5 @@ public class DetectSV {
         this.svList = svList;
 
     }
-
-
-
-    // get seeds from query using sliding window, like BLAST find them in reference and then extend them
-    // create a database of k-tuples for reference
-    // query the k-tuples with those in the reference database
+    //
 }
