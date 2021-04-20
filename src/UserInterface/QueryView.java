@@ -55,7 +55,6 @@ public class QueryView extends JPanel {
     private double alignlen;
     private double Start;
     private double End;
-    private static boolean svDisplay = false;
     private List<Integer> refalignments ;
 
     public QueryView(MapOpticsModel model) {
@@ -114,9 +113,6 @@ public class QueryView extends JPanel {
         QueryView.qryViewSelect = qryViewSelect;
     }
 
-    public static void setSvDisplay(boolean svDisplay) {
-        QueryView.svDisplay = svDisplay;
-    }
 
     public static boolean isRegionView() {
         return regionView;
@@ -197,45 +193,14 @@ public class QueryView extends JPanel {
                     }
                     drawContig(g2d, refScaled, chosenRef);
 
-                    // Set up variables for displaying SV
-                    String hitEnum = qry.getHitEnum();
-                    Cigar cig = new Cigar(hitEnum);
-                    cig.parseHitEnum();
-
-                    // Extract aligned ref sites with selected qry
-                    List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
-                            refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
-
-                    cig.colorCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
-                    Map<Integer, String> refCig = cig.getCigRefSites();
-                    Map<Integer, String> qryCig = cig.getCigQrySites();
-
 
                     //draw reference labels
-                    // In SV mode, refsites that are deletions are coloured blue whereas matches are coloured green.
-                    // loop through all sites in ref contig
                     int WindowWidth = this.getWidth();
                     for (int site : refSites.keySet()) {
-                        // Color green sites that are aligned to selected qry
-                        if (qryRefSites.contains(site)) {
-                            // If in SV display color as appropriate
-                            if (svDisplay && refCig.containsKey(site)) {
-                                if (refCig.get(site).equals("D")) {
-                                    g2d.setColor(Color.BLUE);
-                                } else if (refCig.get(site).equals("M")) {
-                                    g2d.setColor(GREEN);
-                                }
-                            } else {
+                        g2d.setColor(Color.black);
+                        if (refalignments.contains(site)) {
+                            if (refAlignments.contains(site)) {
                                 g2d.setColor(GREEN);
-                            }
-
-                        } else {
-                            if (svDisplay && refCig.containsKey(site)) {
-                                if (refCig.get(site).equals("D")) {
-                                    g2d.setColor(Color.BLUE);
-                                } else {
-                                    g2d.setColor(BLACK);
-                                }
                             } else {
                                 g2d.setColor(BLACK);
                             }
@@ -256,26 +221,10 @@ public class QueryView extends JPanel {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
-                            // If SV display mode color insertions as red and matches green
-                            if (svDisplay && qryCig.containsKey(site)) {
-                                if (qryCig.get(site).equals("I")) {
-                                    g2d.setColor(Color.RED);
-                                } else if (qryCig.get(site).equals("M")) {
-                                    g2d.setColor(GREEN);
-                                }
-                            } else {
-                                g2d.setColor(GREEN);
-                            }
+                            g2d.setColor(GREEN);
+
                         } else {
-                            if (svDisplay && qryCig.containsKey(site)) {
-                                if (qryCig.get(site).equals("I")) {
-                                    g2d.setColor(Color.RED);
-                                } else {
-                                    g2d.setColor(BLACK);
-                                }
-                            } else {
-                                g2d.setColor(BLACK);
-                            }
+                            g2d.setColor(BLACK);
                         }
 
                         int position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
