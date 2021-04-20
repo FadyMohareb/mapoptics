@@ -385,11 +385,6 @@ public class ReferenceView extends JPanel {
                 // For each query, draw rectangle, sites and alignments
                 for (Query qry : ref.getQueries()) {
                     if (ref.getDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
-                        Font fontI = new Font("Tahoma", Font.ITALIC, 12);
-                        g2d.setFont(fontI);
-                        g2d.setColor(RED);
-                        g2d.drawString("Chosen contig was deleted", 30, 70);
-                        g2d.setFont(defaultFont);
                         continue;
                     }
 
