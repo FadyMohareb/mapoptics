@@ -52,7 +52,7 @@ public class SVView extends JPanel {
     private double alignlen;
     private double Start;
     private double End;
-    private static boolean svDisplay = false;
+    private static boolean cigarDisplay = false;
     private List<Integer> refalignments ;
 
     public SVView(MapOpticsModel model) {
@@ -75,6 +75,17 @@ public class SVView extends JPanel {
 
     public static void setSVList() {
     }
+
+    public static void setStyle(String style) {
+        SVView.labelStyle = style;
+    }
+
+    public static void setRefDataset(String refDataset) {
+    }
+
+    public static void setQryDataset(String qryDataset) {
+    }
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -155,7 +166,7 @@ public class SVView extends JPanel {
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
                             refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
 
-                    cig.colorCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
+                    cig.mapCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
                     Map<Integer, String> refCig = cig.getCigRefSites();
                     Map<Integer, String> qryCig = cig.getCigQrySites();
 
@@ -168,7 +179,7 @@ public class SVView extends JPanel {
                         // Color green sites that are aligned to selected qry
                         if (qryRefSites.contains(site)) {
                             // If in SV display color as appropriate
-                            if (svDisplay && refCig.containsKey(site)) {
+                            if (labelStyle.equals("cigar") && refCig.containsKey(site)) {
                                 if (refCig.get(site).equals("D")) {
                                     g2d.setColor(Color.BLUE);
                                 } else if (refCig.get(site).equals("M")) {
@@ -179,7 +190,7 @@ public class SVView extends JPanel {
                             }
 
                         } else {
-                            if (svDisplay && refCig.containsKey(site)) {
+                            if (labelStyle.equals("cigar") && refCig.containsKey(site)) {
                                 if (refCig.get(site).equals("D")) {
                                     g2d.setColor(Color.BLUE);
                                 } else {
@@ -206,7 +217,7 @@ public class SVView extends JPanel {
                         if (qryAlignments.containsKey(site)) {
                             match = true;
                             // If SV display mode color insertions as red and matches green
-                            if (svDisplay && qryCig.containsKey(site)) {
+                            if (labelStyle.equals("cigar") && qryCig.containsKey(site)) {
                                 if (qryCig.get(site).equals("I")) {
                                     g2d.setColor(Color.RED);
                                 } else if (qryCig.get(site).equals("M")) {
@@ -216,7 +227,7 @@ public class SVView extends JPanel {
                                 g2d.setColor(GREEN);
                             }
                         } else {
-                            if (svDisplay && qryCig.containsKey(site)) {
+                            if (labelStyle.equals("cigar") && qryCig.containsKey(site)) {
                                 if (qryCig.get(site).equals("I")) {
                                     g2d.setColor(Color.RED);
                                 } else {
@@ -258,7 +269,7 @@ public class SVView extends JPanel {
             } else {
                 Font font = new Font("Tahoma", Font.ITALIC, 12);
                 g2d.setFont(font);
-                g2d.drawString("Choose a query from Query View", this.getWidth() / 2 - 115, this.getHeight() / 2);
+                g2d.drawString("Choose a Reference contig from SUMMARY VIEW", this.getWidth() / 2 - 115, this.getHeight() / 2);
             }
 
         } catch (Exception e) {
