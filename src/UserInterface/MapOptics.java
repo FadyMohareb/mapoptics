@@ -48,32 +48,29 @@ public class MapOptics extends JFrame {
     private final JTable imageTable = new JTable();
     private final JCheckBox selectAllImages = new JCheckBox();
 
-    private MapOpticsModel model;
+    private final MapOpticsModel model;
 
     private String xmapPath, refPath, qryPath;
 
     // set variables for panel widths and heights so when resized, drawing can be resized relatively
     private double refViewHeight = 0.0;
     private double refViewWidth = 0.0;
-    private double sumViewHeight = 0.0;
-    private double sumViewWidth = 0.0;
 
-    private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
-    private javax.swing.JCheckBox confidenceSetting;
-    private javax.swing.JButton exportQryButton, exportRefButton;
-    private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
+    private JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
+    private JCheckBox confidenceSetting;
+    private JButton exportQryButton, exportRefButton;
+    private JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
-    private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
-    private javax.swing.JPanel labelDensityGraph, referencesGraph;
-    private javax.swing.JTable labelTable, qryContigTable, qryViewRefTable, refContigTable;
-    private javax.swing.JCheckBox overlapSetting;
-    private javax.swing.JComboBox<String> refOrQry, regionType;
-    private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch;
-    private javax.swing.JTabbedPane tabPaneFiles;
+    private JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
+    private JPanel labelDensityGraph, referencesGraph;
+    private JTable labelTable, qryContigTable, qryViewRefTable, refContigTable;
+    private JCheckBox overlapSetting;
+    private JComboBox<String> refOrQry, regionType;
+    private JRadioButton styleChim, styleCoverage, styleMatch;
+    private JTabbedPane tabPaneFiles;
 
-    private UserInterface.QueryView queryView;
-    private UserInterface.ReferenceView referenceView;
-    private UserInterface.SummaryView summaryView;
+    private QueryView queryView;
+    private ReferenceView referenceView;
 
     private static final String EMPTY_STRING = "";
     private static final int DEFAULT = 0;
@@ -249,7 +246,7 @@ public class MapOptics extends JFrame {
         refDataset = new javax.swing.JTextField();
         qryDataset = new javax.swing.JTextField();
         JPanel referenceGraphPanel = new JPanel();
-        summaryView = new UserInterface.SummaryView(model);
+        SummaryView summaryView = new SummaryView(model);
         referencesGraph = new javax.swing.JPanel();
         labelDensityGraph = new javax.swing.JPanel();
         JLabel jLabel16 = new JLabel();
@@ -278,8 +275,6 @@ public class MapOptics extends JFrame {
         JButton reOrientate = new JButton();
         JButton deleteContig = new JButton();
         JButton resetButton = new JButton();
-//        JButton alignLeft = new JButton();
-//        JButton alignRight = new JButton();
         JButton save = new JButton();
         tabPaneFiles = new javax.swing.JTabbedPane();
         JScrollPane refViewTableScroll = new JScrollPane();
@@ -1154,12 +1149,6 @@ public class MapOptics extends JFrame {
         resetButton.setText("RESET");
         resetButton.addActionListener(this::resetButtonActionPerformed);
 
-//        alignLeft.setText("<");
-//        alignLeft.addActionListener(this::alignLeftActionPerformed);
-//
-//        alignRight.setText(">");
-//        alignRight.addActionListener(this::alignRightActionPerformed);
-
         save.setText("SAVE");
         save.addActionListener(this::saveActionPerformed);
 
@@ -1171,10 +1160,6 @@ public class MapOptics extends JFrame {
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-//                                                .addGroup(jPanel3Layout.createSequentialGroup()
-//                                                        .addComponent(alignLeft)
-//                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-//                                                        .addComponent(alignRight))
                                                 .addGroup(jPanel3Layout.createSequentialGroup()
                                                         .addComponent(zoomIn, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1229,9 +1214,6 @@ public class MapOptics extends JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(deleteContig)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-//                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-//                                        .addComponent(alignRight)
-//                                        .addComponent(alignLeft))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(resetButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1354,7 +1336,7 @@ public class MapOptics extends JFrame {
 
         regionType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Reference", "Query" }));
 
-        qryorientate.setLabel("re-orientate");
+        qryorientate.setText("re-orientate");
         qryorientate.addActionListener(this::qryorientateActionPerformed);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -1654,7 +1636,7 @@ public class MapOptics extends JFrame {
                 File fileToSave = fileChooser.getSelectedFile();
 
                 // Uses CSV Writer class to write to user defined file
-                CSVWriter qryContigsOut = null;
+                CSVWriter qryContigsOut;
                 try {
                     if (fileToSave.getPath().endsWith(".csv")) {
                         qryContigsOut = new CSVWriter(new FileWriter(fileToSave));
@@ -1696,20 +1678,10 @@ public class MapOptics extends JFrame {
             JOptionPane.showMessageDialog(this, "Table is not populated please select " +
                     "a reference", "Error in Export Table", JOptionPane.ERROR_MESSAGE);
         }
-
-
-
     }
 
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // orientates all query contigs that are negatively oriented
-//        UserRefData.setQueries(SortOrientation.sortAllOrientation(UserRefData.getReferences(), UserRefData.getQueries()));
-//        UserRefData.setPanelLength(refViewWidth);
-//        UserRefData.setPanelHeight(refViewHeight);
-//        for (String refId : UserRefData.getReferences().keySet()) {
-//            UserRefData.reCentreView(refId);
-//        }
-//        referenceView.repaint();
         if (!model.getSelectedRefID().isEmpty()) {
             for (Query qry : model.getSelectedRef().getQueries()) {
                 if ((qry.getOrientation().equals("-") && !qry.isFlipped()) ||
@@ -1795,18 +1767,8 @@ public class MapOptics extends JFrame {
                 qryDataset.setVisible(true);
                 String refCmapDataset = FilenameUtils.getName(refPath);
                 String qryCmapDataset = FilenameUtils.getName(qryPath);
-
-                //TODO: Can delete if not used by other branches
-
-                // extract data from files
-//                RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
-//                RawFileData.setRefContigs(CmapReader.cmapToHashMap(refPath));
-//                RawFileData.setQryContigs(CmapReader.cmapToHashMap(qryPath));
-
                 refDataset.setText(refCmapDataset);
                 qryDataset.setText(qryCmapDataset);
-//                ReferenceView.setRefDataset(refCmapDataset);
-//                ReferenceView.setQryDataset(qryCmapDataset);
 
                 setAllData();
             }
@@ -1836,32 +1798,6 @@ public class MapOptics extends JFrame {
                 String refData = refDataset.getText();
                 refDataset.setText(qryDataset.getText());
                 qryDataset.setText(refData);
-
-                // TODO: Can possibly delete
-//                // reread the files but swapping the variables
-//                if (XmapReader.isSwap()) {
-//                    XmapReader.setSwap(false);
-//                    // extract data from files
-//                    RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
-//                    RawFileData.setRefContigs(CmapReader.cmapToHashMap(refPath));
-//                    RawFileData.setQryContigs(CmapReader.cmapToHashMap(qryPath));
-//                    String refData = refDataset.getText();
-//                    refDataset.setText(qryDataset.getText());
-//                    qryDataset.setText(refData);
-//                    ReferenceView.setRefDataset(qryDataset.getText());
-//                    ReferenceView.setQryDataset(refData);
-//                } else {
-//                    XmapReader.setSwap(true);
-//                    // extract data from files
-//                    RawFileData.setAlignmentInfo(XmapReader.xmapToHashMap(xmapPath));
-//                    RawFileData.setRefContigs(CmapReader.cmapToHashMap(qryPath));
-//                    RawFileData.setQryContigs(CmapReader.cmapToHashMap(refPath));
-//                    String refData = refDataset.getText();
-//                    refDataset.setText(qryDataset.getText());
-//                    qryDataset.setText(refData);
-//                    ReferenceView.setRefDataset(qryDataset.getText());
-//                    ReferenceView.setQryDataset(refData);
-//                }
                 setAllData();
             }
         } else {
@@ -1922,31 +1858,10 @@ public class MapOptics extends JFrame {
         }
     }
 
-//    private void referenceViewMouseClicked(java.awt.event.MouseEvent evt) {
-//        // Set clicked contig
-//        Rectangle2D qry;
-//        boolean qryMatch = false;
-//        String chosenRef = ReferenceView.getChosenRef();
-//        if (!chosenRef.equals(EMPTY_STRING)) {
-//            for (String qryId : UserRefData.getReferences(chosenRef).getConnections()) {
-//                qry = UserRefData.getQueries(chosenRef + "-" + qryId).getRectangle();
-//                if (qry.contains(evt.getPoint())) {
-//                    qryMatch = true;
-//                    changeQry(qryId);
-//                }
-//            }
-//            if (!qryMatch) {
-//                changeQry(EMPTY_STRING);
-//            }
-//            repaint();
-//        }
-//    }
-
     private void zoomInActionPerformed(java.awt.event.ActionEvent evt) {
         // zoom in reference view
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
             referenceView.zoomIn();
-//            ReferenceView.zoom(1.2, referenceView.getWidth());
             referenceView.repaint();
         }
     }
@@ -1955,7 +1870,6 @@ public class MapOptics extends JFrame {
         // zoom out reference view
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
             referenceView.zoomOut();
-//            ReferenceView.zoom(0.8, referenceView.getWidth());
             referenceView.repaint();
         }
     }
@@ -2003,9 +1917,6 @@ public class MapOptics extends JFrame {
                     qry.reOrientate();
                 }
             }
-//            String refqryId = ReferenceView.getChosenRef() + "-" + ReferenceView.getChosenQry();
-//            QryContig sortedContig = SortOrientation.sortOneOrientation(UserRefData.getQueries(refqryId), UserRefData.getReferences(ReferenceView.getChosenRef()));
-//            UserRefData.getQueries().put(refqryId, sortedContig);
             repaint();
         }
     }
@@ -2014,7 +1925,6 @@ public class MapOptics extends JFrame {
         if (!model.getSelectedRefID().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
             int delete = JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete this query contig?", "Delete", JOptionPane.YES_NO_OPTION);
             if (delete == JOptionPane.YES_OPTION) {
-                //DeleteConflicts.deleteOne(MapOpticsModel.getSelectedRefID(), ReferenceView.getChosenQry());
 
                 // create ref object for selected ref
                 Reference chosenRef = model.getSelectedRef();
@@ -2044,13 +1954,6 @@ public class MapOptics extends JFrame {
             switch (n) {
                 case DEFAULT:
                     // reset view to default overlap
-                    //UserRefData.resetDataToDefault();
-                    //UserQryData.resetDataToDefault();
-
-                    // clear deleted qryIDs list in each reference
-//                    for (Reference ref : model.getReferences()) {
-//                        ref.getDelQryIDs().clear();
-//                    }
                     Reference refD = model.getSelectedRef();
                     refD.getDelQryIDs().clear();
                     for (Query qry : refD.getQueries()) {
@@ -2063,12 +1966,6 @@ public class MapOptics extends JFrame {
                     break;
                 case LAST_SAVED:
                     // reset view to last saved
-
-//                    UserRefData.setHorZoom(refViewWidth / sumViewWidth);
-//                    UserRefData.setVertZoom(refViewHeight / sumViewHeight);
-//                    UserRefData.resetDataToLastSaved();
-//                    UserQryData.resetDataToLastSaved();
-
                     Reference refLS = model.getSelectedRef();
                     refLS.getDelQryIDs().clear();
                     for (int delQry : refLS.getSavedDelQryIDs()) {
@@ -2084,41 +1981,11 @@ public class MapOptics extends JFrame {
         }
     }
 
-    private void alignLeftActionPerformed(java.awt.event.ActionEvent evt) {
-        // align contig to left
-        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
-            String refId = ReferenceView.getChosenRef();
-            String qryId = ReferenceView.getChosenQry();
-            UserRefData.align(refId, qryId, true);
-            repaint();
-        }
-    }
-
-    private void alignRightActionPerformed(java.awt.event.ActionEvent evt) {
-        // align contig to right
-        if (!ReferenceView.getChosenRef().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
-            String refId = ReferenceView.getChosenRef();
-            String qryId = ReferenceView.getChosenQry();
-            UserRefData.align(refId, qryId, false);
-            repaint();
-        }
-    }
-
     private void saveActionPerformed(java.awt.event.ActionEvent evt) {
         // data is saved to summary view
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
             int save = JOptionPane.showConfirmDialog(null, "Would you like to save changes for this reference contig?", "Save Changes", JOptionPane.YES_NO_OPTION);
             if (save == JOptionPane.YES_OPTION) {
-                /*
-                SavedRefData.setHorZoom(sumViewWidth / refViewWidth);
-                SavedRefData.setVertZoom(sumViewHeight / refViewHeight);
-                SavedRefData.saveOneData(ReferenceView.getChosenRef());
-                SavedQryData.saveOneData(ReferenceView.getChosenRef());
-                 */
-                // save the deleted qryIDs by populating the savedDelQryID list with qryIDs
-//                Reference chosenRef = model.getSelectedRef();
-//                chosenRef.setSavedDelQryIDs(chosenRef.getDelQryIDs());
-
                 Reference ref =  model.getSelectedRef();
                 ref.getSavedDelQryIDs().clear();
                 ref.setSavedDelQryIDs(new ArrayList<>(ref.getDelQryIDs()));
@@ -2130,10 +1997,6 @@ public class MapOptics extends JFrame {
     private void reCentreActionPerformed(java.awt.event.ActionEvent evt) {
         // recentre the view
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
-//            UserRefData.setPanelLength(refViewWidth);
-//            UserRefData.setPanelHeight(refViewHeight);
-//            String chosenRef = ReferenceView.getChosenRef();
-//            UserRefData.reCentreView(chosenRef);
             referenceView.reCenter();
             referenceView.repaint();
         }
@@ -2145,11 +2008,10 @@ public class MapOptics extends JFrame {
         // set IDs of reference and query to that searched
         boolean refMatch = false;
         boolean qryMatch = false;
-        boolean regionMatch = false;
         String refSearch = refIdSearch.getText();
         String qrySearch = qryIdSearch.getText();
         String region = regionSearch.getText();
-        String type = null;
+        String type;
         type = Objects.requireNonNull(regionType.getSelectedItem()).toString();
         List<String> refcontig = new ArrayList<>();
         List<String> qrycontig = new ArrayList<>();
@@ -2169,7 +2031,7 @@ public class MapOptics extends JFrame {
             JOptionPane.showMessageDialog(null, "Please provide a reference ID", "Invalid Input", JOptionPane.ERROR_MESSAGE);
         }
 
-        if (!qrySearch.equals(EMPTY_STRING) & refMatch==true) {
+        if (!qrySearch.equals(EMPTY_STRING) & refMatch) {
             changeRef(refSearch);
             int col=0;
             for(int i=0;i<qryContigTable.getRowCount();i++){
@@ -2193,7 +2055,6 @@ public class MapOptics extends JFrame {
 
             }else{
                 String[] regions = region.split("-");
-                // System.out.println(regions[0]+" "+regions[1]);
                 int regionstart = Integer.parseInt(regions[0]);
                 int regionend = Integer.parseInt(regions[1]);
                 if(regionstart<0 || regionstart>=regionend){
@@ -2221,7 +2082,7 @@ public class MapOptics extends JFrame {
                         changeRef(refSearch);
                         changeQry(qrySearch);
                         Reference ref = model.getSelectedRef();
-                        Query qry = ref.getQuery(qrySearch);
+//                        Query qry = ref.getQuery(qrySearch);
                         if(regionstart >= ref.getLength()||regionend>= ref.getLength())
                         {
                             JOptionPane.showMessageDialog(null, "Invalid region", "Invalid Input", JOptionPane.ERROR_MESSAGE);
@@ -2229,15 +2090,11 @@ public class MapOptics extends JFrame {
                             QueryView.setRegionView(true);
                             QueryView.setQryViewSelect(false);
                             QueryView.setReferenceViewSelect(true);}
-                    };
+                    }
                     repaint();
                 }
             }
-
-        }else{
-            //do nothing
         }
-
     }
 
 
@@ -2246,8 +2103,6 @@ public class MapOptics extends JFrame {
         if (!ReferenceView.getChosenRef().equals(EMPTY_STRING)) {
             double positionScale;
             String position = EMPTY_STRING;
-            String refId = ReferenceView.getChosenRef();
-//            Rectangle2D ref = UserRefData.getReferences(refId).getRectangle();
             Rectangle2D ref = model.getSelectedRef().getRefViewRect();
             if (ref.contains(evt.getPoint())) {
                 // display position
@@ -2255,10 +2110,9 @@ public class MapOptics extends JFrame {
                 position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale);
             }
             Rectangle2D qryRect;
-//            for (String qryId : UserRefData.getReferences(refId).getConnections()) {
             for (Query qry : model.getSelectedRef().getQueries()) {
                 // don't display deleted query contig position
-                int refID = Integer.parseInt(model.getSelectedRef().getRefID());
+//                int refID = Integer.parseInt(model.getSelectedRef().getRefID());
                 if (model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
                     continue;
                 }
@@ -2283,12 +2137,12 @@ public class MapOptics extends JFrame {
         // when mouse is hovered over, display the position
         if (!model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
                 && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
-            double positionScale=0.0;
+            double positionScale;
             String position = "";
 
             String qryId = QueryView.getChosenQry();
 
-            Double refstart = QueryViewData.getRefStart();
+            double refstart = QueryViewData.getRefStart();
 
             //get qryrectangle
             Rectangle2D ref = model.getSelectedRef().getQryViewRect();
@@ -2627,7 +2481,6 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "No conflict resolution file is loaded", "No file found", JOptionPane.ERROR_MESSAGE);
         }
-
     }
 
     private void exportImagesActionPerformed(java.awt.event.ActionEvent evt) {
@@ -2643,7 +2496,7 @@ public class MapOptics extends JFrame {
 
             if (chosenDir != null) {
 
-                new File(chosenPath + chosenDir).mkdirs();
+                new File(chosenPath + chosenDir);
 
                 PDFDocument doc;
                 Paper p = new Paper();
@@ -2778,7 +2631,6 @@ public class MapOptics extends JFrame {
                 }
                 // get selected contig
                 String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-//                model.setSelectedRow(chosenQry);
                 changeQry(chosenQry);
                 repaint();
             }
@@ -2794,7 +2646,6 @@ public class MapOptics extends JFrame {
                 }
                 // get selected contig
                 String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
-//                model.setSelectedRow(chosenQry);
                 changeQry(chosenQry);
                 repaint();
             }
@@ -3041,26 +2892,6 @@ public class MapOptics extends JFrame {
         return new ChartPanel(chart);
     }
 
-//    private void fillQryTable(String refId) {
-//        // Empty table
-//        DefaultTableModel qryModel = (DefaultTableModel) qryContigTable.getModel();
-//        qryModel.setRowCount(0);
-//        // Add rows to query table
-//        if (!refId.equals(EMPTY_STRING)) {
-//            for (String qryId : RawFileData.getReferences(refId).getConnections()) {
-//                qryModel.addRow(new Object[]{
-//                        qryId,
-//                        (int) RawFileData.getQryContigs(qryId).getContigLen(),
-//                        RawFileData.getAlignmentInfo(refId + "-" + qryId).getOrientation(),
-//                        Double.parseDouble(RawFileData.getAlignmentInfo(refId + "-" + qryId).getConfidence()),
-//                        RawFileData.getAlignmentInfo(refId + "-" + qryId).getHitEnum(),
-//                        RawFileData.getQryContigs(qryId).getLabelInfo().length - 1,
-//                        RawFileData.getQueries(refId + "-" + qryId).getAlignments().length
-//                });
-//            }
-//        }
-//    }
-
     private void fillQryTable(String refId) {
         // Format table to list all queries of selected reference
         DefaultTableModel tmRefContigs = (DefaultTableModel) qryContigTable.getModel();
@@ -3081,26 +2912,6 @@ public class MapOptics extends JFrame {
                         qry.getNumMatches()
                 });
             }
-        }
-    }
-
-    // TODO: Can possibly delete
-
-    private void fillRefTable(LinkedHashMap<String, Integer> numOverlaps) {
-        // Format table to list all contigs with matches
-        DefaultTableModel tmRefContigs = (DefaultTableModel) refContigTable.getModel();
-        // Empty table
-        tmRefContigs.setRowCount(0);
-        // Add rows to table
-        for (String refId : RawFileData.getReferences().keySet()) {
-            tmRefContigs.addRow(new Object[]{
-                    Integer.parseInt(refId),
-                    (int) RawFileData.getRefContigs(refId).getContigLen(),
-                    RawFileData.getRefContigs(refId).getLabelInfo().length - 1,
-                    ((RawFileData.getRefContigs(refId).getLabelInfo().length - 1) / RawFileData.getRefContigs(refId).getContigLen()) * 100000,
-                    RawFileData.getReferences(refId).getConnections().length,
-                    numOverlaps.get(refId)
-            });
         }
     }
 
@@ -3140,20 +2951,10 @@ public class MapOptics extends JFrame {
     private void fillQryViewRefTable(String qryId) {
 
         DefaultTableModel tmQryMatch = (DefaultTableModel) qryViewRefTable.getModel();
-        Map<String,String[]> refData= (Map<String,String[]>) QueryViewData.getConnection();
+        Map<String,String[]> refData= QueryViewData.getConnection();
         // Empty table
         tmQryMatch.setRowCount(0);
         // Add rows to table
-     //   if (!qryId.equals(EMPTY_STRING)) {
-      //      Reference ref=model.getSelectedRef();
-       //    Query qry=ref.getQuery(qryId);
-       //     tmQryMatch.addRow(new Object[]{
-       ////           ref.getRefID(),
-       //             qry.getOrientation(),
-        //            qry.getConfidence()
-       //     });
-       //     for (String s:refData.keySet()){System.out.println(s+"+"+refData.get(s)[0]+"+"+refData.get(s)[1]);}
-      //  }
 
         if (!qryId.equals(EMPTY_STRING)&refData!=null) {
         for (String s:refData.keySet()){
@@ -3165,57 +2966,7 @@ public class MapOptics extends JFrame {
               });
             }
         }}
-
-
-
     }
-
-
-
-
-/*
-    private void fillQryViewRefTable(String qryId) {
-        DefaultTableModel tmQryMatch = (DefaultTableModel) qryViewRefTable.getModel();
-        // Empty table
-        tmQryMatch.setRowCount(0);
-        // Add rows to table
-        if (!qryId.equals(EMPTY_STRING)) {
-            for (String refId : QueryViewData.getQryConnections(qryId)) {
-                tmQryMatch.addRow(new Object[]{
-                        refId,
-                        RawFileData.getAlignmentInfo(refId + "-" + qryId).getOrientation(),
-                        Double.parseDouble(RawFileData.getAlignmentInfo(refId + "-" + qryId).getConfidence())
-                });
-            }
-        }
-
-    }
-*/
-//    private void fillLabelTable(String qryId) {
-//        DefaultTableModel labelModel = (DefaultTableModel) labelTable.getModel();
-//        // Empty table
-//        labelModel.setRowCount(0);
-//        // Add rows to table
-//        if (!qryId.equals(EMPTY_STRING)) {
-//            for (int i = 0; i < RawFileData.getQryContigs(qryId).getLabelInfo().length - 1; i++) {
-//                double chimQual;
-//                LabelInfo label = RawFileData.getQryContigs(qryId).getLabelInfo()[i];
-//                if (label.getChimQuality() == null) {
-//                    chimQual = 0.0;
-//                } else {
-//                    chimQual = Double.parseDouble(label.getChimQuality());
-//                }
-//                labelModel.addRow(new Object[]{
-//                        Integer.toString(i),
-//                        Double.parseDouble(label.getLabelPos()),
-//                        Double.parseDouble(label.getCoverage()),
-//                        Double.parseDouble(label.getOccurance()),
-//                        chimQual,
-//                        Double.parseDouble(label.getStdDev())
-//                });
-//            }
-//        }
-//    }
 
     private void fillLabelTable(String qryId) {
         DefaultTableModel labelModel = (DefaultTableModel) labelTable.getModel();
@@ -3242,48 +2993,8 @@ public class MapOptics extends JFrame {
 
     private void setAllData() {
 
-        // TODO: Can possibly delete
-
-//        // generate raw data
-//        RawFileData.setData();
-//        // set overlap data from raw data
-//        SortOverlap.sortOverlaps(RawFileData.getReferences(), RawFileData.getQueries(), 10000);
-//
-//        // set reference view data
-//        refViewHeight = referenceView.getHeight();
-//        refViewWidth = referenceView.getWidth();
-//        RefViewData.setPanelLength(refViewWidth);
-//        RefViewData.setPanelHeight(refViewHeight);
-//        RefViewData.setData();
-//
-//        // set summary view data
-//        sumViewHeight = summaryView.getHeight();
-//        sumViewWidth = summaryView.getWidth();
-//        SummaryViewData.setHorZoom(sumViewWidth / refViewWidth);
-//        SummaryViewData.setVertZoom(sumViewHeight / refViewHeight);
-//        SummaryViewData.setData();
-//
-//        // set query view data
-//        double qryViewHeight = queryView.getHeight();
-//        double qryViewWidth = queryView.getWidth();
-//        QueryViewData.setPanelLength(qryViewWidth);
-//        QueryViewData.setPanelHeight(qryViewHeight);
-//        QueryViewData.setData();
-//
-//        // set usr altered data
-//        UserRefData.setData();
-//        UserQryData.setData();
-//        SavedRefData.setData();
-//        SavedQryData.setData();
-//
-//        LinkedHashMap<String, Integer> numOverlaps = CalculateOverlaps.countAllOverlaps(RefViewData.getReferences(), RefViewData.getQueries());
-//
-//        fillRefTable(numOverlaps);
-
         SummaryViewData.setSummaryData(model);
-
         fillRefTable();
-
 
         // Displays graph of reference contigs
         String selectedRow = model.getSelectedRefID();
@@ -3336,7 +3047,6 @@ public class MapOptics extends JFrame {
         labelDensityGraph.setVisible(true);
         refIdSearch.setText(refId);
 
-        // TODO: Read and set alignment data for a specific row
         //REFERENCE VIEW TAB
         if (!refId.isEmpty()) {
             RefViewData.setReferenceData(model);
@@ -3349,18 +3059,9 @@ public class MapOptics extends JFrame {
         referenceView.reCenter();
 
         //QUERY VIEW TAB
-        //QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);
         SearchRegionData.resetData();
         QueryView.setChosenRef(refId);
-
-
-
-
-//        SummaryView.setChosenRef(refId); // probably not needed
-
-
-
 
         repaint();
     }
@@ -3369,7 +3070,7 @@ public class MapOptics extends JFrame {
         ReferenceView.setRefDataset(refDataset.getText());
         ReferenceView.setQryDataset(qryDataset.getText());
         ReferenceView.setChosenQry(qryId);
-        if(qryId!=""){    QueryViewData.setQueryData(model,qryId);}
+        if(!qryId.equals("")){    QueryViewData.setQueryData(model,qryId);}
         QueryView.setChosenQry(qryId);
         QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);
