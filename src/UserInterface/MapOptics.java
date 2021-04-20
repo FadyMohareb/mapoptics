@@ -52,10 +52,6 @@ public class MapOptics extends JFrame {
 
     private String xmapPath, refPath, qryPath;
 
-    // set variables for panel widths and heights so when resized, drawing can be resized relatively
-    private double refViewHeight = 0.0;
-    private double refViewWidth = 0.0;
-
     private JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
     private JCheckBox confidenceSetting;
     private JButton exportQryButton, exportRefButton;
@@ -1073,11 +1069,6 @@ public class MapOptics extends JFrame {
                 referenceViewMouseClicked(evt);
             }
         });
-        referenceView.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                referenceViewComponentResized();
-            }
-        });
 
         exportRefButton.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 10)); // NOI18N
         exportRefButton.setText("Export Image");
@@ -1824,18 +1815,6 @@ public class MapOptics extends JFrame {
             QueryView.setChosenLabel(chosenLabel);
             repaint();
         }
-    }
-
-    private void referenceViewComponentResized() {
-        // when panel resized resize image
-        double newHeight = referenceView.getHeight();
-        double newWidth = referenceView.getWidth();
-        double heightChange = newHeight / refViewHeight;
-        double widthChange = newWidth / refViewWidth;
-        referenceView.zoomPanel(widthChange, heightChange);
-        refViewHeight = newHeight;
-        refViewWidth = newWidth;
-        repaint();
     }
 
     private void referenceViewMouseClicked(java.awt.event.MouseEvent evt) {
@@ -3052,8 +3031,6 @@ public class MapOptics extends JFrame {
         }
 
         fillQryTable(refId);
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
         ReferenceView.setChosenRef(refId);
         referenceView.reCenter();
 
@@ -3066,8 +3043,6 @@ public class MapOptics extends JFrame {
     }
 
     private void changeQry(String qryId) {
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
         ReferenceView.setChosenQry(qryId);
         if(!qryId.equals("")){    QueryViewData.setQueryData(model,qryId);}
         QueryView.setChosenQry(qryId);
