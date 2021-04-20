@@ -2011,7 +2011,7 @@ public class MapOptics extends JFrame {
     }
 
     private void deleteContigActionPerformed(java.awt.event.ActionEvent evt) {
-        if (!MapOpticsModel.getSelectedRefID().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
+        if (!model.getSelectedRefID().equals(EMPTY_STRING) && !ReferenceView.getChosenQry().equals(EMPTY_STRING)) {
             int delete = JOptionPane.showConfirmDialog(null, "Are you sure you would like to delete this query contig?", "Delete", JOptionPane.YES_NO_OPTION);
             if (delete == JOptionPane.YES_OPTION) {
                 //DeleteConflicts.deleteOne(MapOpticsModel.getSelectedRefID(), ReferenceView.getChosenQry());
@@ -2029,7 +2029,7 @@ public class MapOptics extends JFrame {
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // check the user would really like to reset
-        if (!MapOpticsModel.getSelectedRefID().equals(EMPTY_STRING)) {
+        if (!model.getSelectedRefID().equals(EMPTY_STRING)) {
             Object[] choices = {"Default", "Last saved", "Cancel"};
 
             int n = JOptionPane.showOptionDialog(null,
@@ -2373,18 +2373,17 @@ public class MapOptics extends JFrame {
 
     private void saveAllContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // save the view of all contigs
-        if (!RawFileData.getRefContigs().isEmpty()) {
+        if (!model.getReferences().isEmpty()) {
             int saveAll = JOptionPane.showConfirmDialog(null, "Are you sure you would like to save the view of all contigs?", "Save All Contigs", JOptionPane.YES_NO_OPTION);
             if (saveAll == JOptionPane.YES_OPTION) {
-//                SavedRefData.setHorZoom(sumViewWidth / refViewWidth);
-//                SavedRefData.setVertZoom(sumViewHeight / refViewHeight);
-//                SavedQryData.saveAllData();
-//                SavedRefData.saveAllData();
-
+                for (Reference ref : model.getReferences()) {
+                    ref.getSavedDelQryIDs().clear();
+                    ref.setSavedDelQryIDs(new ArrayList<>(ref.getDelQryIDs()));
+                }
                 repaint();
             }
         } else {
-            JOptionPane.showMessageDialog(null, "No files loaded", "Invalid input", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "No data loaded", "Invalid input", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3287,7 +3286,7 @@ public class MapOptics extends JFrame {
 
 
         // Displays graph of reference contigs
-        String selectedRow = MapOpticsModel.getSelectedRefID();
+        String selectedRow = model.getSelectedRefID();
 
         referencesGraph.removeAll();
         ChartPanel refChartPanel = makeLengthChartPanel(model.getLengths(), selectedRow);
