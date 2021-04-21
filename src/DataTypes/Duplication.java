@@ -1,5 +1,7 @@
 package DataTypes;
 
+import Algorithms.DetectSV;
+
 /*
 * @author Anisha
 *
@@ -11,6 +13,12 @@ public class Duplication extends SV {
     Duplication() {
         super();
     }
+
+    @Override
+    public String setType() {
+        return "Duplication";
+    }
+
     @Override
     void setSVRegion(SV sv) {
 
