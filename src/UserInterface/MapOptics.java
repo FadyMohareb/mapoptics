@@ -1001,17 +1001,7 @@ public class MapOptics extends JFrame {
         leftPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
         refContigTable.setAutoCreateRowSorter(true);
-        refContigTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String [] {
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
+        refContigTable.setModel(new DefaultTableModel());
         refContigTable.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         refContigTable.setMinimumSize(new java.awt.Dimension(600, 640));
         refContigTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -1236,17 +1226,7 @@ public class MapOptics extends JFrame {
         jSplitPane2.setLeftComponent(jLayeredPane2);
 
         qryContigTable.setAutoCreateRowSorter(true);
-        qryContigTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String [] {
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
+        qryContigTable.setModel(new DefaultTableModel());
         qryContigTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         qryContigTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -1400,17 +1380,7 @@ public class MapOptics extends JFrame {
         qryorientate.getAccessibleContext().setAccessibleDescription("");
 
         qryViewRefTable.setAutoCreateRowSorter(true);
-        qryViewRefTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String [] {
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
+        qryViewRefTable.setModel(new DefaultTableModel());
         qryViewRefTable.setPreferredSize(new java.awt.Dimension(254, 64));
         qryViewRefTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         qryViewRefTable.setSize(new java.awt.Dimension(254, 0));
@@ -1453,17 +1423,7 @@ public class MapOptics extends JFrame {
         jSplitPane1.setLeftComponent(jLayeredPane1);
 
         labelTable.setAutoCreateRowSorter(true);
-        labelTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String [] {
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
+        labelTable.setModel(new DefaultTableModel());
         labelTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         labelTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
