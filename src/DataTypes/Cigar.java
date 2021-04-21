@@ -11,17 +11,21 @@ public class Cigar {
     * */
 
     private final String hitEnum;
-    private final List<String> parsedCigar;
+    public final List<String> parsedCigar;
     private final Map<Integer, String> cigRefSites;
-    private final Map<Integer, String> cigQrySites;
+    private Map<Integer, String> cigQrySites;
+    private final Map<Double, String> cigRefPos;
+    private final Map<Double, String> cigQryPos;
 
 
 
     public Cigar(String hitEnum) {
         this.hitEnum = hitEnum;
         parsedCigar = new ArrayList<>();
-        cigRefSites = new HashMap<>();
-        cigQrySites = new HashMap<>();
+        cigRefSites = new LinkedHashMap<>();
+        cigRefPos = new LinkedHashMap<>();
+        cigQrySites = new LinkedHashMap<>();
+        cigQryPos = new LinkedHashMap<>();
 
     }
     public void parseHitEnum() {
@@ -47,34 +51,42 @@ public class Cigar {
         }
     }
 
-    public void mapCigSites(Map<Integer, Double> refSites, Set<Integer> qrySites, Double startPos,
-                              Double endPos) {
+    public void mapCigSites(Map<Integer, Double> refSites, Map<Integer, Double> qrySites, Double refStartPos,
+                              Double refEndPos) {
         // Loop through cigar string, ref and qry sites
         // convert sets to lists for easier access
         List<Integer> refSitesSub = new ArrayList<>();
         // extract relevant subset of ref sites for query region
         refSites.forEach((key, value) -> {
-            if (value >= startPos && value <= endPos) {
+            if (value >= refStartPos && value <= refEndPos) {
                 refSitesSub.add(key);
             }
         });
         Iterator<Integer> refIter = refSitesSub.iterator();
         Iterator<String> cigIter = parsedCigar.iterator();
-        Iterator<Integer> qryIter = qrySites.iterator();
+        Iterator<Integer> qryIter = qrySites.keySet().iterator();
         while (cigIter.hasNext()) {
             String next = cigIter.next();
             if ("M".equals(next)) {
                 if (qryIter.hasNext() && refIter.hasNext()) {
-                    cigRefSites.put(refIter.next(), "M");
-                    cigQrySites.put(qryIter.next(), "M");
+                    int nextRef = refIter.next();
+                    int nextQry = qryIter.next();
+                    cigRefSites.put(nextRef, "M");
+                    cigQrySites.put(nextQry, "M");
+                    cigRefPos.put(refSites.get(nextRef), "M");
+                    cigQryPos.put(qrySites.get(nextQry), "M");
                 }
             } else if ("D".equals(next)) {
                 if (refIter.hasNext()) {
-                    cigRefSites.put(refIter.next(), "D");
+                    int nextRef = refIter.next();
+                    cigRefSites.put(nextRef, "D");
+                    cigRefPos.put(refSites.get(nextRef), "D");
                 }
             } else if ("I".equals(next)) {
                 if (qryIter.hasNext()) {
-                    cigQrySites.put(qryIter.next(), "I");
+                    int nextQry = qryIter.next();
+                    cigQrySites.put(nextQry, "I");
+                    cigQryPos.put(qrySites.get(nextQry), "I");
                 }
             }
         }
@@ -87,6 +99,14 @@ public class Cigar {
 
     public Map<Integer, String> getCigQrySites() {
         return cigQrySites;
+    }
+
+    public Map<Double, String> getCigRefPos() {
+        return cigRefPos;
+    }
+
+    public Map<Double, String> getCigQryPos() {
+        return cigQryPos;
     }
 
 }
