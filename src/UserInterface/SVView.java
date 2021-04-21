@@ -4,6 +4,7 @@ import Algorithms.DetectSV;
 import DataTypes.Cigar;
 import DataTypes.Query;
 import DataTypes.Reference;
+import DataTypes.SV;
 import Datasets.Default.QueryViewData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
@@ -166,7 +167,7 @@ public class SVView extends JPanel {
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
                             refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
 
-                    cig.mapCigSites(refSites, qry.getQryViewSites().keySet(), Start, End);
+                    cig.mapCigSites(refSites, qry.getQryViewSites(), Start, End);
                     Map<Integer, String> refCig = cig.getCigRefSites();
                     Map<Integer, String> qryCig = cig.getCigQrySites();
 
@@ -548,6 +549,11 @@ public class SVView extends JPanel {
             }
         }
     }
+
+    public void drawSVRegion(SV sv) {
+
+    }
+
     private void initComponents() {
         setPreferredSize(new java.awt.Dimension(0, 0));
 
