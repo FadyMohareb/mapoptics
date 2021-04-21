@@ -88,10 +88,17 @@ public class TableModels {
     private static final DefaultTableModel SV_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {
-            if (column > 0 && column < 8) {
-                return Integer.class;
-            } else {
-                return String.class;
+            switch (column) {
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 9:
+                case 10:
+                    return Double.class;
+                default:
+                    return String.class;
+
             }
         }
 
