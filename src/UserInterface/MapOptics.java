@@ -1948,9 +1948,11 @@ public class MapOptics extends JFrame {
 
 
     private void svTableMouseClicked() {
-        String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
-        model.setSelectedRefID(chosenRef);
-        changeSV(chosenRef);
+        if (svTable.getRowCount() != 0) {
+            String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
+            changeQry(chosenQry);
+        }
+
     }
 
     private void svViewComponentResized() {
@@ -3505,7 +3507,7 @@ public class MapOptics extends JFrame {
 
         // Add rows to table
         if (!refId.isEmpty()) {
-            /*
+
             for (SV sv : detectSV.getSVList()) {
                 tmSV.addRow(new Object[]{
                         sv.getQryID(),
@@ -3522,7 +3524,7 @@ public class MapOptics extends JFrame {
                         sv.getOrientation()
 
                 });
-        } */
+        }
         }
     }
 
@@ -3837,46 +3839,6 @@ public class MapOptics extends JFrame {
 
     private void changeSV(String refId) {
         model.setSelectedRefID(refId);
-
-        //SUMMARY VIEW TAB
-        // Redraw the graph with contig marked
-        referencesGraph.removeAll();
-        ChartPanel chartPanel1 = makeLengthChartPanel(model.getLengths(), refId);
-        referencesGraph.add(chartPanel1, BorderLayout.CENTER);
-        referencesGraph.setVisible(true);
-
-        // Redraw the graph with contig marked
-        labelDensityGraph.removeAll();
-        ChartPanel chartPanel2 = makeDensityChartPanel(model.getDensities(), refId);
-        labelDensityGraph.add(chartPanel2, BorderLayout.CENTER);
-        labelDensityGraph.setVisible(true);
-        refIdSearch.setText(refId);
-
-        // TODO: Read and set alignment data for a specific row
-        //REFERENCE VIEW TAB
-        if (!refId.isEmpty()) {
-            RefViewData.setReferenceData(model);
-        }
-
-        fillQryTable(refId);
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
-        ReferenceView.setChosenRef(refId);
-
-        //QUERY VIEW TAB
-        //QueryView.setRegionView(false);
-        QueryView.setChosenLabel(EMPTY_STRING);
-        SearchRegionData.resetData();
-        QueryView.setChosenRef(refId);
-
-
-
-
-//        SummaryView.setChosenRef(refId); // probably not needed
-
-
-
-
         repaint();
     }
 
