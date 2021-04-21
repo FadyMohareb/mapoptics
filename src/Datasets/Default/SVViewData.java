@@ -38,7 +38,7 @@ public class SVViewData {
     public static void setSVViewData(MapOpticsModel model, DetectSV detectSV) {
         Reference ref = model.getSelectedRef();
         DetectSV.setChosenRef(ref);
-        detectSV.detectIndels();
+        detectSV.setSVList();
 
     }
 
