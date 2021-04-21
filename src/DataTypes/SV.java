@@ -6,20 +6,24 @@ package DataTypes;
  *
  * */
 
+import Algorithms.DetectSV;
+import UserInterface.MapOptics;
+
 abstract public class SV {
-    private double qryStartPos;
-    private double qryEndPos;
-    private double refStartPos;
-    private double refEndPos;
-    private double confidence;
-    private double svSize;
-    private String qryID;
-    private String refID1;
-    private String refID2;
-    private String type;
-    private String xmapID1;
-    private String xmapID2;
-    private String orientation;
+    public double qryStartPos;
+    public double qryEndPos;
+    public double refStartPos;
+    public double refEndPos;
+    public double confidence;
+    public double svSize;
+    public String qryID;
+    public String refID1;
+    public String refID2;
+    public String type;
+    public String xmapID1;
+    public String xmapID2;
+    public String orientation;
+    public DetectSV detectSV;
 
 
     public SV() {
@@ -35,7 +39,7 @@ abstract public class SV {
         this.xmapID1 = "";
         this.xmapID2 = "";
         this.svSize = 0.0;
-        this.orientation = "-";
+        this.orientation = "";
     }
 
 
@@ -118,7 +122,7 @@ abstract public class SV {
         return type;
     }
 
-    public void setType(String type) {this.type = type; }
+    public abstract String setType();
 
     public String getXmapID1() {
         return xmapID1;
@@ -143,4 +147,6 @@ abstract public class SV {
     public void setOrientation(String orientation) {
         this.orientation = orientation;
     }
+
+
 }
