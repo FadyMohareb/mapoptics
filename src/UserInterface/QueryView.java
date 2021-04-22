@@ -52,6 +52,8 @@ public class QueryView extends JPanel {
     private double Start;
     private double End;
     private List<Integer> refalignments ;
+    private static boolean reorientation=false;
+
 
     public QueryView(MapOpticsModel model) {
         this.model = model;
@@ -118,7 +120,7 @@ public class QueryView extends JPanel {
     public static void setQrySequences(boolean qrySequences){
         QueryView.qrySequences=qrySequences;
     }
-
+    private boolean isFlipped;
 
 
     @Override
@@ -227,14 +229,6 @@ public class QueryView extends JPanel {
                     }
                     g2d.setColor(new Color(80, 80, 80));
 
-
-
-
-
-
-
-
-
                     //draw reference labels
                     int WindowWidth = this.getWidth();
                     for (int site : refSites.keySet()) {
@@ -289,7 +283,7 @@ public class QueryView extends JPanel {
                     drawScaleBar(g2d, refScaled, Start, End, true);
                     drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX), Start, End, false);
                     //display chosen label
-                    drawChosenLabel(g2d,qry,qry.isFlipped());
+                    drawChosenLabel(g2d,qry,isFlipped);
 
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
@@ -367,7 +361,15 @@ public class QueryView extends JPanel {
             }
         }
         //check the reorientation
-        boolean isFlipped = qry.isFlipped();
+        isFlipped = qry.isFlipped();
+        if(regionView&qry.getOrientation().equals("-")){
+            if (isFlipped==false){
+            qry.reOrientate();
+            isFlipped = qry.isFlipped();
+            repaint();
+            }
+        }
+
 
         if (isFlipped == false) {
             if (ref.getLength() > qry.getLength()) {
@@ -569,17 +571,20 @@ public class QueryView extends JPanel {
           //      length =  model.getSelectedRef().getQuery(chosenQry).getLength();
           //  }
             if (numScales != 0) {
+                if(isFlipped){
+                    for (int i = 0; i < numScales + 1; i++) {
+                        g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 20, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 25);
+                        g2d.drawString(String.format("%.2f", (length - (double) count) / 1000) + " kb", (int) (rect.getMinX() + ((rect.getWidth() / numScales) * i) - g2d.getFontMetrics().stringWidth(String.format("%.2f", (length-(double) count) / 1000) + " kb") / 2), (int) rect.getMaxY() + this.getHeight() / 20 + 14);
+                        count = (int) (count + length / numScales);
+                    }
+                }else{
                 for (int i = 0; i < numScales + 1; i++) {
                     g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 20, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 25);
                     g2d.drawString(String.format("%.2f", ((double) count) / 1000) + " kb", (int) (rect.getMinX() + ((rect.getWidth() / numScales) * i) - g2d.getFontMetrics().stringWidth(String.format("%.2f", ((double) count) / 1000) + " kb") / 2), (int) rect.getMaxY() + this.getHeight() / 20 + 14);
                     count = (int) (count + length / numScales);
-                }
+                }}
             } else {
-                g2d.drawLine((int) (rect.getMinX()), (int) rect.getMaxY() + this.getHeight() / 25, (int) (rect.getMinX()), (int) rect.getMaxY() + this.getHeight() / 20);
-                g2d.drawString(String.format("%.2f", (double) 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) 0.0) + " kb") / 2), (int) rect.getMinY() + +this.getHeight() / 20 + 14);
-                g2d.drawLine((int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() + this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() + this.getHeight() / 20);
-                g2d.drawString(String.format("%.2f", (double) length / 1000) + " kb", (int) (rect.getMinX() + rect.getWidth() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) length / 1000) + " kb") / 2), (int) rect.getMinY() + this.getHeight() / 20 + 14);
-            }
+               }
         }
     }
 
@@ -589,15 +594,22 @@ public class QueryView extends JPanel {
             Double labelpos = 0.0;
             if (isFlipped == false) {//if it is reorientated
                 labelpos = qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
+                g2d.setColor(Color.red);
+                g2d.drawLine((int) ((int) (labelpos / scale )),
+                        230,
+                        (int) (labelpos / scale ),
+                        290);
+                g2d.drawString(String.format("%.1f", labelpos), (int) (labelpos / scale ), 290);
             } else {
                 labelpos = qry.getLength() - qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
+                g2d.setColor(Color.red);
+                g2d.drawLine((int) ((int) (labelpos / scale )),
+                        230,
+                        (int) (labelpos / scale ),
+                        290);
+                g2d.drawString(String.format("%.1f", qry.getLength() -labelpos), (int) (labelpos / scale ), 290);
             }
-            g2d.setColor(Color.red);
-            g2d.drawLine((int) ((int) (labelpos / scale )),
-                    230,
-                    (int) (labelpos / scale ),
-                    290);
-            g2d.drawString(String.format("%.1f", labelpos), (int) (labelpos / scale ), 290);
+
 
         }
     }

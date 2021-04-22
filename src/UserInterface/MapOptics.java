@@ -2305,9 +2305,14 @@ public class MapOptics extends JFrame {
             qryRect = qry.getQryViewRect();
 
             if (qryRect.contains(evt.getPoint())) {
+                if(qry.isFlipped()){//if the qry is orientated negatively
+                    positionScale = qry.getLength() / qryRect.getWidth();
+                    position = String.format("%.2f", qry.getLength()-(evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                }else{
                 // display position
                 positionScale = qry.getLength() / qryRect.getWidth();
                 position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                }
             }
 
             QueryView.setPosition(position);
