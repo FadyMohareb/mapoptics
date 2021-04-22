@@ -87,15 +87,18 @@ public class DetectSV {
     public void detectIndels() {
         for (Query qry : chosenRef.getQueries()) {
             System.out.println("refID: " + chosenRef.getRefID() + " qryID: " + qry.getID());
-            // for a given qry and ref get indels
+            // for a given qry and ref get Alignment info
             Map<Integer, Double> refSites = chosenRef.getSites();
             Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
             Map<Integer, Double> qrySites = qry.getQryViewSites();
             // Extract aligned ref sites with selected qry (matches on ref) with duplicate refsites removed
             List<Integer> refAlignedSites = qryAlignments.values().stream().flatMapToInt(
-                    refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().collect(Collectors.toList());
-            double refStartPos = refAlignedSites.get(0);
-            double refEndPos = refSites.get(refAlignedSites.get(refAlignedSites.size() - 1));
+                    refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().sorted()
+                                    .collect(Collectors.toList());
+            System.out.println("qryAlignedSites" + qryAlignments);
+            int refStartSite = refAlignedSites.get(0);
+            // get the last site(s) to get the last site in case the last query site maps to multiple refSites
+            int  refEndSite = refAlignedSites.get(refAlignedSites.size() - 1);
 
             List<Indel> indels = Indel.getPutativeIndels(qryAlignments, chosenRef.getSites(),
                     qry.getQryViewSites());
@@ -103,8 +106,10 @@ public class DetectSV {
             Cigar cig = new Cigar(qry.getHitEnum());
             cig.parseHitEnum();
 
-            cig.mapCigSites(refSites, qrySites, refStartPos, refEndPos);
-            Map<Double, String> refCigar = cig.getCigRefPos();
+            cig.mapCigSites(refSites, qrySites, qryAlignments);
+            Map<Integer, String> refCigar = cig.getCigRefSites();
+            Map<Integer, String> qryCigar = cig.getCigQrySites();
+            System.out.println("qryCigar" + qryCigar);
             // filter the indels
             List<Indel> filteredIndels = filterIndels(indels, this.minIndelSize, this.maxIndelSize, refCigar,
                     this.flankSig);
@@ -113,9 +118,6 @@ public class DetectSV {
                 indel.setQryID(qry.getID());
                 indel.setRefID1(chosenRef.getRefID());
                 indel.setRefID2(chosenRef.getRefID());
-                // XMAP IDs necessary?
-                indel.setXmapID1("Placeholder");
-                indel.setXmapID2("Placeholder");
                 indel.setType();
                 System.out.println(indel.getType());
             }
@@ -125,23 +127,19 @@ public class DetectSV {
 
     // filter indels based on user-specified indel size range and flanking signals
     public static List<Indel> filterIndels(List<Indel> indelList, double minSize, double maxSize,
-                                           Map<Double, String> refCig, int flankSig){
+                                           Map<Integer, String> refCigar, int flankSig){
         List<Indel> filteredIndels = new ArrayList<>();
         for (Indel indel : indelList) {
             if (indel.svSize >= minSize && indel.svSize <= maxSize) {
                 // get index of pos in Cigar
-                List<Double> refPos = new ArrayList<>(refCig.keySet());
-                int startIndex = refPos.indexOf(indel.getRefStartPos());
-                System.out.println(indel.getRefStartPos());
-                System.out.println(indel.getRefEndPos());
-                int endIndex = refPos.indexOf(indel.getRefEndPos());
+                List<Integer> refCig = new ArrayList<>(refCigar.keySet());
+                int refStartInd = refCig.indexOf(indel.refStartSite);
+                int refEndInd = refCig.indexOf(indel.refEndSite);
+
                 // check the number of flanking signals either side of the indel
-                /*
-                if (startIndex > (flankSig - 1) && refCig.keySet().size() - endIndex >= flankSig) {
+                if (refStartInd >= (flankSig - 1) && (refCig.size() - refEndInd >= flankSig)) {
                     filteredIndels.add(indel);
                 }
-                 */
-                filteredIndels.add(indel);
             }
         }
         return filteredIndels;
