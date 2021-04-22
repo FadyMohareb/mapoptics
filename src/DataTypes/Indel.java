@@ -1,6 +1,8 @@
 package DataTypes;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /*
@@ -10,10 +12,16 @@ import java.util.stream.Collectors;
 * */
 
 public class Indel extends SV {
+    private final double qryDist;
+    private final double refDist;
+    private final int qryStartSite;
+    public int refStartSite;
+    public int refEndSite;
+    private final int qryEndSite;
     int mumMolecules = 1;
     
     public Indel(double qryPos1, double qryPos2, double refPos1, double refPos2, double qryDist,
-                 double refDist, double size) {
+                 double refDist, double size, int qryStartSite, int qryEndSite, int refStartSite, int refEndSite) {
         super();
         this.qryStartPos = qryPos1;
         this.qryEndPos = qryPos2;
@@ -21,6 +29,13 @@ public class Indel extends SV {
         this.refEndPos = refPos2;
         this.svSize = size;
         this.orientation = "NA";
+        this.qryDist = qryDist;
+        this.refDist = refDist;
+        this.qryStartSite = qryStartSite;
+        this.qryEndSite = qryEndSite;
+        this.refStartSite = refStartSite;
+        this.refEndSite = refEndSite;
+
     }
 
     // For LARGE INDELS
@@ -59,6 +74,7 @@ public class Indel extends SV {
             int refSite2 = refIter.next();
             // get the positions for the adjacent ref aligned sites
             double refPos1 = refSites.get(refSite1);
+            System.out.println("refSite1: " + refSite1);
             double refPos2 = refSites.get(refSite2);
             double refDist = refPos2 - refPos1;
 
@@ -70,7 +86,15 @@ public class Indel extends SV {
             double qryDist = qryPos2 - qryPos1;
             double size = Math.abs(qryDist - refDist);
             double roundSize = Math.round(size * 10) / 10;
-            Indel indel = new Indel(qryPos1, qryPos2, refPos1, refPos2, refDist, qryDist, roundSize);
+
+            // make indel
+            Indel indel = new Indel(qryPos1, qryPos2, refPos1, refPos2, refDist, qryDist, roundSize, qrySite1,
+                    qrySite2, refSite1, refSite2);
+            indel.setRefStartSite(refSite1);
+            indel.setRefEndSite(refSite2);
+            indel.setQryStartSite(qrySite1);
+            indel.setQryEndSite(qrySite2);
+            indel.setType();
             indelList.add(indel);
             refSite1 = refSite2;
             }
@@ -100,7 +124,14 @@ public class Indel extends SV {
             double refDist = refPos2 - refPos1;
             double size = Math.abs(qryDist - refDist);
             double roundSize = Math.round(size * 10.0) / 10.0;
-            Indel indel = new Indel(qryPos1, qryPos2, refPos1, refPos2, refDist, qryDist, roundSize);
+            // make indel
+            Indel indel = new Indel(qryPos1, qryPos2, refPos1, refPos2, refDist, qryDist, roundSize,
+                    qrySite1, qrySite2, refSite1, refSite2);
+            indel.setRefStartSite(refSite1);
+            indel.setRefEndSite(refSite2);
+            indel.setQryStartSite(qrySite1);
+            indel.setQryEndSite(qrySite2);
+            indel.setType();
             indelList.add(indel);
             //if (!isDuplicate(indel, indelList))  indelList.add(indel);
             qrySite1 = qrySite2;
@@ -162,13 +193,26 @@ public class Indel extends SV {
 
     }
 
+    public void setRefStartSite(int refStartSite){
+        this.refStartSite = refStartSite;
+    }
+
+    public int getRefStartSite() {
+        return refStartSite;
+    }
+
+    public void setRefEndSite(int refEndSite) {
+        this.refEndSite = refEndSite;
+    }
+
+    public int getRefEndSite() {
+        return refEndSite;
+    }
+
     @Override
-    void setSVRegion(SV sv) {
+    public void setSVRegion(SV sv) {
         // use start and end sites / positions of the indel to create filled polygon
-        double qrySite1 = sv.getQryStartPos();
-        double qrySite2 = sv.getQryEndPos();
-        double refSite1 = sv.getRefStartPos();
-        double refSite2 = sv.getRefEndPos();
+        // flanking alignments
 
     }
 
