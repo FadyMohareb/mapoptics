@@ -3503,16 +3503,12 @@ public class MapOptics extends JFrame {
                 tmSV.addRow(new Object[]{
                         sv.getQryID(),
                         sv.getRefID1(),
-                        sv.getRefID2(),
                         sv.getQryStartPos(),
                         sv.getQryEndPos(),
                         sv.getRefStartPos(),
                         sv.getRefEndPos(),
-                        sv.getXmapID1(),
-                        sv.getXmapID2(),
                         sv.getConfidence(),
-                        sv.getSVSize(),
-                        sv.getOrientation()
+                        sv.getSVSize()
 
                 });
         }
