@@ -89,11 +89,12 @@ public class TableModels {
         @Override
         public Class getColumnClass(int column) {
             switch (column) {
+                case 2:
                 case 3:
                 case 4:
                 case 5:
                 case 6:
-                case 10:
+                case 8:
                     return Double.class;
                 default:
                     return String.class;
