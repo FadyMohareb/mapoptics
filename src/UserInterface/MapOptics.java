@@ -48,6 +48,7 @@ public class MapOptics extends JFrame {
     private final JCheckBox selectAllImages = new JCheckBox();
 
     private MapOpticsModel model;
+    private DetectSV detectSV;
 
     private String xmapPath, refPath, qryPath;
 
@@ -60,7 +61,6 @@ public class MapOptics extends JFrame {
     private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
     private javax.swing.JCheckBox confidenceSetting;
     private javax.swing.JButton exportQryButton, exportRefButton;
-    private javax.swing.JToggleButton svDisplay;
     private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
     private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
@@ -68,8 +68,8 @@ public class MapOptics extends JFrame {
     private javax.swing.JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
     private javax.swing.JCheckBox overlapSetting;
     private javax.swing.JComboBox<String> refOrQry, regionType;
-    private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch;
-    private javax.swing.JTabbedPane tabPaneFiles;
+    private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch, styleCigar;
+    private javax.swing.JTabbedPane tabPaneFiles, tabPaneFilesSV;
 
     private UserInterface.QueryView queryView;
     private UserInterface.ReferenceView referenceView;
@@ -85,6 +85,7 @@ public class MapOptics extends JFrame {
         this.setName("MapOptics");
 
         model = new MapOpticsModel();
+        detectSV = new DetectSV(model);
         initComponents();
 
         setRefContigTable();
@@ -277,7 +278,7 @@ public class MapOptics extends JFrame {
         JSeparator jSeparator1 = new JSeparator();
         JLabel jLabel3 = new JLabel();
         JButton reOrientate = new JButton();
-        svDisplay = new JToggleButton();
+        styleCigar = new javax.swing.JRadioButton();
         JButton deleteContig = new JButton();
         JButton resetButton = new JButton();
 //        JButton alignLeft = new JButton();
@@ -289,10 +290,6 @@ public class MapOptics extends JFrame {
         JLayeredPane queryViewPane = new JLayeredPane();
         JSplitPane jSplitPane1 = new JSplitPane();
         JLayeredPane jLayeredPane1 = new JLayeredPane();
-
-        // Add SV Table
-        JScrollPane refViewSVTableScroll = new JScrollPane();
-        svTable = new javax.swing.JTable();
 
         queryView = new UserInterface.QueryView( model);
         exportQryButton = new javax.swing.JButton();
@@ -313,16 +310,32 @@ public class MapOptics extends JFrame {
         JScrollPane queryViewTableScroll = new JScrollPane();
         // Add SV View
         svView = new UserInterface.SVView(model);
+        JLabel displayToolsSV = new JLabel();
         JLayeredPane svPane = new JLayeredPane();
-        JSplitPane jSplitPane4 = new JSplitPane();
+        JButton reCentreSV = new JButton();
+        JButton zoomInSV = new JButton();
+        JButton zoomOutSV = new JButton();
+        JLabel labelStyleSV = new JLabel();
+        JRadioButton styleMatchSV = new javax.swing.JRadioButton();
+        JRadioButton styleCoverageSV = new javax.swing.JRadioButton();
+        JRadioButton styleChimSV = new javax.swing.JRadioButton();
+        JLabel viewLabelSV = new JLabel();
+        JCheckBox confidenceSettingSV = new javax.swing.JCheckBox();
+        JCheckBox overlapSettingSV = new javax.swing.JCheckBox();
+        JLabel contigToolsSV = new JLabel();
+        JButton reOrientateSV = new JButton();
+        JButton resetButtonSV = new JButton();
+        JButton saveSV = new JButton();
+        JSplitPane svSplitPlane = new JSplitPane();
+        JLayeredPane svLayeredPane = new JLayeredPane();
         JScrollPane svViewTableScroll = new JScrollPane();
         JButton exportSVButton = new JButton();
-        JPanel rightPanel1 = new JPanel();
-        JPanel leftPanel1 = new JPanel();
+        JPanel svPanel = new JPanel();
         svTable = new javax.swing.JTable();
-        JPanel alignmentNamePanel1 = new JPanel();
-        JLabel svRefLabel = new JLabel();
-        JLabel svQryLabel = new JLabel();
+        JLayeredPane svViewPane = new JLayeredPane();
+        tabPaneFilesSV = new javax.swing.JTabbedPane();
+
+
         labelTable = new javax.swing.JTable();
         JMenuBar menuBar = new JMenuBar();
         JMenu jMenu1 = new JMenu();
@@ -1167,9 +1180,6 @@ public class MapOptics extends JFrame {
         reOrientate.setText("reOrientate");
         reOrientate.addActionListener(this::reOrientateActionPerformed);
 
-        svDisplay.setText("CIGAR");
-        svDisplay.addActionListener(this::svDisplayActionPerformed);
-
         deleteContig.setText("delete");
         deleteContig.addActionListener(this::deleteContigActionPerformed);
 
@@ -1209,7 +1219,6 @@ public class MapOptics extends JFrame {
                                                 .addComponent(confidenceSetting)
                                                 .addComponent(overlapSetting)
                                                 .addComponent(jLabel3)
-                                                .addComponent(svDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(reOrientate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(deleteContig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(resetButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1247,8 +1256,6 @@ public class MapOptics extends JFrame {
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(svDisplay)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(reOrientate)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1391,8 +1398,6 @@ public class MapOptics extends JFrame {
                                 .addContainerGap()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                                .addComponent(svDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(qryorientate)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(search, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1448,7 +1453,6 @@ public class MapOptics extends JFrame {
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(search)
                                         .addComponent(qryorientate)
-                                        .addComponent(svDisplay)
                                 )
                                 .addContainerGap())
         );
@@ -1554,39 +1558,32 @@ public class MapOptics extends JFrame {
         tabPane.addTab("Query View", queryViewPane);
 
         // SV view
-        jSplitPane4.setDividerLocation(240);
-        jSplitPane4.setDividerSize(6);
-        jSplitPane4.setContinuousLayout(true);
-        jSplitPane4.setOneTouchExpandable(true);
-        jSplitPane4.setSize(new java.awt.Dimension(244, 244));
-
-        rightPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
-
-
-        svRefLabel.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
-        svRefLabel.setText("Reference Dataset:");
-
-        svQryLabel.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
-        svQryLabel.setText("Query Dataset:");
-
+        svSplitPlane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         svView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        svView.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent evt) {
+                svViewMouseMoved(evt);
+            }
+        });
+        svView.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                svViewMouseClicked(evt);
+            }
+        });
         svView.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 svViewComponentResized();
             }
         });
 
-
-
-        javax.swing.GroupLayout svViewLayout = new javax.swing.GroupLayout(svView);
-        svView.setLayout(svViewLayout);
-
         exportSVButton.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 10)); // NOI18N
         exportSVButton.setText("Export Image");
         exportSVButton.addActionListener(this::exportSVButtonActionPerformed);
         exportSVButton.setText("Export Image");
 
+        javax.swing.GroupLayout svViewLayout = new javax.swing.GroupLayout(svView);
+        svView.setLayout(svViewLayout);
         svViewLayout.setHorizontalGroup(
                 svViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, svViewLayout.createSequentialGroup()
@@ -1602,40 +1599,161 @@ public class MapOptics extends JFrame {
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        svView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        svView.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
-                svViewMouseMoved(evt);
-            }
-        });
-        svView.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                svViewMouseClicked(evt);
-            }
-        });
-        svView.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                referenceViewComponentResized();
-            }
-        });
+        svPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        javax.swing.GroupLayout rightPanelLayout1 = new javax.swing.GroupLayout(rightPanel1);
-        rightPanel1.setLayout(rightPanelLayout1);
-        rightPanelLayout1.setHorizontalGroup(
-                rightPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(svView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        displayToolsSV.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
+        displayToolsSV.setText("Display tools:");
+
+        reCentreSV.setText("reCentre");
+        reCentreSV.addActionListener(this::reCentreSVActionPerformed);
+
+        zoomInSV.setText("+");
+        zoomInSV.addActionListener(this::zoomInSVActionPerformed);
+
+        zoomOutSV.setText("-");
+        zoomOutSV.addActionListener(this::zoomOutSVActionPerformed);
+
+        labelStyleSV.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
+        labelStyleSV.setText("Label style:");
+
+        styleMatchSV.setSelected(true);
+        styleMatchSV.setText("Matches");
+        styleMatchSV.addActionListener(this::styleMatchSVActionPerformed);
+
+        styleCoverageSV.setText("Coverage");
+        styleCoverageSV.addActionListener(this::styleCoverageSVActionPerformed);
+
+        styleChimSV.setText("Chim Quality");
+        styleChimSV.addActionListener(this::styleChimSVActionPerformed);
+
+        viewLabelSV.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
+        viewLabelSV.setText("View:");
+
+        confidenceSettingSV.setText("Confidence");
+        confidenceSettingSV.addActionListener(this::confidenceSettingSVActionPerformed);
+
+        overlapSettingSV.setText("Overlap");
+        overlapSettingSV.addActionListener(this::overlapSettingSVActionPerformed);
+
+        contigToolsSV.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
+        contigToolsSV.setText("Contig tools:");
+
+        reOrientateSV.setText("reOrientate");
+        reOrientateSV.addActionListener(this::reOrientateActionPerformed);
+
+        styleCigar.setText("CIGAR");
+        styleCigar.addActionListener(this::styleCigarActionPerformed);
+
+        //deleteContigSV.setText("delete");
+        //deleteContigSV.addActionListener(this::deleteContigActionPerformed);
+
+        resetButtonSV.setText("RESET");
+        resetButtonSV.addActionListener(this::resetButtonSVActionPerformed);
+
+//        alignLeft.setText("<");
+//        alignLeft.addActionListener(this::alignLeftActionPerformed);
+//
+//        alignRight.setText(">");
+//        alignRight.addActionListener(this::alignRightActionPerformed);
+
+        saveSV.setText("SAVE");
+        saveSV.addActionListener(this::saveActionSVPerformed);
+
+        javax.swing.GroupLayout svPanelLayout = new javax.swing.GroupLayout(svPanel);
+        svPanel.setLayout(svPanelLayout);
+        svPanelLayout.setHorizontalGroup(
+                svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(svPanelLayout.createSequentialGroup()
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+//                                                .addGroup(jPanel3Layout.createSequentialGroup()
+//                                                        .addComponent(alignLeft)
+//                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+//                                                        .addComponent(alignRight))
+                                                .addGroup(svPanelLayout.createSequentialGroup()
+                                                        .addComponent(zoomInSV, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addComponent(zoomOutSV, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addComponent(labelStyleSV)
+                                                .addComponent(styleMatchSV)
+                                                .addComponent(styleCoverageSV)
+                                                .addComponent(styleChimSV)
+                                                .addComponent(styleCigar)
+                                                .addComponent(viewLabelSV)
+                                                .addComponent(confidenceSettingSV)
+                                                .addComponent(overlapSettingSV)
+                                                .addComponent(contigToolsSV)
+                                                .addComponent(reOrientateSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(resetButtonSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(displayToolsSV)
+                                                .addComponent(saveSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(jSeparator1))
+                                        .addComponent(reCentreSV, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
-        rightPanelLayout1.setVerticalGroup(
-                rightPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(rightPanelLayout1.createSequentialGroup()
+        svPanelLayout.setVerticalGroup(
+                svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(svPanelLayout.createSequentialGroup()
+                                .addGap(20, 20, 20)
+                                .addComponent(displayToolsSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(reCentreSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(zoomInSV)
+                                        .addComponent(zoomOutSV))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(labelStyleSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(styleMatchSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(styleCoverageSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(styleChimSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(styleCigar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(viewLabelSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(confidenceSettingSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(overlapSettingSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(contigToolsSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(reOrientateSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(resetButtonSV)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(saveSV)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        svLayeredPane.setLayer(svView, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        svLayeredPane.setLayer(svPanel, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout svLayeredPaneLayout = new javax.swing.GroupLayout(svLayeredPane);
+        svLayeredPane.setLayout(svLayeredPaneLayout);
+        svLayeredPaneLayout.setHorizontalGroup(
+                svLayeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(svLayeredPaneLayout.createSequentialGroup()
                                 .addComponent(svView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(svPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
         );
+        svLayeredPaneLayout.setVerticalGroup(
+                svLayeredPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(svView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(svLayeredPaneLayout.createSequentialGroup()
+                                .addComponent(svPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+        );
 
-        jSplitPane4.setRightComponent(rightPanel1);
-
-        leftPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
+        svSplitPlane.setLeftComponent(svLayeredPane);
 
         svTable.setAutoCreateRowSorter(true);
         svTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -1649,49 +1767,35 @@ public class MapOptics extends JFrame {
                         "Title 1", "Title 2", "Title 3", "Title 4"
                 }
         ));
-        svTable.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        svTable.setMinimumSize(new java.awt.Dimension(600, 640));
         svTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        svTable.setShowGrid(false);
         svTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 svTableMouseClicked();
             }
         });
+
         svViewTableScroll.setViewportView(svTable);
 
-        javax.swing.GroupLayout leftPanelLayout1 = new javax.swing.GroupLayout(leftPanel1);
-        leftPanel1.setLayout(leftPanelLayout1);
-        leftPanelLayout1.setHorizontalGroup(
-                leftPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(leftPanelLayout1.createSequentialGroup()
+        tabPaneFilesSV.addTab("Structural Variants", svViewTableScroll);
+
+        svSplitPlane.setRightComponent(tabPaneFilesSV);
+
+        svViewPane.setLayer(svSplitPlane, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        javax.swing.GroupLayout svViewPaneLayout = new javax.swing.GroupLayout(svViewPane);
+        svViewPane.setLayout(svViewPaneLayout);
+        svViewPaneLayout.setHorizontalGroup(
+                svViewPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(svViewPaneLayout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(svViewTableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-                                .addContainerGap())
+                                .addComponent(svSplitPlane))
         );
-        leftPanelLayout1.setVerticalGroup(
-                leftPanelLayout1.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(svViewTableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1096, Short.MAX_VALUE)
-        );
-
-        jSplitPane4.setLeftComponent(leftPanel1);
-
-        svPane.setLayer(jSplitPane4, javax.swing.JLayeredPane.DEFAULT_LAYER);
-
-        javax.swing.GroupLayout svPaneLayout = new javax.swing.GroupLayout(svPane);
-        svPane.setLayout(svPaneLayout);
-        svPaneLayout.setHorizontalGroup(
-                svPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, svPaneLayout.createSequentialGroup()
-                                .addComponent(jSplitPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1597, Short.MAX_VALUE)
-                                .addContainerGap())
-        );
-        svPaneLayout.setVerticalGroup(
-                svPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jSplitPane4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 1100, Short.MAX_VALUE)
+        svViewPaneLayout.setVerticalGroup(
+                svViewPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(svSplitPlane)
         );
 
-        tabPane.addTab("SV View", svPane);
+        tabPane.addTab("SV View", svViewPane);
 
         jMenu1.setText("File");
 
@@ -1799,6 +1903,36 @@ public class MapOptics extends JFrame {
         pack();
     }
 
+    private void saveActionSVPerformed(ActionEvent actionEvent) {
+    }
+
+    private void resetButtonSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void overlapSettingSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void confidenceSettingSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void styleChimSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void styleCoverageSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void styleMatchSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void zoomOutSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void zoomInSVActionPerformed(ActionEvent actionEvent) {
+    }
+
+    private void reCentreSVActionPerformed(ActionEvent actionEvent) {
+    }
+
     private void svViewMouseClicked(java.awt.event.MouseEvent evt) {
     }
 
@@ -1814,9 +1948,11 @@ public class MapOptics extends JFrame {
 
 
     private void svTableMouseClicked() {
-        String chosenRef = refContigTable.getValueAt(refContigTable.getSelectedRow(), 0).toString();
-        model.setSelectedRefID(chosenRef);
-        changeSV(chosenRef);
+        if (svTable.getRowCount() != 0) {
+            String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
+            changeQry(chosenQry);
+        }
+
     }
 
     private void svViewComponentResized() {
@@ -1913,12 +2049,6 @@ public class MapOptics extends JFrame {
         }
     }
 
-    public void svDisplayActionPerformed(java.awt.event.ActionEvent evt) {
-        // when SV button is selected
-        boolean checked = svDisplay.isSelected();
-        QueryView.setSvDisplay(checked);
-        repaint();
-    }
 
     private void browseXmapActionPerformed(java.awt.event.ActionEvent evt) {
         // browse for xmap file
@@ -2183,6 +2313,15 @@ public class MapOptics extends JFrame {
         if (styleChim.isSelected()) {
             ReferenceView.setStyle("chimQual");
             QueryView.setStyle("chimQual");
+            SVView.setStyle("chimQual");
+            repaint();
+        }
+    }
+
+    private void styleCigarActionPerformed(java.awt.event.ActionEvent evt) {
+        // set style to chimeric quality values
+        if (styleCigar.isSelected()) {
+            SVView.setStyle("cigar");
             repaint();
         }
     }
@@ -3360,34 +3499,34 @@ public class MapOptics extends JFrame {
         }
     }
 
-    private void fillSVTable(String qryId) {
+    private void fillSVTable(String refId) {
         // Format table to list all SV detected
         DefaultTableModel tmSV = (DefaultTableModel) svTable.getModel();
-        Map<String,String[]> refData= QueryViewData.getConnection();
         // Empty table
         tmSV.setRowCount(0);
-        DetectSV detectSV = new DetectSV(model);
-        detectSV.detectIndels();/*
-        if (!qryId.equals(EMPTY_STRING) && refData != null && !detectSV.getSVList().isEmpty()) {
+
         // Add rows to table
+        if (!refId.isEmpty()) {
 
-        for (SV sv : detectSV.getSVList()) {
-            tmSV.addRow(new Object[]{
-                    sv.getQryID(),
-                    sv.getRefID1(),
-                    sv.getRefID2(),
-                    sv.getQryStartPos(),
-                    sv.getQryEndPos(),
-                    sv.getRefStartPos(),
-                    sv.getRefEndPos(),
-                    sv.getXmapID1(),
-                    sv.getXmapID2(),
-                    sv.getConfidence(),
-                    sv.getSVSize(),
-                    sv.getOrientation()
+            for (SV sv : detectSV.getSVList()) {
+                tmSV.addRow(new Object[]{
+                        sv.getQryID(),
+                        sv.getRefID1(),
+                        sv.getRefID2(),
+                        sv.getQryStartPos(),
+                        sv.getQryEndPos(),
+                        sv.getRefStartPos(),
+                        sv.getRefEndPos(),
+                        sv.getXmapID1(),
+                        sv.getXmapID2(),
+                        sv.getConfidence(),
+                        sv.getSVSize(),
+                        sv.getOrientation()
 
-            });*/
+                });
         }
+        }
+    }
 
 
 
@@ -3647,6 +3786,7 @@ public class MapOptics extends JFrame {
         //REFERENCE VIEW TAB
         if (!refId.isEmpty()) {
             RefViewData.setReferenceData(model);
+            SVViewData.setSVViewData(model, detectSV);
         }
 
         fillQryTable(refId);
@@ -3661,6 +3801,10 @@ public class MapOptics extends JFrame {
         SearchRegionData.resetData();
         QueryView.setChosenRef(refId);
 
+        fillSVTable(refId);
+        SVView.setRefDataset(refDataset.getText());
+        SVView.setQryDataset(qryDataset.getText());
+        SVView.setChosenRef1(refId);
 
 
 
@@ -3677,64 +3821,24 @@ public class MapOptics extends JFrame {
         ReferenceView.setChosenQry(qryId);
         if(qryId!=""){
             QueryViewData.setQueryData(model,qryId);
-            SVViewData.setSVViewData(model, qryId);
         }
         QueryView.setChosenQry(qryId);
-        SVView.setChosenQry(qryId);
         QueryView.setRegionView(false);
         QueryView.setChosenLabel(EMPTY_STRING);
         SearchRegionData.resetData();
         fillLabelTable(qryId);
         fillQryViewRefTable(qryId);
-        fillSVTable(qryId);
         qryIdSearch.setText(qryId);
 
+        SVView.setRefDataset(refDataset.getText());
+        SVView.setQryDataset(qryDataset.getText());
+        SVView.setChosenQry(qryId);
 
         repaint();
     }
 
     private void changeSV(String refId) {
         model.setSelectedRefID(refId);
-
-        //SUMMARY VIEW TAB
-        // Redraw the graph with contig marked
-        referencesGraph.removeAll();
-        ChartPanel chartPanel1 = makeLengthChartPanel(model.getLengths(), refId);
-        referencesGraph.add(chartPanel1, BorderLayout.CENTER);
-        referencesGraph.setVisible(true);
-
-        // Redraw the graph with contig marked
-        labelDensityGraph.removeAll();
-        ChartPanel chartPanel2 = makeDensityChartPanel(model.getDensities(), refId);
-        labelDensityGraph.add(chartPanel2, BorderLayout.CENTER);
-        labelDensityGraph.setVisible(true);
-        refIdSearch.setText(refId);
-
-        // TODO: Read and set alignment data for a specific row
-        //REFERENCE VIEW TAB
-        if (!refId.isEmpty()) {
-            RefViewData.setReferenceData(model);
-        }
-
-        fillQryTable(refId);
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
-        ReferenceView.setChosenRef(refId);
-
-        //QUERY VIEW TAB
-        //QueryView.setRegionView(false);
-        QueryView.setChosenLabel(EMPTY_STRING);
-        SearchRegionData.resetData();
-        QueryView.setChosenRef(refId);
-
-
-
-
-//        SummaryView.setChosenRef(refId); // probably not needed
-
-
-
-
         repaint();
     }
 
