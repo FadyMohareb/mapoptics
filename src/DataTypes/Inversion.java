@@ -19,7 +19,7 @@ public class Inversion extends SV {
     }
 
     @Override
-    void setSVRegion(SV sv) {
+    public void setSVRegion(SV sv) {
 
     }
 }
