@@ -10,6 +10,8 @@ import Algorithms.DetectSV;
 import UserInterface.MapOptics;
 
 abstract public class SV {
+    private int qryStartSite;
+    private int qryEndSite;
     public double qryStartPos;
     public double qryEndPos;
     public double refStartPos;
@@ -24,6 +26,8 @@ abstract public class SV {
     public String xmapID2;
     public String orientation;
     public DetectSV detectSV;
+    public int refStartSite;
+    public int refEndSite;
 
 
     public SV() {
@@ -34,6 +38,9 @@ abstract public class SV {
         this.qryEndPos = 0.0;
         this.refStartPos = 0.0;
         this.refEndPos = 0.0;
+        this.qryStartSite = 0;
+        this.refStartSite = 0;
+        this.refEndSite = 0;
         this.confidence = 0.0;
         this.type = "";
         this.xmapID1 = "";
@@ -43,7 +50,7 @@ abstract public class SV {
     }
 
 
-    abstract void setSVRegion(SV sv);
+    public abstract void setSVRegion(SV sv);
 
 
     public String getQryID() {
@@ -148,5 +155,35 @@ abstract public class SV {
         this.orientation = orientation;
     }
 
+    public int getRefStartSite() {
+        return refStartSite;
+    }
 
+    public void setRefStartSite(int refStartSite) {
+        this.refStartSite = refStartSite;
+    }
+
+    public int getRefEndSite() {
+        return refEndSite;
+    }
+
+    public void setRefEndSite(int refEndSite) {
+        this.refEndSite = refEndSite;
+    }
+
+    public int getQryStartSite() {
+        return qryStartSite;
+    }
+
+    public void setQryStartSite(int qryStartSite) {
+        this.qryStartSite = qryStartSite;
+    }
+
+    public int getQryEndSite() {
+        return qryEndSite;
+    }
+
+    public void setQryEndSite(int qryEndSite) {
+        this.qryEndSite = qryEndSite;
+    }
 }
