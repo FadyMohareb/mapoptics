@@ -152,16 +152,13 @@ public class Indel extends SV {
 
     // returns type of indel - insertion or deletion based on size change relative to reference distance
     @Override
-    public String setType() {
+    public void setType() {
         double qryDist = Math.abs(this.getQryEndPos() - this.getQryStartPos());
         double refDist = Math.abs(this.getRefEndPos() - this.getRefStartPos());
         if (refDist < qryDist) {
-            return "insertion";
+            this.type = "insertion";
         } else if (refDist > qryDist) {
-            return "deletion";
-        } else {
-            System.out.println("Not an indel");
-            return null;
+            this.type = "deletion";
         }
     }
 
