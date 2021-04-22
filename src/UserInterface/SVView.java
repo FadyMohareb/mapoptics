@@ -1,10 +1,7 @@
 package UserInterface;
 
 import Algorithms.DetectSV;
-import DataTypes.Cigar;
-import DataTypes.Query;
-import DataTypes.Reference;
-import DataTypes.SV;
+import DataTypes.*;
 import Datasets.Default.QueryViewData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
@@ -23,9 +20,9 @@ import java.util.stream.Collectors;
 * */
 
 public class SVView extends JPanel {
-    private static String chosenRef1 = "";
-    private static String chosenRef2 = "";
+    private static String chosenRef = "";
     private static String chosenQry = "";
+    private static List<SV> svList = new ArrayList<>();
     private final MapOpticsModel model;
     private static final Color LIGHT_GREY = new Color(244, 244, 244);
     private static final Color GREY = new Color(192, 192, 192);
@@ -41,6 +38,7 @@ public class SVView extends JPanel {
     private static String position = "";
     private static int mouseX = 0;
     private static int mouseY = 0;
+    private final DetectSV detectSV;
     private double scale=1000.0;
     private double regionOffX;
     private static String[] regions;
@@ -56,8 +54,9 @@ public class SVView extends JPanel {
     private static boolean cigarDisplay = false;
     private List<Integer> refalignments ;
 
-    public SVView(MapOpticsModel model) {
+    public SVView(MapOpticsModel model, DetectSV detectSV) {
         this.model = model;
+        this.detectSV = detectSV;
         initComponents();
 
     }
@@ -66,15 +65,12 @@ public class SVView extends JPanel {
         SVView.chosenQry = chosenQry;
     }
 
-    public static void setChosenRef1(String chosenRef1) {
-        SVView.chosenRef1 = chosenRef1;
+    public static void setChosenRef(String chosenRef) {
+        SVView.chosenRef = chosenRef;
     }
 
-    public static void setChosenRef2(String chosenRef2) {
-        SVView.chosenRef2 = chosenRef2;
-    }
-
-    public static void setSVList() {
+    public static void setSVList(List<SV> svList) {
+        SVView.svList = svList;
     }
 
     public static void setStyle(String style) {
@@ -104,7 +100,7 @@ public class SVView extends JPanel {
                 int refStringLen = g2d.getFontMetrics().stringWidth("Reference ID:  ");
                 int qryStringLen = g2d.getFontMetrics().stringWidth("Query ID:  ");
                 g2d.setFont(defaultFont);
-                g2d.drawString(chosenRef1, refStringLen + 20, 20);
+                g2d.drawString(chosenRef, refStringLen + 20, 20);
                 g2d.drawString(chosenQry, qryStringLen + 20, 40);
 
                 WinoffX=0;
@@ -156,7 +152,7 @@ public class SVView extends JPanel {
                     }else{
                         ref.setQryViewRect(new Rectangle2D.Double(refOffX-refx, 90, (End-Start)/scale, refRect.getHeight()));
                     }
-                    drawContig(g2d, refScaled, chosenRef1);
+                    drawContig(g2d, refScaled, chosenRef);
 
                     // Set up variables for displaying SV
                     String hitEnum = qry.getHitEnum();
@@ -166,8 +162,8 @@ public class SVView extends JPanel {
                     // Extract aligned ref sites with selected qry
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
                             refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
-
-                    cig.mapCigSites(refSites, qry.getQryViewSites(), Start, End);
+                    System.out.println("qryRefSites: " + qryRefSites );
+                    cig.mapCigSites(refSites, qrySites, qryAlignments);
                     Map<Integer, String> refCig = cig.getCigRefSites();
                     Map<Integer, String> qryCig = cig.getCigQrySites();
 
@@ -247,6 +243,7 @@ public class SVView extends JPanel {
                         g2d.setColor(BLACK);
                         // Draw alignment
                         if (match) {
+                            // for each qry site in qry alignments
                             for (int i : qryAlignments.get(site)) {
                                 int refPositionX = (int) (((refSites.get(i)) / scale) + refOffX - refx);
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
@@ -550,8 +547,14 @@ public class SVView extends JPanel {
         }
     }
 
-    public void drawSVRegion(SV sv) {
-
+    public void drawSVRegion(SV sv, Graphics2D g2d) {
+        if (sv instanceof Indel) {
+            if (sv.getType().equals("insertion")) {
+                // color red
+            } else {
+                // color blue
+            }
+        }
     }
 
     private void initComponents() {
