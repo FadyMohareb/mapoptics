@@ -1,10 +1,16 @@
 package FileHandling;
 
 import DataTypes.ContigInfo;
+import DataTypes.Reference;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
+
+import java.awt.geom.Rectangle2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 /**
@@ -13,10 +19,12 @@ import javax.swing.JOptionPane;
  */
 public class FastaReader {
 
-    public static LinkedHashMap<String, String> readFasta(String filename, LinkedHashMap<String, String> contigNames) {
+
+    public static LinkedHashMap<String, ArrayList<Integer>> readFasta(String filename, LinkedHashMap<String, String> contigNames) {
         ArrayList<String> sequenceArray = new ArrayList();
-        LinkedHashMap<String, String> sequences = new LinkedHashMap();
+        LinkedHashMap<String, ArrayList<Integer>> sequences = new LinkedHashMap();
         String name = "";
+
         // Try reading file
         try {
             BufferedReader read = new BufferedReader(new FileReader(filename));
@@ -26,9 +34,15 @@ public class FastaReader {
             while ((line = read.readLine()) != null) {
                 if (line.startsWith(">")) {
                     if (sequenceArray.size() > 0) {
-                        if (contigNames.containsValue(name)) {
+                        if (contigNames.keySet().contains(name)) {
                             sequence = concatenateStrings(sequenceArray);
-                            sequences.put(name, sequence);
+                            //save the gap info
+                            ArrayList<Integer> gaps= new ArrayList<>(findGaps(sequence));
+                            if (!gaps.isEmpty()){
+                                sequences.put(contigNames.get(name), gaps);
+
+                            }
+
                         }
                         sequenceArray.clear();
                     }
@@ -39,9 +53,17 @@ public class FastaReader {
             }
             if (sequenceArray.size() > 0) {
                 sequence = concatenateStrings(sequenceArray);
-                sequences.put(name, sequence);
+                //save the gap info
+                ArrayList<Integer> gaps= new ArrayList<>(findGaps(sequence));
+                if (!gaps.isEmpty()){
+                    sequences.put(contigNames.get(name), gaps);
+                    System.out.println(gaps+" 1 ");
+                }
                 sequenceArray.clear();
             }
+
+
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,
                     "Error loading FASTA file\n\nError: " + ex,
@@ -49,6 +71,30 @@ public class FastaReader {
                     JOptionPane.ERROR_MESSAGE);
         }
         return sequences;
+    }
+
+    public static ArrayList<Integer> findGaps(String seq) {
+        ArrayList <Integer> gaps= new ArrayList();
+
+        String match = "N";
+        int index1 = seq.indexOf(match);////the start position of the first "N" is index1
+        int index2;
+        int count = 0;
+
+        while (index1 >= 0) {
+            index2 = seq.indexOf(match, index1 + 1);//the start position of the second "N" is index1+1
+
+            if (index2 - index1 == 1) {
+                count++;
+            } else {
+                gaps.add(index1-count);
+                gaps.add(index1);
+                count = 0;
+            }
+            index1 = index2;
+        }
+
+       return gaps;
     }
 
     public static String concatenateStrings(ArrayList<String> items) {
@@ -63,7 +109,7 @@ public class FastaReader {
         return result.toString();
     }
 
-    public static LinkedHashMap<String, String> readKeyFile(String filename, ArrayList<String> contigIds, LinkedHashMap<String, ContigInfo> contigInfo) {
+    public static LinkedHashMap<String, String> readKeyFile(String filename, ArrayList<String> contigIds,String refqry, MapOpticsModel model) {
         LinkedHashMap<String, String> contigNames = new LinkedHashMap();
 
         // Try reading file
@@ -85,12 +131,20 @@ public class FastaReader {
                 id = fields[0];
                 name = fields[1];
                 length = fields[2];
+                 if(refqry=="ref"){
+                     if (contigIds.contains(id)) {
 
-                if (contigIds.contains(id)) {
-                    if (contigInfo.get(id).getContigLen() == Double.parseDouble(length)) {
-                        contigNames.put(id, name);
-                    }
+                        if( Double.parseDouble( MapOpticsModel.getRefLen().get(id))== Double.parseDouble(length)){
+                            contigNames.put(name, id);
+                         }
                 }
+            }else if(refqry=="qry"){
+                     if (contigIds.contains(id)) {
+                         if ( Double.parseDouble(MapOpticsModel.getQueryLen().get(id)) == Double.parseDouble(length)) {
+                             contigNames.put(name, id);
+                         }
+                     }
+                 }
             }
 
         } catch (Exception ex) {
@@ -101,5 +155,7 @@ public class FastaReader {
         }
         return contigNames;
     }
+
+
 
 }
