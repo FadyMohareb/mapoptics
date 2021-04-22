@@ -309,7 +309,7 @@ public class MapOptics extends JFrame {
         qryViewRefTable = new javax.swing.JTable();
         JScrollPane queryViewTableScroll = new JScrollPane();
         // Add SV View
-        svView = new UserInterface.SVView(model);
+        svView = new UserInterface.SVView(model, detectSV);
         JLabel displayToolsSV = new JLabel();
         JLayeredPane svPane = new JLayeredPane();
         JButton reCentreSV = new JButton();
@@ -3200,18 +3200,14 @@ public class MapOptics extends JFrame {
     private void setSVTable() {
         DefaultTableModel svModel = TableModels.getSVModel();
         svModel.addColumn("Query ID");
-        svModel.addColumn("RefContig ID1");
-        svModel.addColumn("RefContig ID2");
+        svModel.addColumn("Ref ID");
         svModel.addColumn("Qry Start Pos");
         svModel.addColumn("Qry End Pos");
         svModel.addColumn("Ref Start Pos");
         svModel.addColumn("Ref End Pos");
-        svModel.addColumn("Xmap ID1");
-        svModel.addColumn("Xmap ID2");
         svModel.addColumn("Confidence");
         svModel.addColumn("Type");
         svModel.addColumn("SV Size");
-        svModel.addColumn("Orientation");
 
         svTable.setModel(svModel);
         svTable.setUpdateSelectionOnSort(true);
@@ -3229,10 +3225,8 @@ public class MapOptics extends JFrame {
                 // get selected contigs
                 String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
                 SVView.setChosenQry(chosenQry);
-                String chosenRef1 = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
-                SVView.setChosenRef1(chosenRef1);
-                String chosenRef2 = svTable.getValueAt(svTable.getSelectedRow(), 2).toString();
-                SVView.setChosenRef2(chosenRef2);
+                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
+                SVView.setChosenRef(chosenRef);
                 repaint();
             }
         });
@@ -3248,10 +3242,8 @@ public class MapOptics extends JFrame {
                 // get selected contigs
                 String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
                 SVView.setChosenQry(chosenQry);
-                String chosenRef1 = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
-                SVView.setChosenRef1(chosenRef1);
-                String chosenRef2 = svTable.getValueAt(svTable.getSelectedRow(), 2).toString();
-                SVView.setChosenRef2(chosenRef2);
+                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
+                SVView.setChosenRef(chosenRef);
                 repaint();
             }
         });
@@ -3504,10 +3496,9 @@ public class MapOptics extends JFrame {
         DefaultTableModel tmSV = (DefaultTableModel) svTable.getModel();
         // Empty table
         tmSV.setRowCount(0);
-
         // Add rows to table
         if (!refId.isEmpty()) {
-
+            SVView.setSVList(detectSV.getSVList());
             for (SV sv : detectSV.getSVList()) {
                 tmSV.addRow(new Object[]{
                         sv.getQryID(),
@@ -3803,8 +3794,7 @@ public class MapOptics extends JFrame {
 
         fillSVTable(refId);
         SVView.setRefDataset(refDataset.getText());
-        SVView.setQryDataset(qryDataset.getText());
-        SVView.setChosenRef1(refId);
+        SVView.setChosenRef(refId);
 
 
 
