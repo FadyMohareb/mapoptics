@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /*
-* @author Anisha
-*
-* Detects SV from alignments using user-specified parameters.
-* */
+ * @author Anisha
+ *
+ * Detects SV from alignments using user-specified parameters.
+ * */
 
 public class DetectSV {
     private static List<Query> queries;
@@ -76,13 +76,13 @@ public class DetectSV {
         this.FNR = FNR;
     }
 
-   public static void setChosenRef(Reference chosenRef) {
+    public static void setChosenRef(Reference chosenRef) {
         DetectSV.chosenRef = chosenRef;
-   }
+    }
 
-   public void classifyLabels() {
+    public void classifyLabels() {
 
-   }
+    }
 
     public void detectIndels() {
         for (Query qry : chosenRef.getQueries()) {
@@ -94,7 +94,7 @@ public class DetectSV {
             // Extract aligned ref sites with selected qry (matches on ref) with duplicate refsites removed
             List<Integer> refAlignedSites = qryAlignments.values().stream().flatMapToInt(
                     refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().sorted()
-                                    .collect(Collectors.toList());
+                    .collect(Collectors.toList());
             System.out.println("qryAlignedSites" + qryAlignments);
             int refStartSite = refAlignedSites.get(0);
             // get the last site(s) to get the last site in case the last query site maps to multiple refSites

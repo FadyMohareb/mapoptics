@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /*
-* @author Anisha
-*
-* Detects indels by calculating distance ratios between adjacent label sites on reference and query contigs
-* */
+ * @author Anisha
+ *
+ * Detects indels by calculating distance ratios between adjacent label sites on reference and query contigs
+ * */
 
 public class Indel extends SV {
     private final double qryDist;
@@ -19,7 +19,7 @@ public class Indel extends SV {
     public int refEndSite;
     private final int qryEndSite;
     int mumMolecules = 1;
-    
+
     public Indel(double qryPos1, double qryPos2, double refPos1, double refPos2, double qryDist,
                  double refDist, double size, int qryStartSite, int qryEndSite, int refStartSite, int refEndSite) {
         super();
@@ -42,7 +42,7 @@ public class Indel extends SV {
 
     // compute difference between adjacent label sites on ref sequence and their corresponding query sites
     public static List<Indel> setRefSiteDists(Map<Integer, List<Integer>> qryAlignments,
-                                       Map<Integer, Double> refSites, Map<Integer, Double> qrySites){
+                                              Map<Integer, Double> refSites, Map<Integer, Double> qrySites){
         // Extract aligned ref sites with selected qry (matches on ref) with duplicate refsites removed
         List<Integer> refAlignedSites = qryAlignments.values().stream().flatMapToInt(
                 refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().collect(Collectors.toList());
@@ -97,14 +97,14 @@ public class Indel extends SV {
             indel.setType();
             indelList.add(indel);
             refSite1 = refSite2;
-            }
+        }
         return indelList;
     }
 
     // measure the unchecked distances and compare with aligned sites on reference
     // this will detect distances missed by setRefSiteDists
     public static List<Indel> setResidualSiteDiffs(Map<Integer, List<Integer>> qryAlignments,
-                                            Map<Integer, Double> refSites, Map<Integer, Double> qrySites) {
+                                                   Map<Integer, Double> refSites, Map<Integer, Double> qrySites) {
         List<Integer> qryAlignedSites = new ArrayList<>(qryAlignments.keySet());
         List<Indel> indelList = new ArrayList<>();
         ListIterator<Integer> qryIter = qryAlignedSites.listIterator();

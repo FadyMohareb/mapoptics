@@ -15,9 +15,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /*
-* @author Anisha
-*
-* */
+ * @author Anisha
+ *
+ * */
 
 public class SVView extends JPanel {
     private static String chosenRef = "";

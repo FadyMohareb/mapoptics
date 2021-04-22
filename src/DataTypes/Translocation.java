@@ -3,9 +3,9 @@ package DataTypes;
 import Algorithms.DetectSV;
 
 /*
-* @author Anisha
-*
-* */
+ * @author Anisha
+ *
+ * */
 public class Translocation extends SV {
 
     public Translocation() {
@@ -13,8 +13,8 @@ public class Translocation extends SV {
     }
 
     @Override
-    public String setType() {
-        return "Translocation";
+    public void setType() {
+        this.type = "Translocation";
     }
 
     @Override

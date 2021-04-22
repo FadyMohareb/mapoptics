@@ -14,8 +14,8 @@ public class Inversion extends SV {
     }
 
     @Override
-    public String setType() {
-        return "Inversion";
+    public void setType() {
+        this.type = "Inversion";
     }
 
     @Override

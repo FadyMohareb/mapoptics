@@ -8,8 +8,8 @@ public class CNV extends SV {
     }
 
     @Override
-    public String setType() {
-        return "CNV";
+    public void setType() {
+        this.type = "CNV";
     }
 
     @Override

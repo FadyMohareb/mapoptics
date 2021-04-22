@@ -3155,7 +3155,7 @@ public class MapOptics extends JFrame {
                 changeQry(chosenQry);
                 repaint();
             }
-            });
+        });
     }
     private void setQryViewRefTable() {
         // Construct empty table model and set headings for protein table
@@ -3508,10 +3508,11 @@ public class MapOptics extends JFrame {
                         sv.getRefStartPos(),
                         sv.getRefEndPos(),
                         sv.getConfidence(),
+                        sv.getType(),
                         sv.getSVSize()
 
                 });
-        }
+            }
         }
     }
 
@@ -3576,27 +3577,27 @@ public class MapOptics extends JFrame {
         // Empty table
         tmQryMatch.setRowCount(0);
         // Add rows to table
-     //   if (!qryId.equals(EMPTY_STRING)) {
-      //      Reference ref=model.getSelectedRef();
-       //    Query qry=ref.getQuery(qryId);
-       //     tmQryMatch.addRow(new Object[]{
-       ////           ref.getRefID(),
-       //             qry.getOrientation(),
+        //   if (!qryId.equals(EMPTY_STRING)) {
+        //      Reference ref=model.getSelectedRef();
+        //    Query qry=ref.getQuery(qryId);
+        //     tmQryMatch.addRow(new Object[]{
+        ////           ref.getRefID(),
+        //             qry.getOrientation(),
         //            qry.getConfidence()
-       //     });
-       //     for (String s:refData.keySet()){System.out.println(s+"+"+refData.get(s)[0]+"+"+refData.get(s)[1]);}
-      //  }
+        //     });
+        //     for (String s:refData.keySet()){System.out.println(s+"+"+refData.get(s)[0]+"+"+refData.get(s)[1]);}
+        //  }
 
         if (!qryId.equals(EMPTY_STRING)&refData!=null) {
-        for (String s:refData.keySet()){
-            if (!qryId.isEmpty()) {
-                tmQryMatch.addRow(new Object[]{
-                        s,
-                        refData.get(s)[0],
-                       Double.parseDouble(refData.get(s)[1])
-              });
-            }
-        }}
+            for (String s:refData.keySet()){
+                if (!qryId.isEmpty()) {
+                    tmQryMatch.addRow(new Object[]{
+                            s,
+                            refData.get(s)[0],
+                            Double.parseDouble(refData.get(s)[1])
+                    });
+                }
+            }}
 
 
 

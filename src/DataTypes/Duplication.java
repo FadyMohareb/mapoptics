@@ -3,11 +3,11 @@ package DataTypes;
 import Algorithms.DetectSV;
 
 /*
-* @author Anisha
-*
-* Class for creating duplication objects and associated detection methods.
-*
-* */
+ * @author Anisha
+ *
+ * Class for creating duplication objects and associated detection methods.
+ *
+ * */
 public class Duplication extends SV {
 
     Duplication() {
@@ -15,8 +15,8 @@ public class Duplication extends SV {
     }
 
     @Override
-    public String setType() {
-        return "Duplication";
+    public void setType() {
+        this.type = "Duplication";
     }
 
     @Override

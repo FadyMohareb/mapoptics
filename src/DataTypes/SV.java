@@ -129,7 +129,7 @@ abstract public class SV {
         return type;
     }
 
-    public abstract String setType();
+    public abstract void setType();
 
     public String getXmapID1() {
         return xmapID1;
