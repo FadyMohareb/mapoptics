@@ -50,6 +50,7 @@ public class QueryView extends JPanel {
     private double Start;
     private double End;
     private List<Integer> refalignments ;
+    public boolean reorientate;
 
     public QueryView(MapOpticsModel model) {
         this.model = model;
