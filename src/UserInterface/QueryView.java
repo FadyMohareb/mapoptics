@@ -163,6 +163,16 @@ public class QueryView extends JPanel {
                 // draw relative to query alignment
                 ref = model.getSelectedRef();
                 qry = ref.getQuery(chosenQry);
+                //check the reorientation
+                isFlipped = qry.isFlipped();
+                if(regionView&qry.getOrientation().equals("-")){
+                    if (isFlipped==false){
+                        qry.reOrientate();
+                        isFlipped = qry.isFlipped();
+                       // System.out.println("after flip "+isFlipped);
+                      //  repaint();
+                    }
+                }
                 if (qry != null) {
                     Rectangle2D refRect = new Rectangle2D.Double(0, 20, ref.getLength(), 50);
                     Rectangle2D qryRect = qry.getRectangle();
@@ -280,8 +290,9 @@ public class QueryView extends JPanel {
                         }
                     }
                     // draw scalebars
-                    drawScaleBar(g2d, refScaled, Start, End, true);
-                    drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX), Start, End, false);
+                    double qrylength=qry.getLength();
+                    drawScaleBar(g2d, refScaled,qrylength, true);
+                    drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX),qrylength, false);
                     //display chosen label
                     drawChosenLabel(g2d,qry,isFlipped);
 
@@ -361,15 +372,6 @@ public class QueryView extends JPanel {
             }
         }
         //check the reorientation
-        isFlipped = qry.isFlipped();
-        if(regionView&qry.getOrientation().equals("-")){
-            if (isFlipped==false){
-            qry.reOrientate();
-            isFlipped = qry.isFlipped();
-            repaint();
-            }
-        }
-
 
         if (isFlipped == false) {
             if (ref.getLength() > qry.getLength()) {
@@ -412,14 +414,29 @@ public class QueryView extends JPanel {
 
             Start=qryRegionstart+refx*scale;
             End=qryRegionend+refx*scale;
-            if(Integer.parseInt(regions[0])!=0){
-                regionOffX= -Integer.parseInt(regions[0])/scale;
-                refx=refx-regionOffX;
-            }else{
-                regionOffX=0.0;
-                refx=refx-regionOffX;
-            }
+            //System.out.println("refx "+refx+" scale "+scale);
+           // System.out.println("qryStart "+qryRegionstart+" qryEnd "+qryRegionend);
+           // System.out.println("Start "+Start+" End "+End);
 
+            if(isFlipped){
+                if(qryRegionstart!=qry.getLength()){
+                    regionOffX= -qryRegionstart/scale;
+                    refx=refx-regionOffX;
+                }else{
+                    regionOffX=qry.getLength();
+                    refx=refx-regionOffX;
+                }
+            }else{
+                if(Integer.parseInt(regions[0])!=0){
+                    regionOffX= -Integer.parseInt(regions[0])/scale;
+                    refx=refx-regionOffX;
+                }else{
+                    regionOffX=0.0;
+                    refx=refx-regionOffX;
+                }
+
+
+            }
         }else{
             Start=qryRegionstart+refx*scale;
             End=qryRegionend+refx*scale;
@@ -460,11 +477,18 @@ public class QueryView extends JPanel {
                 Start = Double.parseDouble(regions[0]);
                 End = Double.parseDouble(regions[1]);
             }else if(qryViewSelect){
-                qryRegionstart=Double.parseDouble(regions[0]);
+                qryRegionstart= Double.parseDouble(regions[0]);
                 qryRegionend=Double.parseDouble(regions[1]);
                 scale = (qryRegionend-qryRegionstart) / this.getWidth();
                 Start = 0.0;
                 End = reflen;
+            }
+           // System.out.println("check flip in qrysearch "+isFlipped);
+            if(isFlipped){
+                double flippedstart = qry.getLength()-qryRegionend;
+                double flippedend = qry.getLength()-qryRegionstart;
+                qryRegionstart= flippedstart;
+                qryRegionend=flippedend;
             }
         }
 
@@ -475,7 +499,6 @@ public class QueryView extends JPanel {
         g2d.fill(rect);
         g2d.setColor(Color.lightGray);
         g2d.draw(rect);
-        //g2d.drawLine((int) rect.getMinX(), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25);
         g2d.setColor(new Color(80, 80, 80));
     }
     private Rectangle2D zoomRectangle(Rectangle2D refRect){
@@ -484,7 +507,7 @@ public class QueryView extends JPanel {
         double w=(End-Start)/scale;
         double x1;
         double w1;
-      //  if(regionView){
+
             if(referenceViewSelect){
                 Rectangle2D refRectScaled = new Rectangle2D.Double(0, 90,this.getWidth(), refRect.getHeight());
                 return refRectScaled;
@@ -493,13 +516,6 @@ public class QueryView extends JPanel {
                 }else{x=-refx;}
 
             }
-
-       // }else{
-       //     if(Start!=0){
-        //        x=this.getWidth() /20+Start/scale-refx;}else {
-       //         x=this.getWidth() /20-refx;
-         //   }
-       // }
         if(x<0){
             x1=0;
         }else{
@@ -518,11 +534,8 @@ public class QueryView extends JPanel {
         double w=qryRect.getWidth()/ scale;
         double x1;
         double w1;
-        //if(regionView){
-            x=regionOffX;
-       // }else{
-      //      x=this.getWidth() /20+regionOffX;
-       // }
+        x=regionOffX;
+
         if(x<0){
             x1=0;
         }else{
@@ -536,13 +549,13 @@ public class QueryView extends JPanel {
         return qryRectScaled;
     }
 
-    private void drawScaleBar(Graphics2D g2d, Rectangle2D rect,double start, double end ,boolean ref) {
+    private void drawScaleBar(Graphics2D g2d, Rectangle2D rect,double qrylength,boolean ref) {
         g2d.setColor(Color.black);
         if (ref) {
             g2d.drawLine((int) rect.getMinX(), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25);
-            int count = (int)start;
+            int count = (int)Start;
             int numScales = (int) rect.getWidth() / 100;
-            double length = end-start;
+            double length = End-Start;
             if (numScales != 0) {
                 for (int i = 0; i < numScales + 1; i++) {
                     g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMinY() - this.getHeight() / 20);
@@ -559,23 +572,18 @@ public class QueryView extends JPanel {
             int count;
             int numScales;
             double length;
-          //  if(regionView==true){
-                g2d.drawLine((int) rect.getMinX(), (int) rect.getMaxY() + this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMaxY() + this.getHeight() / 25);
-                count = (int)qryRegionstart;
-                numScales = (int) rect.getWidth() / 100;
-                length =  qryRegionend-qryRegionstart;
-          //  }else{
-          //      g2d.drawLine((int) rect.getMinX(), (int) rect.getMaxY() + this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMaxY() + this.getHeight() / 25);
-           //     count = 0;
-          //      numScales = (int) rect.getWidth() / 100;
-          //      length =  model.getSelectedRef().getQuery(chosenQry).getLength();
-          //  }
+            g2d.drawLine((int) rect.getMinX(), (int) rect.getMaxY() + this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMaxY() + this.getHeight() / 25);
+            count = (int)qryRegionstart;
+            numScales = (int) rect.getWidth() / 100;
+            length =  qryRegionend-qryRegionstart;
             if (numScales != 0) {
                 if(isFlipped){
+                    count=(int)(qrylength-qryRegionstart);
+                   // System.out.println("count "+count+" region start "+qryRegionstart+" region end"+qryRegionend+ " length "+length);
                     for (int i = 0; i < numScales + 1; i++) {
                         g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 20, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 25);
-                        g2d.drawString(String.format("%.2f", (length - (double) count) / 1000) + " kb", (int) (rect.getMinX() + ((rect.getWidth() / numScales) * i) - g2d.getFontMetrics().stringWidth(String.format("%.2f", (length-(double) count) / 1000) + " kb") / 2), (int) rect.getMaxY() + this.getHeight() / 20 + 14);
-                        count = (int) (count + length / numScales);
+                        g2d.drawString(String.format("%.2f", ((double) count) / 1000) + " kb", (int) (rect.getMinX() + ((rect.getWidth() / numScales) * i) - g2d.getFontMetrics().stringWidth(String.format("%.2f", ((double) count) / 1000) + " kb") / 2), (int) rect.getMaxY() + this.getHeight() / 20 + 14);
+                        count = (int) (count - length / numScales);
                     }
                 }else{
                 for (int i = 0; i < numScales + 1; i++) {
@@ -637,7 +645,4 @@ public class QueryView extends JPanel {
 
 
 }
-
-
-
 
