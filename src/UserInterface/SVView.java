@@ -20,9 +20,13 @@ import java.util.stream.Collectors;
  * */
 
 public class SVView extends JPanel {
+    public static List<Inversion> inversions;
+    public static List<Indel> indels;
+    public static List<Duplication> duplications;
+    public static List<Translocation> translocations;
     private static String chosenRef = "";
     private static String chosenQry = "";
-    private static List<SV> svList = new ArrayList<>();
+    private static List<SV> svList;
     private final MapOpticsModel model;
     private static final Color LIGHT_GREY = new Color(244, 244, 244);
     private static final Color GREY = new Color(192, 192, 192);
@@ -30,6 +34,7 @@ public class SVView extends JPanel {
     private static final Color BLACK = new Color(30, 30, 30);
     private static final Color GREEN = new Color(97, 204, 10);
     private static String chosenLabel = "";
+    private static SV chosenSV;
     private static String labelStyle = "match";
     private static boolean confidenceView = false;
     private static boolean regionView = false;
@@ -83,6 +88,14 @@ public class SVView extends JPanel {
     public static void setQryDataset(String qryDataset) {
     }
 
+    public SV getChosenSV() {
+        return chosenSV;
+    }
+
+    public static void setChosenSV(SV sv) {
+        SVView.chosenSV = sv;
+    }
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -91,7 +104,7 @@ public class SVView extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Stroke defaultStroke = g2d.getStroke();
         try {
-            if (!"".equals(chosenQry)) {
+            if (!"".equals(chosenQry) && !model.getSelectedRef().getDelQryIDs().contains(chosenQry)) {
                 Font defaultFont = g2d.getFont();
                 Font fontB = new Font("Tahoma", Font.BOLD, 12);
                 g2d.setFont(fontB);
@@ -258,13 +271,27 @@ public class SVView extends JPanel {
                     drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX), Start, End, false);
                     //display chosen label
                     drawChosenLabel(g2d,qry,qry.isFlipped());
+                    // draw SV
+                    drawIndel(g2d, (Indel) chosenSV);
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
                     g2d.setFont(font);
                     g2d.drawString("No match between chosen query and reference", this.getWidth() / 2 - 115, this.getHeight() / 2 - 10);
                     g2d.drawString("(Query contig may have been deleted)", this.getWidth() / 2 - 100, this.getHeight() / 2 + 10);
                 }
+            } else if (!"".equals(chosenRef)) {
+                if (svList.isEmpty()) {
+                    Font font = new Font("Tahoma", Font.ITALIC, 12);
+                    g2d.setFont(font);
+                    g2d.drawString("No SVs found", this.getWidth() / 2 - 115, this.getHeight() / 2);
+                } else {
+                    Font font = new Font("Tahoma", Font.ITALIC, 12);
+                    g2d.setFont(font);
+                    g2d.drawString("Choose a SV from STRUCTURAL VARIANTS table", this.getWidth() / 2 - 115, this.getHeight() / 2);
+                }
+
             } else {
+                // if both query and ref are empty
                 Font font = new Font("Tahoma", Font.ITALIC, 12);
                 g2d.setFont(font);
                 g2d.drawString("Choose a Reference contig from SUMMARY VIEW", this.getWidth() / 2 - 115, this.getHeight() / 2);
@@ -547,14 +574,18 @@ public class SVView extends JPanel {
         }
     }
 
-    public void drawSVRegion(SV sv, Graphics2D g2d) {
-        if (sv instanceof Indel) {
-            if (sv.getType().equals("insertion")) {
-                // color red
-            } else {
-                // color blue
-            }
-        }
+    public static void drawIndel(Graphics2D g2d, Indel indel) {
+        Double qryStartPos = indel.getQryStartPos();
+        Double qryEndPos = indel.getQryEndPos();
+        Double refStartPos = indel.getRefStartPos();
+        Double refEndPos = indel.getRefEndPos();
+        Polygon polygon = new Polygon();
+        g2d.setColor(new Color(244, 244, 244));
+        g2d.fill(polygon);
+        g2d.setColor(Color.lightGray);
+        g2d.draw(polygon);
+        //g2d.drawLine((int) rect.getMinX(), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25);
+        g2d.setColor(new Color(80, 80, 80));
     }
 
     private void initComponents() {
