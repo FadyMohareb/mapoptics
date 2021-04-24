@@ -10,7 +10,10 @@ import FileHandling.XmapReader;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
     @author Josie
@@ -121,7 +124,6 @@ public class RefViewData {
                 highestOffSetX = maxX;
             }
         }
-
 
 
         // Slot in method with lowestOffSetX, highestOffsetY
