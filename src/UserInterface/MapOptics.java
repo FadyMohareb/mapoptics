@@ -1951,6 +1951,13 @@ public class MapOptics extends JFrame {
         if (svTable.getRowCount() != 0) {
             String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
             changeQry(chosenQry);
+            String qryStart = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
+            String qryEnd = svTable.getValueAt(svTable.getSelectedRow(), 2).toString();
+            String refStart = svTable.getValueAt(svTable.getSelectedRow(), 3).toString();
+            String refEnd = svTable.getValueAt(svTable.getSelectedRow(), 4).toString();
+            String type = svTable.getValueAt(svTable.getSelectedRow(), 6).toString();
+            SV chosenSV = detectSV.getSV(qryStart, qryEnd, refStart, refEnd, type);
+            changeSV(chosenSV);
         }
 
     }
@@ -3210,7 +3217,6 @@ public class MapOptics extends JFrame {
     private void setSVTable() {
         DefaultTableModel svModel = TableModels.getSVModel();
         svModel.addColumn("Query ID");
-        svModel.addColumn("Ref ID");
         svModel.addColumn("Qry Start Pos");
         svModel.addColumn("Qry End Pos");
         svModel.addColumn("Ref Start Pos");
@@ -3512,7 +3518,6 @@ public class MapOptics extends JFrame {
             for (SV sv : detectSV.getSVList()) {
                 tmSV.addRow(new Object[]{
                         sv.getQryID(),
-                        sv.getRefID1(),
                         sv.getQryStartPos(),
                         sv.getQryEndPos(),
                         sv.getRefStartPos(),
@@ -3834,8 +3839,8 @@ public class MapOptics extends JFrame {
         repaint();
     }
 
-    private void changeSV(String refId) {
-        model.setSelectedRefID(refId);
+    private void changeSV(SV sv) {
+        SVView.setChosenSV(sv);
         repaint();
     }
 
