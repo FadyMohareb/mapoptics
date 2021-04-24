@@ -11,7 +11,7 @@ import UserInterface.MapOptics;
 
 abstract public class SV {
     private int qryStartSite;
-    private int qryEndSite;
+    public int qryEndSite;
     public double qryStartPos;
     public double qryEndPos;
     public double refStartPos;
