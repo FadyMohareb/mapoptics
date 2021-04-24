@@ -17,7 +17,7 @@ public class Indel extends SV {
     private final int qryStartSite;
     public int refStartSite;
     public int refEndSite;
-    private final int qryEndSite;
+    private static Map<Integer, List<Double>> refQryPos = new HashMap<>();
     int mumMolecules = 1;
 
     public Indel(double qryPos1, double qryPos2, double refPos1, double refPos2, double qryDist,
@@ -69,12 +69,12 @@ public class Indel extends SV {
         // loop through the matched refsites and calculate the distance between adjacent refsites that have a match
         ListIterator<Integer> refIter = refAlignedSites.listIterator();
         int refSite1 = refIter.next();
+        int index = 1;
         List<Indel> indelList = new ArrayList<>();
         while (refIter.hasNext()) {
             int refSite2 = refIter.next();
             // get the positions for the adjacent ref aligned sites
             double refPos1 = refSites.get(refSite1);
-            System.out.println("refSite1: " + refSite1);
             double refPos2 = refSites.get(refSite2);
             double refDist = refPos2 - refPos1;
 
@@ -83,9 +83,15 @@ public class Indel extends SV {
             int qrySite2 = refAlignments.get(refSite2).get(0);
             double qryPos1 = qrySites.get(qrySite1);
             double qryPos2 = qrySites.get(qrySite2);
+            index++;
+            List<Double> positions = new ArrayList();
+            for (double v : new double[]{refPos1, refPos2, qryPos1, qryPos2}) {
+                positions.add(v);
+            }
+            refQryPos.put(index, positions);
             double qryDist = qryPos2 - qryPos1;
             double size = Math.abs(qryDist - refDist);
-            double roundSize = Math.round(size * 10) / 10;
+            double roundSize = Math.round(size * 10.0) / 10.0;
 
             // make indel
             Indel indel = new Indel(qryPos1, qryPos2, refPos1, refPos2, refDist, qryDist, roundSize, qrySite1,
@@ -113,7 +119,6 @@ public class Indel extends SV {
             double qryPos1 = qrySites.get(qrySite1);
             int qrySite2 = qryIter.next();
             double qryPos2 = qrySites.get(qrySite2);
-            double qryDist = qryPos2 - qryPos1;
 
             // get corresponding refSites for those query sites and compute the difference
             int refSite1 = qryAlignments.get(qrySite1).get(0);
@@ -121,19 +126,32 @@ public class Indel extends SV {
             // get respective positions
             double refPos1 = refSites.get(refSite1);
             double refPos2 = refSites.get(refSite2);
-            double refDist = refPos2 - refPos1;
-            double size = Math.abs(qryDist - refDist);
-            double roundSize = Math.round(size * 10.0) / 10.0;
-            // make indel
-            Indel indel = new Indel(qryPos1, qryPos2, refPos1, refPos2, refDist, qryDist, roundSize,
-                    qrySite1, qrySite2, refSite1, refSite2);
-            indel.setRefStartSite(refSite1);
-            indel.setRefEndSite(refSite2);
-            indel.setQryStartSite(qrySite1);
-            indel.setQryEndSite(qrySite2);
-            indel.setType();
-            indelList.add(indel);
-            //if (!isDuplicate(indel, indelList))  indelList.add(indel);
+
+            Boolean duplicate = false;
+            // screen for duplicates by only adding indels which have at least one different position
+            for (List<Double> positions : refQryPos.values()) {
+                if (positions.contains(refPos1) && positions.contains(refPos2) && positions.contains(qryPos1)
+                    && positions.contains(qryPos2)) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                double qryDist = qryPos2 - qryPos1;
+                double refDist = refPos2 - refPos1;
+                double size = Math.abs(qryDist - refDist);
+                double roundSize = Math.round(size * 10.0) / 10.0;
+                // make indel
+                Indel indel = new Indel(qryPos1, qryPos2, refPos1, refPos2, refDist, qryDist, roundSize,
+                        qrySite1, qrySite2, refSite1, refSite2);
+                indel.setRefStartSite(refSite1);
+                indel.setRefEndSite(refSite2);
+                indel.setQryStartSite(qrySite1);
+                indel.setQryEndSite(qrySite2);
+                indel.setType();
+                indelList.add(indel);
+            }
+
             qrySite1 = qrySite2;
         }
         return indelList;
@@ -165,18 +183,7 @@ public class Indel extends SV {
 
     // calculate the number of molecules covering the aligned region region
 
-    static Boolean isDuplicate(Indel indel, List<Indel> indelList) {
-        // compare each indel with the others to remove duplicate indels
-        List<Indel> duplicates = new ArrayList<>();
-        for (Indel listIndel : indelList) {
-            // if all the qry and ref positions are the same the indel is already in the list
-            if (indel.qryStartPos == listIndel.qryStartPos && indel.qryEndPos == listIndel.qryEndPos
-                    && indel.refStartPos == listIndel.refStartPos && indel.refEndPos == listIndel.refEndPos) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
 
     public static List<Indel> getPutativeIndels(Map<Integer, List<Integer>> qryAlignments, Map<Integer, Double> refSites,
@@ -209,7 +216,6 @@ public class Indel extends SV {
     @Override
     public void setSVRegion(SV sv) {
         // use start and end sites / positions of the indel to create filled polygon
-        // flanking alignments
 
     }
 
