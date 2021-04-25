@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 /*
  * @author Anisha
  *
- * Detects indels by calculating distance ratios between adjacent label sites on reference and query contigs
+ * Detects Large indels by calculating distance ratios between adjacent label sites on reference and query contigs
  * */
 
 public class Indel extends SV {
@@ -44,8 +44,6 @@ public class Indel extends SV {
     // check orientation of query contig
     public static List<Indel> setRefSiteDists(Map<Integer, List<Integer>> qryAlignments,
                                               Map<Integer, Double> refSites, Map<Integer, Double> qrySites){
-
-        System.out.println("alignments in detect: " + qryAlignments);
         // Extract aligned ref sites with selected qry (matches on ref) with duplicate refsites removed
         List<Integer> refAlignedSites = qryAlignments.values().stream().flatMapToInt(
                 refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().collect(Collectors.toList());
@@ -79,7 +77,7 @@ public class Indel extends SV {
             // get the positions for the adjacent ref aligned sites
             double refPos1 = refSites.get(refSite1);
             double refPos2 = refSites.get(refSite2);
-            double refDist = refPos2 - refPos1;
+            double refDist = Math.abs(refPos2 - refPos1);
 
             // get the matching query site position for the refsite
             int qrySite1 = refAlignments.get(refSite1).get(0);
@@ -92,7 +90,7 @@ public class Indel extends SV {
                 positions.add(v);
             }
             refQryPos.put(index, positions);
-            double qryDist = qryPos2 - qryPos1;
+            double qryDist = Math.abs(qryPos2 - qryPos1);
             double size = Math.abs(qryDist - refDist);
             double roundSize = Math.round(size * 10.0) / 10.0;
 
@@ -140,8 +138,8 @@ public class Indel extends SV {
                 }
             }
             if (!duplicate) {
-                double qryDist = qryPos2 - qryPos1;
-                double refDist = refPos2 - refPos1;
+                double qryDist = Math.abs(qryPos2 - qryPos1);
+                double refDist = Math.abs(refPos2 - refPos1);
                 double size = Math.abs(qryDist - refDist);
                 double roundSize = Math.round(size * 10.0) / 10.0;
                 // make indel
