@@ -10,7 +10,7 @@ import Algorithms.DetectSV;
 import UserInterface.MapOptics;
 
 abstract public class SV {
-    private int qryStartSite;
+    public int qryStartSite;
     public int qryEndSite;
     public double qryStartPos;
     public double qryEndPos;

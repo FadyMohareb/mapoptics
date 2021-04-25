@@ -1,12 +1,11 @@
 package Algorithms;
 
 import DataTypes.*;
+import UserInterface.MapOptics;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
+//import org.apache.commons.math3.distribution;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /*
@@ -39,6 +38,7 @@ public class DetectSV {
     private double FPR;
     private double FNR;
     private int minCoverage;
+
 
     public DetectSV(MapOpticsModel model) {
         this.model = model;
@@ -89,41 +89,48 @@ public class DetectSV {
 
     public void detectIndels() {
         for (Query qry : chosenRef.getQueries()) {
-            if (!chosenRef.getDelQryIDs().contains(Integer.parseInt(qry.getID())) &&
-                    !chosenRef.getSavedDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
-                // for a given qry and ref get Alignment info
-                Map<Integer, Double> refSites = chosenRef.getSites();
-                Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
-                Map<Integer, Double> qrySites = qry.getQryViewSites();
-                // Extract aligned ref sites with selected qry (matches on ref) with duplicate refsites removed
-                List<Integer> refAlignedSites = qryAlignments.values().stream().flatMapToInt(
-                        refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().sorted()
-                        .collect(Collectors.toList());
-                int refStartSite = refAlignedSites.get(0);
-                // get the last site(s) to get the last site in case the last query site maps to multiple refSites
-                int  refEndSite = refAlignedSites.get(refAlignedSites.size() - 1);
+            // don't run indel functions on deleted queries
+            if (chosenRef.getDelQryIDs().contains(Integer.parseInt(qry.getID())) ||
+                    chosenRef.getSavedDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
+                continue;
+            }
+            // for a given qry and ref get Alignment info
+            Map<Integer, Double> refSites = chosenRef.getSites();
+            Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
+            // check orientation
+            if (qry.getOrientation().equals("-")) {
+                Map<Integer, List<Integer>> revQryAlignment = changeOrientation(qryAlignments);
+                qryAlignments = revQryAlignment;
+            }
 
-                List<Indel> indels = Indel.getPutativeIndels(qryAlignments, chosenRef.getSites(),
-                        qry.getQryViewSites());
-                // cigar
-                Cigar cig = new Cigar(qry.getHitEnum());
-                cig.parseHitEnum();
+            Map<Integer, Double> qrySites = qry.getQryViewSites();
+            // Extract aligned ref sites with selected qry (matches on ref) with duplicate refsites removed
+            List<Integer> refAlignedSites = qryAlignments.values().stream().flatMapToInt(
+                    refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().sorted()
+                    .collect(Collectors.toList());
+            int refStartSite = refAlignedSites.get(0);
+            // get the last site(s) to get the last site in case the last query site maps to multiple refSites
+            int  refEndSite = refAlignedSites.get(refAlignedSites.size() - 1);
 
-                cig.mapCigSites(refSites, qrySites, qryAlignments);
-                Map<Integer, String> refCigar = cig.getCigRefSites();
-                Map<Integer, String> qryCigar = cig.getCigQrySites();
-                // filter the indels
-                List<Indel> filteredIndels = filterIndels(indels, this.minIndelSize, this.maxIndelSize, refCigar,
-                        this.flankSig);
-                // add qry and ref IDs to indels
-                for (Indel indel : filteredIndels) {
-                    indel.setQryID(qry.getID());
-                    indel.setRefID1(chosenRef.getRefID());
-                    indel.setType();
-                }
-                System.out.println("detectsv loop: filteredIndels" + filteredIndels.size());
+            List<Indel> indels = Indel.getIndels(qryAlignments, chosenRef.getSites(),
+                    qry.getQryViewSites());
+            // cigar
+            Cigar cig = new Cigar(qry.getHitEnum());
+            cig.parseHitEnum();
+
+            cig.mapCigSites(refSites, qrySites, qryAlignments);
+            Map<Integer, String> refCigar = cig.getCigRefSites();
+            Map<Integer, String> qryCigar = cig.getCigQrySites();
+            // filter the indels
+            List<Indel> filteredIndels = filterIndels(indels, this.minIndelSize, this.maxIndelSize, refCigar,
+                    this.flankSig);
+            // add qry and ref IDs to indels
+            for (Indel indel : filteredIndels) {
+                indel.setQryID(qry.getID());
+                indel.setRefID1(chosenRef.getRefID());
+                indel.setType();
+            }
                 this.indels.addAll(filteredIndels);
-            } System.out.println("this.indels: line 126 " + this.indels);
             }
         }
 
@@ -144,7 +151,6 @@ public class DetectSV {
                 }
             }
         }
-        System.out.println("filteredIndels: " + filteredIndels);
         return filteredIndels;
     }
     public List<Indel> getIndels() {
@@ -194,6 +200,18 @@ public class DetectSV {
         List<SV> svList = new ArrayList<>();
         svList.addAll(this.indels);
         this.svList = svList;
+    }
+
+    public static Map<Integer, List<Integer>> changeOrientation(Map<Integer, List<Integer>> qryAlignments) {
+        // reverse the order of the query sites
+        Map<Integer, List<Integer>> reverseMap = new LinkedHashMap<>();
+        ArrayList<Integer> qrySites = new ArrayList<>(qryAlignments.keySet());
+        for(int i = qrySites.size() - 1; i >= 0; i--){
+            int revQrySite = qrySites.get(i);
+            reverseMap.put(revQrySite, qryAlignments.get(revQrySite));
+
+        }
+        return reverseMap;
     }
 
 }

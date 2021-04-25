@@ -28,7 +28,7 @@ public class Indel extends SV {
         this.refStartPos = refPos1;
         this.refEndPos = refPos2;
         this.svSize = size;
-        this.orientation = "NA";
+        this.orientation = "+";
         this.qryDist = qryDist;
         this.refDist = refDist;
         this.qryStartSite = qryStartSite;
@@ -41,8 +41,11 @@ public class Indel extends SV {
     // For LARGE INDELS
 
     // compute difference between adjacent label sites on ref sequence and their corresponding query sites
+    // check orientation of query contig
     public static List<Indel> setRefSiteDists(Map<Integer, List<Integer>> qryAlignments,
                                               Map<Integer, Double> refSites, Map<Integer, Double> qrySites){
+
+        System.out.println("alignments in detect: " + qryAlignments);
         // Extract aligned ref sites with selected qry (matches on ref) with duplicate refsites removed
         List<Integer> refAlignedSites = qryAlignments.values().stream().flatMapToInt(
                 refSite -> refSite.stream().mapToInt(i -> i)).boxed().distinct().collect(Collectors.toList());
@@ -163,7 +166,7 @@ public class Indel extends SV {
     }
 
     double calculateDistRatio(double refDist, double qryDist) {
-        double distRatio = Math.round(((qryDist / refDist) * 10) / 10);
+        double distRatio = Math.round(((qryDist / refDist) * 10.0) / 10.0);
         return distRatio;
     }
 
@@ -186,7 +189,7 @@ public class Indel extends SV {
 
 
 
-    public static List<Indel> getPutativeIndels(Map<Integer, List<Integer>> qryAlignments, Map<Integer, Double> refSites,
+    public static List<Indel> getIndels(Map<Integer, List<Integer>> qryAlignments, Map<Integer, Double> refSites,
                                                 Map<Integer, Double> qrySites) {
         List<Indel> indelList = new ArrayList<>();
         List<Indel> indels = Indel.setRefSiteDists(qryAlignments, refSites, qrySites);
@@ -212,6 +215,8 @@ public class Indel extends SV {
     public int getRefEndSite() {
         return refEndSite;
     }
+
+
 
     @Override
     public void setSVRegion(SV sv) {
