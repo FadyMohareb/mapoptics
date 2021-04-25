@@ -12,6 +12,7 @@ public class Cigar {
 
     private final String hitEnum;
     public final List<String> parsedCigar;
+    private List<String> revCompCigar;
     private final Map<Integer, String> cigRefSites;
     private Map<Integer, String> cigQrySites;
     private final Map<Double, String> cigRefPos;
@@ -22,13 +23,14 @@ public class Cigar {
     public Cigar(String hitEnum) {
         this.hitEnum = hitEnum;
         parsedCigar = new ArrayList<>();
+        revCompCigar = new ArrayList<>();
         cigRefSites = new LinkedHashMap<>();
         cigRefPos = new LinkedHashMap<>();
         cigQrySites = new LinkedHashMap<>();
         cigQryPos = new LinkedHashMap<>();
 
     }
-    public void parseHitEnum() {
+    public List<String> parseHitEnum() {
         // create regex pattern (for 1 or more digits followed by a letter (non-digit)
         Pattern pattern = Pattern.compile("\\d+\\D");
         Matcher m = pattern.matcher(hitEnum);
@@ -49,6 +51,7 @@ public class Cigar {
 
 
         }
+        return parsedCigar;
     }
 
     public void mapCigSites(Map<Integer, Double> refSites, Map<Integer, Double> qrySites, Map<Integer,
@@ -106,6 +109,57 @@ public class Cigar {
 
     public Map<Integer, String> getCigQrySites() {
         return cigQrySites;
+    }
+
+    // computes the reverse complement of the CIGAR string
+    public List<String> reverseComplement(List<String> parsedCigar) {
+        // loop through reversed Cigar sites
+        for (int i = parsedCigar.size() - 1; i >= 0; i--) {
+            // replace I with D and D with I
+            if (parsedCigar.get(i).equals("I")) {
+                this.revCompCigar.add("D");
+            } else if (parsedCigar.get(i).equals("D")) {
+                this.revCompCigar.add("I");
+            } else {
+                this.revCompCigar.add("M"); // matches remain the same
+            }
+        }
+        return revCompCigar;
+    }
+
+    // find sequences which are palindromic within the CIGAR string
+    public List<String> getRevPalindromes(List<String> parsedCigar, List<String> revCompCigar) {
+        List<String> revPalindromes = new ArrayList<>();
+        // concatenate individual string letters of cigar into a single string
+        String revCompStr = String.join("", revCompCigar);
+
+        System.out.println("revcompsb:" + revCompStr);
+        // loop through the parsed cigar string list
+        // loop through a window of size 4
+        for (int i = 0; i + 4 < parsedCigar.size(); i++) {
+            List<String> window = parsedCigar.subList(i, i + 4);
+            String windowStr = String.join("", window);
+            // check the sequence window is in the reverse string
+            if (revCompStr.contains(windowStr)) {
+                System.out.println("windowStr: " + windowStr);
+                List<String> residualSeq = parsedCigar.subList(i, parsedCigar.size());
+                ListIterator<String> winIter = residualSeq.listIterator();
+                StringBuilder sb = new StringBuilder(windowStr);
+                while (winIter.hasNext()) {
+                    String nextLetter = winIter.next();
+
+                    sb.append(nextLetter);
+                    System.out.println("sb: " + sb.toString());
+                    if (!revCompStr.contains(sb.toString())) {
+                        // remove the last char that makes the string not match with a subsequence in the revComplement
+                        sb.deleteCharAt(sb.length() - 1);
+                        revPalindromes.add(sb.toString());
+                        break;
+                    }
+                }
+            }
+        }
+        return revPalindromes;
     }
 
 }
