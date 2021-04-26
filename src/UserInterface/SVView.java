@@ -7,6 +7,7 @@ import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.AlphaComposite;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,7 @@ public class SVView extends JPanel {
     private boolean isFlipped;
     private static boolean refSequences = false;
     private static boolean qrySequences = false;
+    private static boolean changeOrientation = false;
 
     public SVView(MapOpticsModel model, DetectSV detectSV) {
         this.model = model;
@@ -99,6 +101,11 @@ public class SVView extends JPanel {
         SVView.chosenSV = sv;
     }
 
+    public static void resetChosenSV() {SVView.chosenSV = null; }
+
+    public static String getStyle() {
+        return labelStyle;
+    }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -137,15 +144,8 @@ public class SVView extends JPanel {
                 ref = model.getSelectedRef();
                 qry = ref.getQuery(chosenQry);
                 //check the reorientation
-                isFlipped = qry.isFlipped();
-                if(regionView&qry.getOrientation().equals("-")){
-                    if (isFlipped==false){
-                        qry.reOrientate();
-                        isFlipped = qry.isFlipped();
-                        // System.out.println("after flip "+isFlipped);
-                        //  repaint();
-                    }
-                }
+                isFlipped = qry.isFlipped();//to see whether the button is clicked
+
                 if (qry != null) {
                     Rectangle2D refRect = new Rectangle2D.Double(0, 20, ref.getLength(), 50);
                     Rectangle2D qryRect = qry.getRectangle();
@@ -170,9 +170,7 @@ public class SVView extends JPanel {
                     QueryViewData.setRefStart(Start);
                     QueryViewData.setQryStart(regionOffX);
 
-                    // draw query contig
-                    qry.setQryViewRect(new Rectangle2D.Double(refOffX+regionOffX, 230, qryRect.getWidth()/ scale, qryRect.getHeight()));
-                    drawContig(g2d, qryScaled, chosenQry);
+
 
                     // draw reference contig
                     if(Start!=0){
@@ -212,15 +210,89 @@ public class SVView extends JPanel {
 
                     }
                     g2d.setColor(new Color(80, 80, 80));
+                    //cigar
+                    String hitEnum = qry.getHitEnum();
+                    Cigar cigar = new Cigar(hitEnum);
+                    cigar.parseHitEnum();
+                    cigar.getCigRefSites();
+                    // Extract aligned ref sites with selected qry
+                    List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
+                            refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
+
+                    cigar.mapCigSites(refSites, qrySites, qryAlignments);
+                    Map<Integer, String> refCig = cigar.getCigRefSites();
+                    Map<Integer, String> qryCig = cigar.getCigQrySites();
+                    // For each query, draw sites and alignments
+
+                    int qryOffSetY = (int) qryScaled.getY();
+                    int qryHeight = (int) qryScaled.getHeight();
+
+                    // draw SV if selected
+                    if (chosenSV != null && chosenSV instanceof Indel) {
+                        // Set Polygon for indel region
+                        Polygon polygon;
+                        if (chosenSV instanceof Indel) {
+                            if (isFlipped) {
+                                int qryPos1X = (int) (((qry.getLength() - chosenSV.qryEndPos) / scale) + refOffX + regionOffX);
+                                int qryPos1Y = (int) qryOffSetY + qryHeight;
+                                int qryPos2X = (int) (((qry.getLength() - chosenSV.qryStartPos) / scale) + refOffX + regionOffX);
+                                int qryPos2Y = (int) qryOffSetY + qryHeight;
+                                int refPos1X = (int) ((chosenSV.refStartPos / scale) + refOffX - refx);
+                                int refPos1Y = (int) (refScaled.getMinY());
+                                int refPos2X = (int) ((chosenSV.refEndPos / scale) + refOffX - refx);
+                                int refPos2Y = (int) (refScaled.getMinY());
+                                int[] xVals = {qryPos1X, qryPos2X, refPos1X, refPos2X};
+                                int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
+                                        (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
+                                polygon = new Polygon(xVals, yVals, 4);
+                                drawSVRegion(g2d, polygon, chosenSV);
+                            } else {
+                                int qryPos1X = (int) (((chosenSV.qryStartPos) / scale) + refOffX + regionOffX);
+                                int qryPos1Y = (int) qryOffSetY + qryHeight;
+                                int qryPos2X = (int) (((chosenSV.qryEndPos) / scale) + refOffX + regionOffX);
+                                int qryPos2Y = (int) qryOffSetY + qryHeight;
+                                int refPos1X = (int) ((chosenSV.refStartPos / scale) + refOffX - refx);
+                                int refPos1Y = (int) (refScaled.getMinY());
+                                int refPos2X = (int) ((chosenSV.refEndPos / scale) + refOffX - refx);
+                                int refPos2Y = (int) (refScaled.getMinY());
+                                int[] xVals = {qryPos1X, qryPos2X, refPos2X, refPos1X};
+                                int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
+                                        (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
+                                polygon = new Polygon(xVals, yVals, 4);
+                                drawSVRegion(g2d, polygon, chosenSV);
+                            }
+                        }
+                    }
+
+
+
+
 
                     //draw reference labels
+                    // In SV mode, refsites that are deletions are coloured blue whereas matches are coloured green.
+                    // loop through all sites in ref contig
                     int WindowWidth = this.getWidth();
                     for (int site : refSites.keySet()) {
-
-                        g2d.setColor(Color.black);
-                        if (refalignments.contains(site)) {
-                            if (refAlignments.contains(site)) {
+                        // Color green sites that are aligned to selected qry
+                        if (qryRefSites.contains(site)) {
+                            // If in SV display color as appropriate
+                            if (getStyle().equals("cigar") && refCig.containsKey(site)) {
+                                if (refCig.get(site).equals("D")) {
+                                    g2d.setColor(Color.BLUE);
+                                } else if (refCig.get(site).equals("M")) {
+                                    g2d.setColor(GREEN);
+                                }
+                            } else {
                                 g2d.setColor(GREEN);
+                            }
+
+                        } else {
+                            if (getStyle().equals("cigar") && refCig.containsKey(site)) {
+                                if (refCig.get(site).equals("D")) {
+                                    g2d.setColor(Color.BLUE);
+                                } else {
+                                    g2d.setColor(BLACK);
+                                }
                             } else {
                                 g2d.setColor(BLACK);
                             }
@@ -231,21 +303,40 @@ public class SVView extends JPanel {
                                 g2d.drawLine(position, (int) refScaled.getMinY(), position, (int) refScaled.getMaxY());
                             }}
                     }
-                    // For each query, draw sites and alignments
 
-                    int qryOffSetY = (int) qryScaled.getY();
-                    int qryHeight = (int) qryScaled.getHeight();
 
+                    // draw query contig
+                    qry.setQryViewRect(new Rectangle2D.Double(refOffX+regionOffX, 230, qryRect.getWidth()/ scale, qryRect.getHeight()));
+                    drawContig(g2d, qryScaled, chosenQry);
+                            // draw qry labels
+
+                    // In SV display mode, qrysite labels are coloured red if insertions and green if they are a
+                    // match
                     for (int site : qry.getQryViewSites().keySet()) {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
-                            g2d.setColor(GREEN);
-
+                            // If SV display mode color insertions as red and matches green
+                            if (getStyle().equals("cigar") && qryCig.containsKey(site)) {
+                                if (qryCig.get(site).equals("I")) {
+                                    g2d.setColor(Color.RED);
+                                } else if (qryCig.get(site).equals("M")) {
+                                    g2d.setColor(GREEN);
+                                }
+                            } else {
+                                g2d.setColor(GREEN);
+                            }
                         } else {
-                            g2d.setColor(BLACK);
+                            if (getStyle().equals("cigar") && qryCig.containsKey(site)) {
+                                if (qryCig.get(site).equals("I")) {
+                                    g2d.setColor(Color.RED);
+                                } else {
+                                    g2d.setColor(BLACK);
+                                }
+                            } else {
+                                g2d.setColor(BLACK);
+                            }
                         }
-
 
                         int position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
                         if(position>=0 &position<=WindowWidth){
@@ -260,34 +351,12 @@ public class SVView extends JPanel {
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
                                 if(refPositionX>=0&refPositionX<=this.getWidth()&position>=0 &position<=this.getWidth()){
                                     g2d.drawLine(position, qryOffSetY, refPositionX, refPositionY);
-
                                 }
-
-                                }
-                            // draw SV if selected
-                            /*
-                            if (chosenSV != null && chosenSV instanceof Indel) {
-                                // Set Polygon
-                                Polygon polygon;
-                                if (chosenSV instanceof Indel) {
-                                    int qryPos1X = (int) ((chosenSV.qryStartPos / 100) + refOffX+ regionOffX);
-                                    int qryPos1Y = (int) qryScaled.getY();
-                                    int qryPos2X = (int) ((chosenSV.qryEndSite / scale) + refOffX+ regionOffX);
-                                    int qryPos2Y = (int) qryScaled.getY();
-                                    int refPos1X = (int) ((chosenSV.refStartPos / scale) + refOffX - refx);
-                                    int refPos1Y = (int) (refScaled.getY() + refScaled.getHeight());
-                                    int refPos2X = (int) (((chosenSV.refEndPos / scale)) + refOffX - refx);
-                                    int refPos2Y = (int) (refScaled.getY() + refScaled.getHeight());
-                                    int[] xVals = {qryPos1X, qryPos2X, refPos1X, refPos2X};
-                                    int[] yVals = {qryPos1X, qryPos2X, refPos1X, refPos2X};
-                                    polygon = new Polygon(xVals, yVals, 4);
-                                    drawSVRegion(g2d, polygon, chosenSV);
-                                }
-                            }*/
+                            }
                         }
-
-
                     }
+
+
                     // draw scalebars
                     double qrylength=qry.getLength();
                     drawScaleBar(g2d, refScaled,qrylength, true);
@@ -631,20 +700,21 @@ public class SVView extends JPanel {
         if (chosenSV instanceof Indel) {
             g2d.draw(polygon);
             if (chosenSV.type.equals("insertion")) {
-                g2d.setColor(new Color(175, 10, 10));
-                g2d.fill(polygon);
-                g2d.setColor(Color.RED);
-                g2d.draw(polygon);
+                g2d.setColor(new Color(250, 128, 114));
+                for (int i = 1; i <= 10; i++) {
+                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, i * 0.1f));
+                    g2d.fill(polygon);
+                }
             } else {
-                g2d.setColor(new Color(10, 102, 199));
-                g2d.fill(polygon);
-                g2d.setColor(Color.BLUE);
-                g2d.draw(polygon);
+                g2d.setColor(new Color(176, 224, 230));
+                for (int i = 1; i <= 10; i++) {
+                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, i * 0.1f));
+                    g2d.fill(polygon);
+                }
+
             }
 
         }
-
-
 
     }
 
