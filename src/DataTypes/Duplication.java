@@ -14,13 +14,10 @@ public class Duplication extends SV {
         super();
     }
 
+    // query contig has matches to the same region on the reference
     @Override
     public void setType() {
         this.type = "Duplication";
     }
 
-    @Override
-    public void setSVRegion(SV sv) {
-
-    }
 }

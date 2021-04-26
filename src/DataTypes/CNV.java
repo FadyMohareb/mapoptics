@@ -11,9 +11,4 @@ public class CNV extends SV {
     public void setType() {
         this.type = "CNV";
     }
-
-    @Override
-    public void setSVRegion(SV sv) {
-
-    }
 }

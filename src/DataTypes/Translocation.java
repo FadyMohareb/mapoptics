@@ -16,9 +16,4 @@ public class Translocation extends SV {
     public void setType() {
         this.type = "Translocation";
     }
-
-    @Override
-    public void setSVRegion(SV sv) {
-
-    }
 }
