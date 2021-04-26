@@ -49,10 +49,6 @@ abstract public class SV {
         this.orientation = "";
     }
 
-
-    public abstract void setSVRegion(SV sv);
-
-
     public String getQryID() {
         return qryID;
     }
