@@ -1,9 +1,9 @@
 package DataTypes;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+//import org.apache.commons.math3.distribution.CauchyDistribution;
 
 /*
  * @author Anisha
@@ -213,15 +213,5 @@ public class Indel extends SV {
     public int getRefEndSite() {
         return refEndSite;
     }
-
-
-
-    @Override
-    public void setSVRegion(SV sv) {
-        // use start and end sites / positions of the indel to create filled polygon
-
-    }
-
-
 
 }
