@@ -116,6 +116,10 @@ public class MapOptics extends JFrame {
         chimSettings.setVisible(false);
         chimSettings.pack();
 
+        ButtonGroup buttongroupSV = new ButtonGroup();
+        buttongroupSV.add(styleMatch);
+        buttongroupSV.add(styleCigar);
+
         saveQueries.setVisible(false);
         saveQueries.pack();
 
@@ -278,7 +282,7 @@ public class MapOptics extends JFrame {
         JSeparator jSeparator1 = new JSeparator();
         JLabel jLabel3 = new JLabel();
         JButton reOrientate = new JButton();
-        styleCigar = new javax.swing.JRadioButton();
+
         JButton deleteContig = new JButton();
         JButton resetButton = new JButton();
 //        JButton alignLeft = new JButton();
@@ -312,20 +316,12 @@ public class MapOptics extends JFrame {
         svView = new UserInterface.SVView(model, detectSV);
         JLabel displayToolsSV = new JLabel();
         JLayeredPane svPane = new JLayeredPane();
-        JButton reCentreSV = new JButton();
-        JButton zoomInSV = new JButton();
-        JButton zoomOutSV = new JButton();
         JLabel labelStyleSV = new JLabel();
         JRadioButton styleMatchSV = new javax.swing.JRadioButton();
-        JRadioButton styleCoverageSV = new javax.swing.JRadioButton();
-        JRadioButton styleChimSV = new javax.swing.JRadioButton();
+        styleCigar = new javax.swing.JRadioButton();
         JLabel viewLabelSV = new JLabel();
-        JCheckBox confidenceSettingSV = new javax.swing.JCheckBox();
-        JCheckBox overlapSettingSV = new javax.swing.JCheckBox();
         JLabel contigToolsSV = new JLabel();
         JButton reOrientateSV = new JButton();
-        JButton resetButtonSV = new JButton();
-        JButton saveSV = new JButton();
         JSplitPane svSplitPlane = new JSplitPane();
         JLayeredPane svLayeredPane = new JLayeredPane();
         JScrollPane svViewTableScroll = new JScrollPane();
@@ -1604,36 +1600,12 @@ public class MapOptics extends JFrame {
         displayToolsSV.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         displayToolsSV.setText("Display tools:");
 
-        reCentreSV.setText("reCentre");
-        reCentreSV.addActionListener(this::reCentreSVActionPerformed);
-
-        zoomInSV.setText("+");
-        zoomInSV.addActionListener(this::zoomInSVActionPerformed);
-
-        zoomOutSV.setText("-");
-        zoomOutSV.addActionListener(this::zoomOutSVActionPerformed);
-
         labelStyleSV.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
         labelStyleSV.setText("Label style:");
 
         styleMatchSV.setSelected(true);
         styleMatchSV.setText("Matches");
         styleMatchSV.addActionListener(this::styleMatchSVActionPerformed);
-
-        styleCoverageSV.setText("Coverage");
-        styleCoverageSV.addActionListener(this::styleCoverageSVActionPerformed);
-
-        styleChimSV.setText("Chim Quality");
-        styleChimSV.addActionListener(this::styleChimSVActionPerformed);
-
-        viewLabelSV.setFont(new java.awt.Font("Tahoma", Font.ITALIC, 11)); // NOI18N
-        viewLabelSV.setText("View:");
-
-        confidenceSettingSV.setText("Confidence");
-        confidenceSettingSV.addActionListener(this::confidenceSettingSVActionPerformed);
-
-        overlapSettingSV.setText("Overlap");
-        overlapSettingSV.addActionListener(this::overlapSettingSVActionPerformed);
 
         contigToolsSV.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         contigToolsSV.setText("Contig tools:");
@@ -1647,17 +1619,11 @@ public class MapOptics extends JFrame {
         //deleteContigSV.setText("delete");
         //deleteContigSV.addActionListener(this::deleteContigActionPerformed);
 
-        resetButtonSV.setText("RESET");
-        resetButtonSV.addActionListener(this::resetButtonSVActionPerformed);
-
 //        alignLeft.setText("<");
 //        alignLeft.addActionListener(this::alignLeftActionPerformed);
 //
 //        alignRight.setText(">");
 //        alignRight.addActionListener(this::alignRightActionPerformed);
-
-        saveSV.setText("SAVE");
-        saveSV.addActionListener(this::saveActionSVPerformed);
 
         javax.swing.GroupLayout svPanelLayout = new javax.swing.GroupLayout(svPanel);
         svPanel.setLayout(svPanelLayout);
@@ -1671,53 +1637,28 @@ public class MapOptics extends JFrame {
 //                                                        .addComponent(alignLeft)
 //                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 //                                                        .addComponent(alignRight))
-                                                .addGroup(svPanelLayout.createSequentialGroup()
-                                                        .addComponent(zoomInSV, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(zoomOutSV, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
                                                 .addComponent(labelStyleSV)
                                                 .addComponent(styleMatchSV)
-                                                .addComponent(styleCoverageSV)
-                                                .addComponent(styleChimSV)
                                                 .addComponent(styleCigar)
-                                                .addComponent(viewLabelSV)
-                                                .addComponent(confidenceSettingSV)
-                                                .addComponent(overlapSettingSV)
                                                 .addComponent(contigToolsSV)
                                                 .addComponent(reOrientateSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(resetButtonSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(displayToolsSV)
-                                                .addComponent(saveSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(jSeparator1))
-                                        .addComponent(reCentreSV, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)))
-        );
+        )));
         svPanelLayout.setVerticalGroup(
                 svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(svPanelLayout.createSequentialGroup()
                                 .addGap(20, 20, 20)
                                 .addComponent(displayToolsSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(reCentreSV)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(zoomInSV)
-                                        .addComponent(zoomOutSV))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(labelStyleSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(styleMatchSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(styleCoverageSV)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(styleChimSV)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(styleCigar)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(viewLabelSV)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(confidenceSettingSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(overlapSettingSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1725,10 +1666,6 @@ public class MapOptics extends JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(reOrientateSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(resetButtonSV)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(saveSV)
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1903,32 +1840,12 @@ public class MapOptics extends JFrame {
         pack();
     }
 
-    private void saveActionSVPerformed(ActionEvent actionEvent) {
-    }
-
-    private void resetButtonSVActionPerformed(ActionEvent actionEvent) {
-    }
-
-    private void overlapSettingSVActionPerformed(ActionEvent actionEvent) {
-    }
-
-    private void confidenceSettingSVActionPerformed(ActionEvent actionEvent) {
-    }
-
-    private void styleChimSVActionPerformed(ActionEvent actionEvent) {
-    }
-
     private void styleCoverageSVActionPerformed(ActionEvent actionEvent) {
     }
 
     private void styleMatchSVActionPerformed(ActionEvent actionEvent) {
     }
 
-    private void zoomOutSVActionPerformed(ActionEvent actionEvent) {
-    }
-
-    private void zoomInSVActionPerformed(ActionEvent actionEvent) {
-    }
 
     private void reCentreSVActionPerformed(ActionEvent actionEvent) {
     }
@@ -1944,9 +1861,6 @@ public class MapOptics extends JFrame {
     }
 
 
-
-
-
     private void svTableMouseClicked() {
         if (svTable.getRowCount() != 0) {
             String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
@@ -1955,7 +1869,7 @@ public class MapOptics extends JFrame {
             String qryEnd = svTable.getValueAt(svTable.getSelectedRow(), 2).toString();
             String refStart = svTable.getValueAt(svTable.getSelectedRow(), 3).toString();
             String refEnd = svTable.getValueAt(svTable.getSelectedRow(), 4).toString();
-            String type = svTable.getValueAt(svTable.getSelectedRow(), 6).toString();
+            String type = svTable.getValueAt(svTable.getSelectedRow(), 5).toString();
             SV chosenSV = detectSV.getSV(qryStart, qryEnd, refStart, refEnd, type);
             changeSV(chosenSV);
         }
@@ -2326,7 +2240,7 @@ public class MapOptics extends JFrame {
     }
 
     private void styleCigarActionPerformed(java.awt.event.ActionEvent evt) {
-        // set style to chimeric quality values
+        // set style to CIGAR labelling
         if (styleCigar.isSelected()) {
             SVView.setStyle("cigar");
             repaint();
@@ -3221,7 +3135,6 @@ public class MapOptics extends JFrame {
         svModel.addColumn("Qry End Pos");
         svModel.addColumn("Ref Start Pos");
         svModel.addColumn("Ref End Pos");
-        svModel.addColumn("Confidence");
         svModel.addColumn("Type");
         svModel.addColumn("SV Size");
 
@@ -3522,7 +3435,6 @@ public class MapOptics extends JFrame {
                         sv.getQryEndPos(),
                         sv.getRefStartPos(),
                         sv.getRefEndPos(),
-                        sv.getConfidence(),
                         sv.getType(),
                         sv.getSVSize()
 
@@ -3835,11 +3747,12 @@ public class MapOptics extends JFrame {
         SVView.setRefDataset(refDataset.getText());
         SVView.setQryDataset(qryDataset.getText());
         SVView.setChosenQry(qryId);
-
+        SVView.resetChosenSV();
         repaint();
     }
 
     private void changeSV(SV sv) {
+        SVView.resetChosenSV();
         SVView.setChosenSV(sv);
         repaint();
     }
