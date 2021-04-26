@@ -38,6 +38,7 @@ public class DetectSV {
     private double FPR;
     private double FNR;
     private int minCoverage;
+    private List<Double> ratios;
 
 
     public DetectSV(MapOpticsModel model) {
@@ -158,10 +159,42 @@ public class DetectSV {
     }
 
 
-
-
     public void setIndels() {
         this.indels = new ArrayList<>();
+    }
+
+    public void detectInversions() {
+        for (Query qry : getChosenRef().getQueries()) {
+            // loop through queries and identify reverse palindromes
+            if (chosenRef.getDelQryIDs().contains(Integer.parseInt(qry.getID())) ||
+                    chosenRef.getSavedDelQryIDs().contains(Integer.parseInt(qry.getID()))) {
+                continue;
+            }
+            // for a given qry and ref get Alignment info
+            Map<Integer, Double> refSites = chosenRef.getSites();
+            Map<Integer, List<Integer>> qryAlignments = qry.getAlignmentSites();
+            Map<Integer, Double> qrySites = qry.getQryViewSites();
+
+            // set the reverse complement CIGAR string
+            String hitEnum = qry.getHitEnum();
+            Cigar cigar = new Cigar(hitEnum);
+            // set the reverse comp cigar
+            Inversion.setRevCompCigar(cigar);
+
+        }
+    }
+
+    public List<Inversion> getInversions() {
+        return inversions;
+    }
+
+    public void setInversions() {
+        this.inversions = new ArrayList<>();
+    }
+
+    public List<SV> filterSVs() {
+        //TODO: filter out SVs in gap locations, if fasta provided
+        return svList;
     }
 
     public SV getSV(String qryStartPos, String qryEndPos, String refStartPos, String refEndPos, String type) {
@@ -176,10 +209,6 @@ public class DetectSV {
             }
         }
         return null;
-    }
-
-    public List<Inversion> getInversions() {
-        return inversions;
     }
 
     public List<Duplication> getDuplications() {
@@ -197,8 +226,11 @@ public class DetectSV {
     public void setSVList() {
         setIndels();
         detectIndels();
+        // setInversions();
+        // detectInversions();
         List<SV> svList = new ArrayList<>();
         svList.addAll(this.indels);
+        //svList.addAll(this.inversions);
         this.svList = svList;
     }
 
