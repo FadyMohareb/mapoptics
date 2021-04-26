@@ -111,6 +111,40 @@ public class Cigar {
         return cigQrySites;
     }
 
+    public Map<Integer, List<Integer>> mapParsedCigarSites(Map<Integer, List<Integer>> qryAlignments, Map<Integer, Double>
+            qrySites, Map<Integer, Double> refSites) {
+        Map<Integer, List<Integer>> mappedCigar = new HashMap<>();
+        List<Integer> qrySiteList = new ArrayList<>(qrySites.keySet());
+        List<Integer> refSiteList = new ArrayList<>(refSites.keySet());
+        ListIterator<Integer> refIt = refSiteList.listIterator();
+        ListIterator<Integer> qryIt = qrySiteList.listIterator();
+        // loop through cigar and get sites for each letter to produce a map where key: index of cigar letter and
+        // value: corresponding sites
+        for (int i = 1; i < parsedCigar.size(); i++) {
+            String letter = parsedCigar.get(i - 1);
+            while (refIt.hasNext() && qryIt.hasNext()) {
+                switch (letter) {
+                    case "I":
+                        int qrySite = qryIt.next();
+                        mappedCigar.put(i, new ArrayList<>(qrySite));
+                        break;
+                    case "D":
+                        int refSite = refIt.next();
+                        mappedCigar.put(i, new ArrayList<>(refSite));
+                        break;
+                    default:
+                        refSite = refIt.next();
+                        qrySite = qryIt.next();
+                        List<Integer> matchPair = new ArrayList<>();
+                        matchPair.add(refSite, qrySite);
+                        mappedCigar.put(i, matchPair);
+                }
+            }
+
+        }
+        return mappedCigar;
+    }
+
     // computes the reverse complement of the CIGAR string
     public List<String> reverseComplement(List<String> parsedCigar) {
         // loop through reversed Cigar sites
