@@ -1785,7 +1785,7 @@ public class MapOptics extends JFrame {
         if (!chosenRef.getRefID().equals(EMPTY_STRING)) {
             for (Query qry : chosenRef.getQueries()) {
                 qryRect = qry.getRefViewRect();
-                if (qryRect.contains(evt.getPoint())) {
+                if (qryRect != null && qryRect.contains(evt.getPoint())) {
                     qryMatch = true;
                     changeQry(qry.getID());
                 }
@@ -1871,6 +1871,7 @@ public class MapOptics extends JFrame {
                 int chosenQry = Integer.parseInt(ReferenceView.getChosenQry());
                 // populate deleted contigs list with deleted qryIDs
                 chosenRef.setDelQryIDs(chosenQry);
+                ReferenceView.setChosenQry(EMPTY_STRING);
                 repaint();
             }
         }
@@ -2993,6 +2994,7 @@ public class MapOptics extends JFrame {
         fillQryTable(refId);
         ReferenceView.setChosenRef(refId);
         referenceView.reCenter();
+        ReferenceView.setChosenQry(EMPTY_STRING);
 
         //QUERY VIEW TAB
         QueryView.setChosenLabel(EMPTY_STRING);

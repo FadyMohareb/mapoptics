@@ -427,9 +427,13 @@ public class ReferenceView extends JPanel {
             Rectangle2D rect;
             if (!"".equals(chosenRef)) {
                 // loop through draggable queries and set dragged shape
+                System.out.println(model.getSelectedRef().getRefID());
                 for (Query qry : model.getSelectedRef().getQueries()) {
+
                     rect = qry.getRefViewRect();
-                    if (rect.contains(e.getPoint())) {
+                    System.out.println(qry.getID());
+                    System.out.println(rect);
+                    if (rect != null && rect.contains(e.getPoint())) {
                         setMovedQry(qry.getID());
                         draggedShape = qry;
                     }
