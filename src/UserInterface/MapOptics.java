@@ -63,7 +63,7 @@ public class MapOptics extends JFrame {
     private javax.swing.JButton exportQryButton, exportRefButton;
     private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
-    private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual;
+    private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual, indelMinSize, indelMaxSize, flankSignal;
     private javax.swing.JPanel labelDensityGraph, referencesGraph;
     private javax.swing.JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
     private javax.swing.JCheckBox overlapSetting;
@@ -317,6 +317,7 @@ public class MapOptics extends JFrame {
         JLabel displayToolsSV = new JLabel();
         JLayeredPane svPane = new JLayeredPane();
         JLabel labelStyleSV = new JLabel();
+        JLabel labelParametersSV = new JLabel();
         JRadioButton styleMatchSV = new javax.swing.JRadioButton();
         styleCigar = new javax.swing.JRadioButton();
         JLabel viewLabelSV = new JLabel();
@@ -330,6 +331,13 @@ public class MapOptics extends JFrame {
         svTable = new javax.swing.JTable();
         JLayeredPane svViewPane = new JLayeredPane();
         tabPaneFilesSV = new javax.swing.JTabbedPane();
+        indelMinSize = new javax.swing.JSpinner();
+        indelMaxSize = new javax.swing.JSpinner();
+        flankSignal = new javax.swing.JSpinner();
+        JLabel labelIndelMin = new JLabel();
+        JLabel labelIndelMax = new JLabel();
+        JLabel labelFlankSig = new JLabel();
+        JButton saveSVSettings = new JButton();
 
 
         labelTable = new javax.swing.JTable();
@@ -1607,6 +1615,9 @@ public class MapOptics extends JFrame {
         styleMatchSV.setText("Matches");
         styleMatchSV.addActionListener(this::styleMatchSVActionPerformed);
 
+        labelParametersSV.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
+        labelParametersSV.setText("SV Parameters:");
+
         contigToolsSV.setFont(new java.awt.Font("Tahoma", Font.BOLD, 11)); // NOI18N
         contigToolsSV.setText("Contig tools:");
 
@@ -1616,14 +1627,27 @@ public class MapOptics extends JFrame {
         styleCigar.setText("CIGAR");
         styleCigar.addActionListener(this::styleCigarActionPerformed);
 
-        //deleteContigSV.setText("delete");
-        //deleteContigSV.addActionListener(this::deleteContigActionPerformed);
+        indelMinSize.setPreferredSize(new java.awt.Dimension(80, 25));
+        indelMinSize.setValue(500);
 
-//        alignLeft.setText("<");
-//        alignLeft.addActionListener(this::alignLeftActionPerformed);
-//
-//        alignRight.setText(">");
-//        alignRight.addActionListener(this::alignRightActionPerformed);
+        indelMaxSize.setPreferredSize(new java.awt.Dimension(100, 25));
+        indelMaxSize.setValue(1000000);
+
+        flankSignal.setPreferredSize(new java.awt.Dimension(60, 25));
+        flankSignal.setValue(5);
+
+        labelIndelMin.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 11)); // NOI18N
+        labelIndelMin.setText("Min indel size:");
+
+        labelIndelMax.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 11)); // NOI18N
+        labelIndelMax.setText("Max indel size:");
+
+        labelFlankSig.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 11)); // NOI18N
+        labelFlankSig.setText("Flank Signals:");
+
+        saveSVSettings.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 11)); // NOI18N
+        saveSVSettings.setText("Save Changes");
+        saveSVSettings.addActionListener(this::saveSVParamsActionPerformed);
 
         javax.swing.GroupLayout svPanelLayout = new javax.swing.GroupLayout(svPanel);
         svPanel.setLayout(svPanelLayout);
@@ -1640,6 +1664,22 @@ public class MapOptics extends JFrame {
                                                 .addComponent(labelStyleSV)
                                                 .addComponent(styleMatchSV)
                                                 .addComponent(styleCigar)
+                                                .addComponent(labelParametersSV)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(labelIndelMin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(indelMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(labelIndelMax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(indelMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(labelFlankSig, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(flankSignal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(saveSVSettings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
                                                 .addComponent(contigToolsSV)
                                                 .addComponent(reOrientateSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(displayToolsSV)
@@ -1658,8 +1698,21 @@ public class MapOptics extends JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(styleCigar)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(labelParametersSV)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(labelIndelMin)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(indelMinSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(labelIndelMax)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(indelMaxSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(labelFlankSig)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(flankSignal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(saveSVSettings)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(contigToolsSV)
@@ -1840,14 +1893,7 @@ public class MapOptics extends JFrame {
         pack();
     }
 
-    private void styleCoverageSVActionPerformed(ActionEvent actionEvent) {
-    }
-
     private void styleMatchSVActionPerformed(ActionEvent actionEvent) {
-    }
-
-
-    private void reCentreSVActionPerformed(ActionEvent actionEvent) {
     }
 
     private void svViewMouseClicked(java.awt.event.MouseEvent evt) {
@@ -2651,6 +2697,13 @@ public class MapOptics extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "No files loaded", "Invalid input", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void saveSVParamsActionPerformed(java.awt.event.ActionEvent evt) {
+        // save all SV parameters changed
+        detectSV.setParameters((double) indelMinSize.getValue(), (double) indelMaxSize.getValue(),
+                (int) flankSignal.getValue());
+        repaint();
     }
 
     private void overlapSettingActionPerformed(java.awt.event.ActionEvent evt) {
