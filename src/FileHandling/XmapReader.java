@@ -199,42 +199,50 @@ public class XmapReader {
     }
     public static Map <String,String[]> getQueryData(MapOpticsModel model,String queryID) {
 
-
         boolean isReversed = model.isReversed();
         int queryIndex = isReversed ? 2 : 1;
         int refIndex = isReversed ? 1 : 2;
-       // String refID = model.getSelectedRefID();
-        List<String> refIDs= new ArrayList<>();
+        List<String> qryIDs= new ArrayList<>();
         Map <String,String[]> connection = new HashMap<>();
-       if(queryID !=""){
 
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(model.getXmapFile()));
-            String line;
+        if(queryID !=""){
 
-            while ((line = br.readLine()) != null) {
-                if (line.startsWith("#") || line.isEmpty()) {
-                    continue;
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(model.getXmapFile()));
+                String line;
+                Map<String,String> qryInfos= new HashMap<>();
+                Map<String,String> refInfos= new HashMap<>();
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("#") || line.isEmpty()) {
+                        continue;
+                    }
+
+                    String[] data = line.split("\t");
+
+                    if (data[queryIndex].equals(queryID)) {
+                        String[] refinfo= {data[7], data[8]};
+                        connection.put(data[refIndex],refinfo);
+                    }
+                    if(!qryInfos.keySet().contains(data[queryIndex])){
+                        qryInfos.put(data[queryIndex],data[queryIndex+9]);
+                    }
+                    if(!refInfos.keySet().contains(data[refIndex])){
+                        refInfos.put(data[refIndex],data[refIndex+9]);
+                    }
                 }
 
-                String[] data = line.split("\t");
+                MapOpticsModel.setRefList(refInfos);
+                MapOpticsModel.setQueryList(qryInfos);
 
-                if (data[queryIndex].equals(queryID)) {
-                    String[] refinfo= {data[7], data[8]};
-                    connection.put(data[refIndex],refinfo);
-                }
+                br.close();
+                return connection;
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            br.close();
-            return connection;
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-       }
         return null;
     }
-
     private static void setAlignmentSites(Reference selectedRef, Map<Integer, Query> queries, boolean isReversed) {
 
         Set<Integer> refAlignmentSiteIds = new HashSet<>();
