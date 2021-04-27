@@ -2075,41 +2075,44 @@ public class MapOptics extends JFrame {
     private void queryViewMouseMoved(java.awt.event.MouseEvent evt) {
 
         // when mouse is hovered over, display the position
-        if (!model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
-                && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
-            double positionScale;
-            String position = "";
+        if (!QueryView.getChosenQry().isEmpty()) {
 
-            String qryId = QueryView.getChosenQry();
+            if (!model.getSelectedRef().getDelQryIDs().contains(Integer.parseInt(QueryView.getChosenQry()))
+                    && !QueryView.getChosenRef().isEmpty() && !QueryView.getChosenQry().isEmpty()) {
+                double positionScale;
+                String position = "";
 
-            double refstart = QueryViewData.getRefStart();
+                String qryId = QueryView.getChosenQry();
 
-            //get qryrectangle
-            Rectangle2D ref = model.getSelectedRef().getQryViewRect();
-            if (ref.contains(evt.getPoint())) {
-                //get the information of the displayed region from QueryViewData
-                positionScale =QueryViewData.getRefLen() / ref.getWidth();
-                // display position
-                position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale+refstart);
+                double refstart = QueryViewData.getRefStart();
+
+                //get qryrectangle
+                Rectangle2D ref = model.getSelectedRef().getQryViewRect();
+                if (ref.contains(evt.getPoint())) {
+                    //get the information of the displayed region from QueryViewData
+                    positionScale =QueryViewData.getRefLen() / ref.getWidth();
+                    // display position
+                    position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale+refstart);
+                }
+                Rectangle2D qryRect;
+
+                Reference ref1 = model.getSelectedRef();
+                Query qry= ref1.getQuery(qryId);
+                qryRect = qry.getQryViewRect();
+
+                if (qryRect.contains(evt.getPoint())) {
+                    // display position
+                    positionScale = qry.getLength() / qryRect.getWidth();
+                    position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                }
+
+                QueryView.setPosition(position);
+                QueryView.setMouseX(evt.getX());
+                QueryView.setMouseY(evt.getY());
+
+                queryView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
+
             }
-            Rectangle2D qryRect;
-
-            Reference ref1 = model.getSelectedRef();
-            Query qry= ref1.getQuery(qryId);
-            qryRect = qry.getQryViewRect();
-
-            if (qryRect.contains(evt.getPoint())) {
-                // display position
-                positionScale = qry.getLength() / qryRect.getWidth();
-                position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
-            }
-
-            QueryView.setPosition(position);
-            QueryView.setMouseX(evt.getX());
-            QueryView.setMouseY(evt.getY());
-
-            queryView.repaint(evt.getX() - 500, evt.getY() - 500, 1000, 1000);
-
         }
     }
 
@@ -2364,32 +2367,36 @@ public class MapOptics extends JFrame {
         // load both files into the program
         if (!fastaFile.getText().equals(EMPTY_STRING)) {
             fastaLoader.setVisible(false);
+            ArrayList<String> qryIds = model.getQueryList();
+            // System.out.println(qryIds);
 
             String refQry = Objects.requireNonNull(refOrQry.getSelectedItem()).toString();
 
             if (refQry.equals("Reference")) {
-                ArrayList<String> refIds = new ArrayList<>(RawFileData.getReferences().keySet());
-                LinkedHashMap<String, String> names = FastaReader.readKeyFile(keyFile.getText(), refIds, RawFileData.getRefContigs());
-                LinkedHashMap<String, String> sequences = FastaReader.readFasta(fastaFile.getText(), names);
+                ArrayList<String> refIds = new ArrayList<>();
+                for (Reference ref : model.getReferences()) {
+                    refIds.add(ref.getRefID());
+                }
 
+                LinkedHashMap<String, String> names = FastaReader.readKeyFile(keyFile.getText(), refIds,"ref",model);
+                LinkedHashMap<String, ArrayList<Integer>> sequences = FastaReader.readFasta(fastaFile.getText(), names);
+                QueryViewData.addSequences(sequences);
                 // add sequences to contigs
-                QueryView.setReferenceViewSelect(true);
-                UserQryData.addSequences(names, sequences, "ref");
+                QueryView.setQrySequences(false);
+                QueryView.setRefSequences(true);
+                //UserQryData.addSequences(names, sequences, "ref");
 
             } else if (refQry.equals("Query")) {
-                ArrayList<String> qryIds = new ArrayList<>();
-                for (String refqryId : RawFileData.getQueries().keySet()) {
-                    String qryId = refqryId.split("-")[1];
-                    if (!qryIds.contains(qryId)) {
-                        qryIds.add(qryId);
-                    }
-                }
-                LinkedHashMap<String, String> names = FastaReader.readKeyFile(keyFile.getText(), qryIds, RawFileData.getQryContigs());
-                LinkedHashMap<String, String> sequences = FastaReader.readFasta(fastaFile.getText(), names);
+                //get query ids
 
+                LinkedHashMap<String, String> names = FastaReader.readKeyFile(keyFile.getText(), qryIds,"qry",model);
+                LinkedHashMap<String, ArrayList<Integer>> sequences = FastaReader.readFasta(fastaFile.getText(), names);
+                QueryViewData.addSequences(sequences);
                 // add sequences to contigs
-                QueryView.setQryViewSelect(true);
-                UserQryData.addSequences(names, sequences, "qry");
+                QueryView.setRefSequences(false);
+                QueryView.setQrySequences(true);
+
+                //UserQryData.addSequences(names, sequences, "qry");
             }
             repaint();
         } else {
@@ -2896,15 +2903,15 @@ public class MapOptics extends JFrame {
         // Add rows to table
 
         if (!qryId.equals(EMPTY_STRING)&refData!=null) {
-        for (String s:refData.keySet()){
-            if (!qryId.isEmpty()) {
-                tmQryMatch.addRow(new Object[]{
-                        s,
-                        refData.get(s)[0],
-                       Double.parseDouble(refData.get(s)[1])
-              });
-            }
-        }}
+            for (String s:refData.keySet()){
+                if (!qryId.isEmpty()) {
+                    tmQryMatch.addRow(new Object[]{
+                            s,
+                            refData.get(s)[0],
+                            Double.parseDouble(refData.get(s)[1])
+                    });
+                }
+            }}
     }
 
     private void fillLabelTable(String qryId) {

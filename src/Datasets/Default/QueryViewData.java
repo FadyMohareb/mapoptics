@@ -41,6 +41,18 @@ public class QueryViewData {
         }else {refData=null;}
 
     }
+   private static HashMap<String, ArrayList<Integer>> sequences;
+
+    public static void addSequences( HashMap<String, ArrayList<Integer>> sequences) {
+        // adds sequence data from fasta file
+        QueryViewData.sequences=new HashMap<>(sequences);
+    }
+
+    public static HashMap<String, ArrayList<Integer>> setSequences() {
+        return  sequences;
+    }
+
+
     public static Map<String,String[]> getConnection(){
         return refData;
     }

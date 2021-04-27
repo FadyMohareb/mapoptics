@@ -4,7 +4,9 @@ import DataTypes.Reference;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author James
@@ -132,5 +134,24 @@ public class MapOpticsModel {
 
     public double getRectangleTotalHeight() {
         return rectangleTotalHeight;
+    }
+    private static ArrayList<String> qryIds ;
+    private static Map <String,String> qrylen ;
+    private static Map <String,String> reflen ;
+    public static void setQueryList(Map<String,String> qryIDs) {
+        qryIds=new ArrayList<>(qryIDs.keySet());
+        qrylen=new HashMap<>(qryIDs);
+    }
+    public ArrayList<String> getQueryList(){
+        return qryIds;
+    }
+    public static Map<String,String> getQueryLen(){
+        return qrylen;
+    }
+    public static void setRefList(Map<String,String> refIDs) {
+        reflen=new HashMap<>(refIDs);
+    }
+    public static Map<String,String> getRefLen(){
+        return reflen;
     }
 }
