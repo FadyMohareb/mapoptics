@@ -62,21 +62,17 @@ public class DetectSV {
 
 
     // apply user-defined parameters to SV detection model
-    public void setParameters(double minIndelSize, double maxIndelSize, int flankSig, int minSupport,
-                              int minCoverage, double pValueThresh, double LHRThresh, double FPR, double FNR,
-                              double minIndelRatio){
-        this.minIndelSize = minIndelSize;
-        this.maxIndelSize = maxIndelSize;
+    public void setFlankSig(int flankSig){
         this.flankSig = flankSig;
-        this.minSupport = minSupport;
-        this.minCoverage = minCoverage;
-        this.minIndelRatio = minIndelRatio;
-        this.pValueThresh = pValueThresh;
-        this.LHRThresh = LHRThresh;
-        this.FPR = FPR;
-        this.FNR = FNR;
     }
 
+    public void setMinIndelSize(int minIndelSize) {
+        this.minIndelSize = (double) minIndelSize;
+    }
+
+    public void setMaxIndelSize(int maxIndelSize) {
+        this.maxIndelSize = (double) maxIndelSize;
+    }
     public void setChosenRef(Reference chosenRef) {
         this.chosenRef = chosenRef;
     }
