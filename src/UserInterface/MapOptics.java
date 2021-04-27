@@ -2701,8 +2701,13 @@ public class MapOptics extends JFrame {
 
     private void saveSVParamsActionPerformed(java.awt.event.ActionEvent evt) {
         // save all SV parameters changed
-        detectSV.setParameters((double) indelMinSize.getValue(), (double) indelMaxSize.getValue(),
-                (int) flankSignal.getValue());
+        SVViewData.resetData();
+        SVViewData.setSVViewData(model, detectSV);
+        detectSV.setMinIndelSize((int) indelMinSize.getValue());
+        detectSV.setMaxIndelSize((int) indelMaxSize.getValue());
+        detectSV.setFlankSig((int) flankSignal.getValue());
+        detectSV.setSVList();
+        fillSVTable(model.getSelectedRef().getRefID(), detectSV);
         repaint();
     }
 
@@ -3473,7 +3478,7 @@ public class MapOptics extends JFrame {
         }
     }
 
-    private void fillSVTable(String refId) {
+    private void fillSVTable(String refId, DetectSV detectSV) {
         // Format table to list all SV detected
         DefaultTableModel tmSV = (DefaultTableModel) svTable.getModel();
         // Empty table
@@ -3769,7 +3774,7 @@ public class MapOptics extends JFrame {
         SearchRegionData.resetData();
         QueryView.setChosenRef(refId);
 
-        fillSVTable(refId);
+        fillSVTable(refId, detectSV);
         SVView.setRefDataset(refDataset.getText());
         SVView.setChosenRef(refId);
 
