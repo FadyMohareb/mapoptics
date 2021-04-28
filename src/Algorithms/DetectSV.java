@@ -32,7 +32,6 @@ public class DetectSV {
     private List<Inversion> inversions;
     private List<Duplication> duplications;
     private List<Translocation> translocations;
-    private List<CNV> cnv;
     private List<SV> svList;
     private double pValueThresh;
     private double FPR;
@@ -115,7 +114,7 @@ public class DetectSV {
             Cigar cig = new Cigar(qry.getHitEnum());
             cig.parseHitEnum();
 
-            cig.mapCigSites(refSites, qrySites, qryAlignments);
+            cig.mapCigSites(refSites, qrySites, qryAlignments, qry.getOrientation());
             Map<Integer, String> refCigar = cig.getCigRefSites();
             Map<Integer, String> qryCigar = cig.getCigQrySites();
             // filter the indels
