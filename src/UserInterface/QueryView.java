@@ -5,6 +5,7 @@ import DataTypes.Reference;
 import Datasets.Default.QueryViewData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -167,7 +168,7 @@ public class QueryView extends JPanel {
                 qry = ref.getQuery(chosenQry);
                 //check the reorientation
                 isFlipped = qry.isFlipped();
-                if(regionView&qry.getOrientation().equals("-")){
+                if(qry.getOrientation().equals("-")){
                     if (isFlipped==false){
                         qry.reOrientate();
                         isFlipped = qry.isFlipped();
@@ -297,6 +298,13 @@ public class QueryView extends JPanel {
                     drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX),qrylength, false);
                     //display chosen label
                     drawChosenLabel(g2d,qry,isFlipped);
+                    //display the icon
+                    if(isFlipped) {
+                        int[] xval = {this.getWidth()-130,this.getWidth()-110,this.getWidth()-130,this.getWidth()-110};
+                        int[] yval = {10,10,35,35};
+                       g2d.setColor(Color.GREEN.darker());
+                       g2d.fillPolygon(xval,yval,4);
+                    }
 
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
@@ -414,11 +422,8 @@ public class QueryView extends JPanel {
         }
         else if(regionView==true& qryViewSelect ==true){//if search query
 
-            Start=qryRegionstart+refx*scale;
-            End=qryRegionend+refx*scale;
-            //System.out.println("refx "+refx+" scale "+scale);
-           // System.out.println("qryStart "+qryRegionstart+" qryEnd "+qryRegionend);
-           // System.out.println("Start "+Start+" End "+End);
+            Start=0.0;
+            End=ref.getLength();
 
             if(isFlipped){
                 if(qryRegionstart!=qry.getLength()){
@@ -437,11 +442,10 @@ public class QueryView extends JPanel {
                     refx=refx-regionOffX;
                 }
 
-
             }
         }else{
-            Start=qryRegionstart+refx*scale;
-            End=qryRegionend+refx*scale;
+            Start=0;
+            End=ref.getLength();
             regionOffX=0.0;
             refx=refx-regionOffX;
 
@@ -514,9 +518,11 @@ public class QueryView extends JPanel {
                 Rectangle2D refRectScaled = new Rectangle2D.Double(0, 90,this.getWidth(), refRect.getHeight());
                 return refRectScaled;
             }else{
-                if(Start!=0){ x=Start/scale-refx;
-                }else{x=-refx;}
-
+                if(Start!=0.0){ x=Start/scale-refx;
+                System.out.println(Start);
+                }else{
+                x=-refx;
+                }
             }
         if(x<0){
             x1=0;
