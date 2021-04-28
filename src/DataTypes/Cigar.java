@@ -13,7 +13,7 @@ public class Cigar {
     private final String hitEnum;
     public final List<String> parsedCigar;
     private List<String> revCompCigar;
-    private final Map<Integer, String> cigRefSites;
+    private Map<Integer, String> cigRefSites;
     private Map<Integer, String> cigQrySites;
     private final Map<Double, String> cigRefPos;
     private final Map<Double, String> cigQryPos;
@@ -55,14 +55,25 @@ public class Cigar {
     }
 
     public void mapCigSites(Map<Integer, Double> refSites, Map<Integer, Double> qrySites, Map<Integer,
-            List<Integer>> qryAlignments) {
+            List<Integer>> qryAlignments, String orientation) {
         // Loop through cigar string, ref and qry sites
         // convert sets to lists for easier access
         // extract relevant subset of ref sites for query region
         List<Integer> refSitesSub = new ArrayList<>();
-        List<Integer> qryAlignedQrys = new ArrayList<>(qryAlignments.keySet());
-        int qryStart = qryAlignedQrys.get(0);
-        int qryEnd = qryAlignedQrys.get(qryAlignedQrys.size() - 1);
+        // get list of queries that are matches
+        List<Integer> alignedQrys = new ArrayList<>(qryAlignments.keySet());
+        List<Integer> revQryAligned = new ArrayList<>();
+        // check orientation, if negative reverse
+        if (orientation.equals("-")) {
+            Map<Integer, List<Integer>> revQryAlignment = changeOrientation(qryAlignments);
+            qryAlignments = revQryAlignment;
+            alignedQrys = new ArrayList<>(qryAlignments.keySet());
+        }
+
+        int qryStart = alignedQrys.get(0);
+        System.out.println("qryStart: " + qryStart);
+        int qryEnd = alignedQrys.get(alignedQrys.size() - 1);
+        System.out.println("qryEnd: " + qryEnd);
         int refStartSite = qryAlignments.get(qryStart).get(0);
         // get the last ref site
         List<Integer> refEndSites = qryAlignments.get(qryEnd);
@@ -87,6 +98,8 @@ public class Cigar {
                     int nextQry = qryIter.next();
                     cigRefSites.put(nextRef, "M");
                     cigQrySites.put(nextQry, "M");
+                    System.out.println("nextRef: " + nextRef);
+                    System.out.println("nextQry: " + nextQry);
                 }
             } else if ("D".equals(next)) {
                 if (refIter.hasNext()) {
@@ -100,15 +113,25 @@ public class Cigar {
                 }
             }
         }
-
+        this.setCigRefSites(cigRefSites);
+        this.setCigQrySites(cigQrySites);
     }
 
     public Map<Integer, String> getCigRefSites() {
         return cigRefSites;
     }
 
+    public void setCigQrySites(Map<Integer, String> cigQrySites) {
+        this.cigQrySites = cigQrySites;
+    }
+
     public Map<Integer, String> getCigQrySites() {
         return cigQrySites;
+    }
+
+    public void setCigRefSites(Map<Integer, String> cigRefSites) {
+        this.cigRefSites = cigRefSites;
+
     }
 
     public Map<Integer, List<Integer>> mapParsedCigarSites(Map<Integer, List<Integer>> qryAlignments, Map<Integer, Double>
@@ -166,8 +189,6 @@ public class Cigar {
         List<String> revPalindromes = new ArrayList<>();
         // concatenate individual string letters of cigar into a single string
         String revCompStr = String.join("", revCompCigar);
-
-        System.out.println("revcompsb:" + revCompStr);
         // loop through the parsed cigar string list
         // loop through a window of size 4
         for (int i = 0; i + 4 < parsedCigar.size(); i++) {
@@ -175,15 +196,12 @@ public class Cigar {
             String windowStr = String.join("", window);
             // check the sequence window is in the reverse string
             if (revCompStr.contains(windowStr)) {
-                System.out.println("windowStr: " + windowStr);
                 List<String> residualSeq = parsedCigar.subList(i, parsedCigar.size());
                 ListIterator<String> winIter = residualSeq.listIterator();
                 StringBuilder sb = new StringBuilder(windowStr);
                 while (winIter.hasNext()) {
                     String nextLetter = winIter.next();
-
                     sb.append(nextLetter);
-                    System.out.println("sb: " + sb.toString());
                     if (!revCompStr.contains(sb.toString())) {
                         // remove the last char that makes the string not match with a subsequence in the revComplement
                         sb.deleteCharAt(sb.length() - 1);
@@ -196,5 +214,16 @@ public class Cigar {
         return revPalindromes;
     }
 
+    public static Map<Integer, List<Integer>> changeOrientation(Map<Integer, List<Integer>> qryAlignments) {
+        // reverse the order of the query sites
+        Map<Integer, List<Integer>> reverseMap = new LinkedHashMap<>();
+        ArrayList<Integer> qrySites = new ArrayList<>(qryAlignments.keySet());
+        for(int i = qrySites.size() - 1; i >= 0; i--){
+            int revQrySite = qrySites.get(i);
+            reverseMap.put(revQrySite, qryAlignments.get(revQrySite));
+
+        }
+        return reverseMap;
+    }
 }
 

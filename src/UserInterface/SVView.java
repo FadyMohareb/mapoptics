@@ -134,8 +134,8 @@ public class SVView extends JPanel {
                 End=0 ;
                 qryRegionstart=0;
                 qryRegionend=0;
-                Reference ref=null ;
-                Query qry=null;
+                Reference ref = null ;
+                Query qry = null;
                 refalignments = new ArrayList();
                 // refOffX=this.getWidth() / 20;// the minX of refrectangle
                 refOffX=0;
@@ -143,10 +143,20 @@ public class SVView extends JPanel {
                 // draw relative to query alignment
                 ref = model.getSelectedRef();
                 qry = ref.getQuery(chosenQry);
-                //check the reorientation
-                isFlipped = qry.isFlipped();//to see whether the button is clicked
+
+
 
                 if (qry != null) {
+                    //check the reorientation
+                    isFlipped = qry.isFlipped();//to see whether the button is clicked
+                    if(qry.getOrientation().equals("-")){
+                        if (!isFlipped){
+                            qry.reOrientate();
+                            isFlipped = qry.isFlipped();
+                            // System.out.println("after flip "+isFlipped);
+                            repaint();
+                        }
+                    }
                     Rectangle2D refRect = new Rectangle2D.Double(0, 20, ref.getLength(), 50);
                     Rectangle2D qryRect = qry.getRectangle();
                     //set scale parameters
@@ -214,14 +224,15 @@ public class SVView extends JPanel {
                     String hitEnum = qry.getHitEnum();
                     Cigar cigar = new Cigar(hitEnum);
                     cigar.parseHitEnum();
-                    cigar.getCigRefSites();
                     // Extract aligned ref sites with selected qry
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
-                            refSite -> refSite.stream().mapToInt(i -> i)).boxed().collect(Collectors.toList());
-
-                    cigar.mapCigSites(refSites, qrySites, qryAlignments);
+                            refSite -> refSite.stream().mapToInt(i -> i)).boxed().sorted().collect(Collectors.toList());
+                    cigar.mapCigSites(refSites, qrySites, qryAlignments, qry.getOrientation());
                     Map<Integer, String> refCig = cigar.getCigRefSites();
                     Map<Integer, String> qryCig = cigar.getCigQrySites();
+                    System.out.println("refCig: " + refCig);
+                    System.out.println("qryCig: " + qryCig);
+                    System.out.println("parsedCig: " + cigar.parsedCigar);
                     // For each query, draw sites and alignments
 
                     int qryOffSetY = (int) qryScaled.getY();
@@ -269,27 +280,24 @@ public class SVView extends JPanel {
 
 
                     //draw reference labels
-                    // In SV mode, refsites that are deletions are coloured blue whereas matches are coloured green.
                     // loop through all sites in ref contig
                     int WindowWidth = this.getWidth();
+                    g2d.setColor(Color.black);
                     for (int site : refSites.keySet()) {
-                        // Color green sites that are aligned to selected qry
-                        if (qryRefSites.contains(site)) {
-                            // If in SV display color as appropriate
-                            if (getStyle().equals("cigar") && refCig.containsKey(site)) {
+                        if (refalignments.contains(site)) {
+                            if (refAlignments.contains(site)) {
+                                g2d.setColor(GREEN);
+                            } else {
+                                g2d.setColor(BLACK);
+                            }
+                        }
+                        // in cigar mode color ref labels blue if its a deletion or green if its a match
+                        if (getStyle().equals("cigar")) {
+                            if (refCig.containsKey(site)) {
                                 if (refCig.get(site).equals("D")) {
                                     g2d.setColor(Color.BLUE);
                                 } else if (refCig.get(site).equals("M")) {
                                     g2d.setColor(GREEN);
-                                }
-                            } else {
-                                g2d.setColor(GREEN);
-                            }
-
-                        } else {
-                            if (getStyle().equals("cigar") && refCig.containsKey(site)) {
-                                if (refCig.get(site).equals("D")) {
-                                    g2d.setColor(Color.BLUE);
                                 } else {
                                     g2d.setColor(BLACK);
                                 }
@@ -310,26 +318,22 @@ public class SVView extends JPanel {
                     drawContig(g2d, qryScaled, chosenQry);
                             // draw qry labels
 
-                    // In SV display mode, qrysite labels are coloured red if insertions and green if they are a
-                    // match
+
                     for (int site : qry.getQryViewSites().keySet()) {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
-                            // If SV display mode color insertions as red and matches green
-                            if (getStyle().equals("cigar") && qryCig.containsKey(site)) {
+                            g2d.setColor(GREEN);
+                        } else {
+                            g2d.setColor(BLACK);
+                        }
+                        // if cigar style selected color insertion labels red and matches green
+                        if (getStyle().equals("cigar")) {
+                            if (qryCig.containsKey(site)) {
                                 if (qryCig.get(site).equals("I")) {
                                     g2d.setColor(Color.RED);
                                 } else if (qryCig.get(site).equals("M")) {
                                     g2d.setColor(GREEN);
-                                }
-                            } else {
-                                g2d.setColor(GREEN);
-                            }
-                        } else {
-                            if (getStyle().equals("cigar") && qryCig.containsKey(site)) {
-                                if (qryCig.get(site).equals("I")) {
-                                    g2d.setColor(Color.RED);
                                 } else {
                                     g2d.setColor(BLACK);
                                 }
@@ -364,10 +368,15 @@ public class SVView extends JPanel {
                     //display chosen label
                     drawChosenLabel(g2d,qry,isFlipped);
                 } else {
-                    Font font = new Font("Tahoma", Font.ITALIC, 12);
-                    g2d.setFont(font);
-                    g2d.drawString("No match between chosen query and reference", this.getWidth() / 2 - 115, this.getHeight() / 2 - 10);
-                    g2d.drawString("(Query contig may have been deleted)", this.getWidth() / 2 - 100, this.getHeight() / 2 + 10);
+                    if (svList.isEmpty()) {
+                        Font font = new Font("Tahoma", Font.ITALIC, 12);
+                        g2d.setFont(font);
+                        g2d.drawString("No SVs found", this.getWidth() / 2 - 115, this.getHeight() / 2);
+                    } else {
+                        Font font = new Font("Tahoma", Font.ITALIC, 12);
+                        g2d.setFont(font);
+                        g2d.drawString("Choose a SV from STRUCTURAL VARIANTS table", this.getWidth() / 2 - 115, this.getHeight() / 2 - 10);
+                    }
                 }
             } else if (!"".equals(chosenRef)) {
                 if (svList.isEmpty()) {

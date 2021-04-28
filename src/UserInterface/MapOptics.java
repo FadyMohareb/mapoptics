@@ -68,7 +68,7 @@ public class MapOptics extends JFrame {
     private javax.swing.JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
     private javax.swing.JCheckBox overlapSetting;
     private javax.swing.JComboBox<String> refOrQry, regionType;
-    private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch, styleCigar;
+    private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch, styleCigar, styleMatchSV;
     private javax.swing.JTabbedPane tabPaneFiles, tabPaneFilesSV;
 
     private UserInterface.QueryView queryView;
@@ -117,7 +117,7 @@ public class MapOptics extends JFrame {
         chimSettings.pack();
 
         ButtonGroup buttongroupSV = new ButtonGroup();
-        buttongroupSV.add(styleMatch);
+        buttongroupSV.add(styleMatchSV);
         buttongroupSV.add(styleCigar);
 
         saveQueries.setVisible(false);
@@ -318,7 +318,7 @@ public class MapOptics extends JFrame {
         JLayeredPane svPane = new JLayeredPane();
         JLabel labelStyleSV = new JLabel();
         JLabel labelParametersSV = new JLabel();
-        JRadioButton styleMatchSV = new javax.swing.JRadioButton();
+        styleMatchSV = new javax.swing.JRadioButton();
         styleCigar = new javax.swing.JRadioButton();
         JLabel viewLabelSV = new JLabel();
         JLabel contigToolsSV = new JLabel();
@@ -1627,7 +1627,7 @@ public class MapOptics extends JFrame {
         styleCigar.setText("CIGAR");
         styleCigar.addActionListener(this::styleCigarActionPerformed);
 
-        indelMinSize.setPreferredSize(new java.awt.Dimension(80, 25));
+        indelMinSize.setPreferredSize(new java.awt.Dimension(70, 25));
         indelMinSize.setValue(500);
 
         indelMaxSize.setPreferredSize(new java.awt.Dimension(100, 25));
@@ -1894,6 +1894,10 @@ public class MapOptics extends JFrame {
     }
 
     private void styleMatchSVActionPerformed(ActionEvent actionEvent) {
+        if (styleMatch.isSelected()) {
+            SVView.setStyle("match");
+            repaint();
+        }
     }
 
     private void svViewMouseClicked(java.awt.event.MouseEvent evt) {
