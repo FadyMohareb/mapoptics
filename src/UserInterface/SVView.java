@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class SVView extends JPanel {
     public static List<Inversion> inversions;
-    public static List<Indel> indels;
+    public static List<Indel> qryIndels;
     public static List<Duplication> duplications;
     public static List<Translocation> translocations;
     private static String chosenRef = "";
@@ -63,6 +63,7 @@ public class SVView extends JPanel {
     private static boolean refSequences = false;
     private static boolean qrySequences = false;
     private static boolean changeOrientation = false;
+    private static boolean allIndels = false;
 
     public SVView(MapOpticsModel model, DetectSV detectSV) {
         this.model = model;
@@ -73,6 +74,10 @@ public class SVView extends JPanel {
 
     public static void setChosenQry(String chosenQry) {
         SVView.chosenQry = chosenQry;
+    }
+
+    public static String getChosenQry() {
+        return chosenQry;
     }
 
     public static void setChosenRef(String chosenRef) {
@@ -91,6 +96,25 @@ public class SVView extends JPanel {
     }
 
     public static void setQryDataset(String qryDataset) {
+    }
+
+    public static void setIndels(DetectSV detectSV) {
+        List<Indel> indelList = new ArrayList<>();
+        List<Indel> indels = detectSV.getIndels();
+        for (Indel indel : indels) {
+            if (indel.qryID.equals(chosenQry)) {
+                indelList.add(indel);
+            }
+        }
+        SVView.qryIndels = indelList;
+    }
+
+    public static List<Indel> getIndels() {
+        return qryIndels;
+    }
+
+    public static void setAllIndels(Boolean allIndels) {
+        SVView.allIndels = allIndels;
     }
 
     public SV getChosenSV() {
@@ -242,38 +266,74 @@ public class SVView extends JPanel {
                     if (chosenSV != null && chosenSV instanceof Indel) {
                         // Set Polygon for indel region
                         Polygon polygon;
-                        if (chosenSV instanceof Indel) {
-                            if (isFlipped) {
-                                int qryPos1X = (int) (((qry.getLength() - chosenSV.qryEndPos) / scale) + refOffX + regionOffX);
-                                int qryPos1Y = (int) qryOffSetY + qryHeight;
-                                int qryPos2X = (int) (((qry.getLength() - chosenSV.qryStartPos) / scale) + refOffX + regionOffX);
-                                int qryPos2Y = (int) qryOffSetY + qryHeight;
-                                int refPos1X = (int) ((chosenSV.refStartPos / scale) + refOffX - refx);
-                                int refPos1Y = (int) (refScaled.getMinY());
-                                int refPos2X = (int) ((chosenSV.refEndPos / scale) + refOffX - refx);
-                                int refPos2Y = (int) (refScaled.getMinY());
-                                int[] xVals = {qryPos1X, qryPos2X, refPos1X, refPos2X};
-                                int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
-                                        (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
-                                polygon = new Polygon(xVals, yVals, 4);
-                                drawSVRegion(g2d, polygon, chosenSV);
-                            } else {
-                                int qryPos1X = (int) (((chosenSV.qryStartPos) / scale) + refOffX + regionOffX);
-                                int qryPos1Y = (int) qryOffSetY + qryHeight;
-                                int qryPos2X = (int) (((chosenSV.qryEndPos) / scale) + refOffX + regionOffX);
-                                int qryPos2Y = (int) qryOffSetY + qryHeight;
-                                int refPos1X = (int) ((chosenSV.refStartPos / scale) + refOffX - refx);
-                                int refPos1Y = (int) (refScaled.getMinY());
-                                int refPos2X = (int) ((chosenSV.refEndPos / scale) + refOffX - refx);
-                                int refPos2Y = (int) (refScaled.getMinY());
-                                int[] xVals = {qryPos1X, qryPos2X, refPos2X, refPos1X};
-                                int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
-                                        (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
-                                polygon = new Polygon(xVals, yVals, 4);
-                                drawSVRegion(g2d, polygon, chosenSV);
+                        if (allIndels) {
+                            for (Indel indel : SVView.getIndels()) {
+                                if (isFlipped) {
+                                    int qryPos1X = (int) (((qry.getLength() - indel.qryEndPos) / scale) + refOffX + regionOffX);
+                                    int qryPos1Y = (int) qryOffSetY + qryHeight;
+                                    int qryPos2X = (int) (((qry.getLength() - indel.qryStartPos) / scale) + refOffX + regionOffX);
+                                    int qryPos2Y = (int) qryOffSetY + qryHeight;
+                                    int refPos1X = (int) ((indel.refStartPos / scale) + refOffX - refx);
+                                    int refPos1Y = (int) (refScaled.getMinY());
+                                    int refPos2X = (int) ((indel.refEndPos / scale) + refOffX - refx);
+                                    int refPos2Y = (int) (refScaled.getMinY());
+                                    int[] xVals = {qryPos1X, qryPos2X, refPos1X, refPos2X};
+                                    int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
+                                            (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
+                                    polygon = new Polygon(xVals, yVals, 4);
+                                    drawSVRegion(g2d, polygon, indel);
+                                } else {
+                                    int qryPos1X = (int) (((indel.qryStartPos) / scale) + refOffX + regionOffX);
+                                    int qryPos1Y = (int) qryOffSetY + qryHeight;
+                                    int qryPos2X = (int) (((indel.qryEndPos) / scale) + refOffX + regionOffX);
+                                    int qryPos2Y = (int) qryOffSetY + qryHeight;
+                                    int refPos1X = (int) ((indel.refStartPos / scale) + refOffX - refx);
+                                    int refPos1Y = (int) (refScaled.getMinY());
+                                    int refPos2X = (int) ((indel.refEndPos / scale) + refOffX - refx);
+                                    int refPos2Y = (int) (refScaled.getMinY());
+                                    int[] xVals = {qryPos1X, qryPos2X, refPos2X, refPos1X};
+                                    int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
+                                            (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
+                                    polygon = new Polygon(xVals, yVals, 4);
+                                    drawSVRegion(g2d, polygon, indel);
+                                }
+                            }
+                        } else {
+                            if (chosenSV instanceof Indel) {
+                                if (isFlipped) {
+                                    int qryPos1X = (int) (((qry.getLength() - chosenSV.qryEndPos) / scale) + refOffX + regionOffX);
+                                    int qryPos1Y = (int) qryOffSetY + qryHeight;
+                                    int qryPos2X = (int) (((qry.getLength() - chosenSV.qryStartPos) / scale) + refOffX + regionOffX);
+                                    int qryPos2Y = (int) qryOffSetY + qryHeight;
+                                    int refPos1X = (int) ((chosenSV.refStartPos / scale) + refOffX - refx);
+                                    int refPos1Y = (int) (refScaled.getMinY());
+                                    int refPos2X = (int) ((chosenSV.refEndPos / scale) + refOffX - refx);
+                                    int refPos2Y = (int) (refScaled.getMinY());
+                                    int[] xVals = {qryPos1X, qryPos2X, refPos1X, refPos2X};
+                                    int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
+                                            (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
+                                    polygon = new Polygon(xVals, yVals, 4);
+                                    drawSVRegion(g2d, polygon, chosenSV);
+                                } else {
+                                    int qryPos1X = (int) (((chosenSV.qryStartPos) / scale) + refOffX + regionOffX);
+                                    int qryPos1Y = (int) qryOffSetY + qryHeight;
+                                    int qryPos2X = (int) (((chosenSV.qryEndPos) / scale) + refOffX + regionOffX);
+                                    int qryPos2Y = (int) qryOffSetY + qryHeight;
+                                    int refPos1X = (int) ((chosenSV.refStartPos / scale) + refOffX - refx);
+                                    int refPos1Y = (int) (refScaled.getMinY());
+                                    int refPos2X = (int) ((chosenSV.refEndPos / scale) + refOffX - refx);
+                                    int refPos2Y = (int) (refScaled.getMinY());
+                                    int[] xVals = {qryPos1X, qryPos2X, refPos2X, refPos1X};
+                                    int[] yVals = {(int) qryScaled.getMinY(), (int) qryScaled.getMinY(),
+                                            (int) refScaled.getMaxY(), (int) refScaled.getMaxY()};
+                                    polygon = new Polygon(xVals, yVals, 4);
+                                    drawSVRegion(g2d, polygon, chosenSV);
+                                }
                             }
                         }
-                    }
+                        }
+
+
 
 
 
@@ -290,6 +350,7 @@ public class SVView extends JPanel {
                             } else {
                                 g2d.setColor(BLACK);
                             }
+                            g2d.setColor(BLACK);
                         }
                         // in cigar mode color ref labels blue if its a deletion or green if its a match
                         if (getStyle().equals("cigar")) {
