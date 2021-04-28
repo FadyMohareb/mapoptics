@@ -3,6 +3,7 @@ package UserInterface;
 import Algorithms.DetectSV;
 import DataTypes.*;
 import Datasets.Default.QueryViewData;
+import Datasets.Default.SVViewData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
@@ -99,13 +100,9 @@ public class SVView extends JPanel {
     }
 
     public static void setIndels(DetectSV detectSV) {
-        List<Indel> indelList = new ArrayList<>();
+        List<Indel> indelList;
         List<Indel> indels = detectSV.getIndels();
-        for (Indel indel : indels) {
-            if (indel.qryID.equals(chosenQry)) {
-                indelList.add(indel);
-            }
-        }
+        indelList = indels.stream().filter(indel -> indel.qryID.equals(chosenQry)).collect(Collectors.toList());
         SVView.qryIndels = indelList;
     }
 
@@ -201,8 +198,6 @@ public class SVView extends JPanel {
                     // add to QueryViewData
                     qryScaled = zoomQryRectangle(qryRect,regionOffX);
                     refScaled = zoomRectangle(refRect);
-                    QueryViewData.setRefStart(Start);
-                    QueryViewData.setQryStart(regionOffX);
 
 
 
@@ -254,9 +249,6 @@ public class SVView extends JPanel {
                     cigar.mapCigSites(refSites, qrySites, qryAlignments, qry.getOrientation());
                     Map<Integer, String> refCig = cigar.getCigRefSites();
                     Map<Integer, String> qryCig = cigar.getCigQrySites();
-                    System.out.println("refCig: " + refCig);
-                    System.out.println("qryCig: " + qryCig);
-                    System.out.println("parsedCig: " + cigar.parsedCigar);
                     // For each query, draw sites and alignments
 
                     int qryOffSetY = (int) qryScaled.getY();
@@ -343,13 +335,10 @@ public class SVView extends JPanel {
                     // loop through all sites in ref contig
                     int WindowWidth = this.getWidth();
                     g2d.setColor(Color.black);
-                    for (int site : refSites.keySet()) {
-                        if (refalignments.contains(site)) {
-                            if (refAlignments.contains(site)) {
-                                g2d.setColor(GREEN);
-                            } else {
-                                g2d.setColor(BLACK);
-                            }
+                    for (int site : qryRefSites) {
+                        if (qryRefSites.contains(site)) {
+                            g2d.setColor(GREEN);
+                        } else {
                             g2d.setColor(BLACK);
                         }
                         // in cigar mode color ref labels blue if its a deletion or green if its a match
@@ -432,7 +421,7 @@ public class SVView extends JPanel {
                     if (svList.isEmpty()) {
                         Font font = new Font("Tahoma", Font.ITALIC, 12);
                         g2d.setFont(font);
-                        g2d.drawString("No SVs found", this.getWidth() / 2 - 115, this.getHeight() / 2);
+                        g2d.drawString("No indels found", this.getWidth() / 2 - 115, this.getHeight() / 2);
                     } else {
                         Font font = new Font("Tahoma", Font.ITALIC, 12);
                         g2d.setFont(font);
@@ -443,7 +432,7 @@ public class SVView extends JPanel {
                 if (svList.isEmpty()) {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
                     g2d.setFont(font);
-                    g2d.drawString("No SVs found", this.getWidth() / 2 - 115, this.getHeight() / 2);
+                    g2d.drawString("No indels found", this.getWidth() / 2 - 115, this.getHeight() / 2);
                 } else {
                     Font font = new Font("Tahoma", Font.ITALIC, 12);
                     g2d.setFont(font);
