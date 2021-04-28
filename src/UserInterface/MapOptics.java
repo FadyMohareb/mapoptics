@@ -70,6 +70,7 @@ public class MapOptics extends JFrame {
     private javax.swing.JComboBox<String> refOrQry, regionType;
     private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch, styleCigar, styleMatchSV;
     private javax.swing.JTabbedPane tabPaneFiles, tabPaneFilesSV;
+    private javax.swing.JCheckBox allIndels;
 
     private UserInterface.QueryView queryView;
     private UserInterface.ReferenceView referenceView;
@@ -320,6 +321,7 @@ public class MapOptics extends JFrame {
         JLabel labelParametersSV = new JLabel();
         styleMatchSV = new javax.swing.JRadioButton();
         styleCigar = new javax.swing.JRadioButton();
+        allIndels = new JCheckBox();
         JLabel viewLabelSV = new JLabel();
         JLabel contigToolsSV = new JLabel();
         JButton reOrientateSV = new JButton();
@@ -1649,6 +1651,10 @@ public class MapOptics extends JFrame {
         saveSVSettings.setText("Save Changes");
         saveSVSettings.addActionListener(this::saveSVParamsActionPerformed);
 
+        allIndels.setFont(new java.awt.Font("Tahoma", Font.PLAIN, 11)); // NOI18N
+        allIndels.setText("All Indels");
+        allIndels.addActionListener(this::allIndelsActionPerformed);
+
         javax.swing.GroupLayout svPanelLayout = new javax.swing.GroupLayout(svPanel);
         svPanel.setLayout(svPanelLayout);
         svPanelLayout.setHorizontalGroup(
@@ -1679,6 +1685,8 @@ public class MapOptics extends JFrame {
                                                 .addComponent(flankSignal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(100, 100, 100)
                                                 .addComponent(saveSVSettings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(100, 100, 100)
+                                                .addComponent(allIndels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(100, 100, 100)
                                                 .addComponent(contigToolsSV)
                                                 .addComponent(reOrientateSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1712,6 +1720,8 @@ public class MapOptics extends JFrame {
                                 .addComponent(flankSignal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(saveSVSettings)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
+                                .addComponent(allIndels)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1893,6 +1903,18 @@ public class MapOptics extends JFrame {
         pack();
     }
 
+    private void allIndelsActionPerformed(ActionEvent actionEvent) {
+        if(allIndels.isSelected()){
+            SVView.setIndels(detectSV);
+            SVView.setAllIndels(true);
+            repaint();
+        } else if (!allIndels.isSelected()){
+            SVView.setAllIndels(false);
+            repaint();
+        }
+
+    }
+
     private void styleMatchSVActionPerformed(ActionEvent actionEvent) {
         if (styleMatch.isSelected()) {
             SVView.setStyle("match");
@@ -1908,6 +1930,7 @@ public class MapOptics extends JFrame {
     }
 
     private void exportSVButtonActionPerformed(ActionEvent actionEvent) {
+
     }
 
 
@@ -3218,6 +3241,7 @@ public class MapOptics extends JFrame {
                 SVView.setChosenQry(chosenQry);
                 String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
                 SVView.setChosenRef(chosenRef);
+                svTableMouseClicked();
                 repaint();
             }
         });
@@ -3235,6 +3259,7 @@ public class MapOptics extends JFrame {
                 SVView.setChosenQry(chosenQry);
                 String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
                 SVView.setChosenRef(chosenRef);
+                svTableMouseClicked();
                 repaint();
             }
         });
