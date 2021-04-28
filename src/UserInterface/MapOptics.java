@@ -60,7 +60,7 @@ public class MapOptics extends JFrame {
 
     private javax.swing.JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
     private javax.swing.JCheckBox confidenceSetting;
-    private javax.swing.JButton exportQryButton, exportRefButton;
+    private javax.swing.JButton exportQryButton, exportRefButton, exportSVButton;
     private javax.swing.JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
     private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual, indelMinSize, indelMaxSize, flankSignal;
@@ -328,7 +328,7 @@ public class MapOptics extends JFrame {
         JSplitPane svSplitPlane = new JSplitPane();
         JLayeredPane svLayeredPane = new JLayeredPane();
         JScrollPane svViewTableScroll = new JScrollPane();
-        JButton exportSVButton = new JButton();
+        exportSVButton = new JButton();
         JPanel svPanel = new JPanel();
         svTable = new javax.swing.JTable();
         JLayeredPane svViewPane = new JLayeredPane();
@@ -1907,12 +1907,10 @@ public class MapOptics extends JFrame {
         if(allIndels.isSelected()){
             SVView.setIndels(detectSV);
             SVView.setAllIndels(true);
-            repaint();
         } else if (!allIndels.isSelected()){
             SVView.setAllIndels(false);
-            repaint();
         }
-
+        repaint();
     }
 
     private void styleMatchSVActionPerformed(ActionEvent actionEvent) {
@@ -1930,7 +1928,44 @@ public class MapOptics extends JFrame {
     }
 
     private void exportSVButtonActionPerformed(ActionEvent actionEvent) {
+        // export chosen image into chosen directory
+        // Opens a dialog box for user to choose directory of file
+        FileDialog fileBox;
+        fileBox = new FileDialog(this, "Save PDF of reference alignment view", FileDialog.SAVE);
+        fileBox.setVisible(true);
 
+        if (fileBox.getFile() != null) {
+            String chosenPath = fileBox.getDirectory();
+            String chosenFile = fileBox.getFile();
+
+            exportSVButton.setVisible(false);
+            try {
+                PDFDocument doc = new PDFDocument ();
+
+                // Use a Paper instance to change page dimensions, some plots can be long
+                Paper p = new Paper();
+                p.setSize(svView.getWidth(), svView.getHeight());
+                p.setImageableArea(0, 0, svView.getWidth(), svView.getHeight());
+                PageFormat pf = new PageFormat ();
+                pf.setPaper(p);
+
+                PDFPage page = doc.createPage(pf);
+                doc.addPage(page);
+
+                // Directly paint the panel to the pdf page
+                Graphics2D g2d = page.createGraphics();
+                svView.paint(g2d);
+
+                doc.saveDocument(chosenPath + chosenFile + ".pdf");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error saving image to pdf file", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            exportSVButton.setVisible(true);
+
+        } else {
+            JOptionPane.showMessageDialog(null, "No filename given", "Invalid input", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
 
@@ -1945,6 +1980,7 @@ public class MapOptics extends JFrame {
             String type = svTable.getValueAt(svTable.getSelectedRow(), 5).toString();
             SV chosenSV = detectSV.getSV(qryStart, qryEnd, refStart, refEnd, type);
             changeSV(chosenSV);
+            repaint();
         }
 
     }
