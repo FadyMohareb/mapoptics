@@ -71,9 +71,7 @@ public class Cigar {
         }
 
         int qryStart = alignedQrys.get(0);
-        System.out.println("qryStart: " + qryStart);
         int qryEnd = alignedQrys.get(alignedQrys.size() - 1);
-        System.out.println("qryEnd: " + qryEnd);
         int refStartSite = qryAlignments.get(qryStart).get(0);
         // get the last ref site
         List<Integer> refEndSites = qryAlignments.get(qryEnd);
@@ -98,8 +96,6 @@ public class Cigar {
                     int nextQry = qryIter.next();
                     cigRefSites.put(nextRef, "M");
                     cigQrySites.put(nextQry, "M");
-                    System.out.println("nextRef: " + nextRef);
-                    System.out.println("nextQry: " + nextQry);
                 }
             } else if ("D".equals(next)) {
                 if (refIter.hasNext()) {
