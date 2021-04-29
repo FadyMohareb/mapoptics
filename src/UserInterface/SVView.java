@@ -567,11 +567,10 @@ public class SVView extends JPanel {
 
             }
         }else{
-            Start=qryRegionstart+refx*scale;
-            End=qryRegionend+refx*scale;
+            Start=0;
+            End=ref.getLength();
             regionOffX=0.0;
             refx=refx-regionOffX;
-
         }
     }
     private void setScaleParameters(Reference ref,Query qry,Rectangle2D refRect,Rectangle2D qryRect){
@@ -641,9 +640,11 @@ public class SVView extends JPanel {
             Rectangle2D refRectScaled = new Rectangle2D.Double(0, 90,this.getWidth(), refRect.getHeight());
             return refRectScaled;
         }else{
-            if(Start!=0){ x=Start/scale-refx;
-            }else{x=-refx;}
-
+            if(Start!=0.0){ x=Start/scale-refx;
+                System.out.println(Start);
+            }else{
+                x=-refx;
+            }
         }
         if(x<0){
             x1=0;
