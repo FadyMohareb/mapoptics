@@ -249,6 +249,8 @@ public class SVView extends JPanel {
                     cigar.mapCigSites(refSites, qrySites, qryAlignments, qry.getOrientation());
                     Map<Integer, String> refCig = cigar.getCigRefSites();
                     Map<Integer, String> qryCig = cigar.getCigQrySites();
+                    System.out.println(refCig.keySet());
+                    System.out.println(qryCig.keySet());
                     // For each query, draw sites and alignments
 
                     int qryOffSetY = (int) qryScaled.getY();
@@ -326,23 +328,21 @@ public class SVView extends JPanel {
                         }
 
 
-
-
-
-
-
                     //draw reference labels
-                    // loop through all sites in ref contig
                     int WindowWidth = this.getWidth();
-                    g2d.setColor(Color.black);
-                    for (int site : qryRefSites) {
-                        if (qryRefSites.contains(site)) {
-                            g2d.setColor(GREEN);
-                        } else {
-                            g2d.setColor(BLACK);
+                    for (int site : refSites.keySet()) {
+
+                        g2d.setColor(Color.black);
+                        if (refalignments.contains(site)) {
+                            if (refAlignments.contains(site)) {
+                                g2d.setColor(GREEN);
+                            } else {
+                                g2d.setColor(BLACK);
+                            }
                         }
                         // in cigar mode color ref labels blue if its a deletion or green if its a match
                         if (getStyle().equals("cigar")) {
+
                             if (refCig.containsKey(site)) {
                                 if (refCig.get(site).equals("D")) {
                                     g2d.setColor(Color.BLUE);
@@ -391,8 +391,10 @@ public class SVView extends JPanel {
                                 g2d.setColor(BLACK);
                             }
                         }
+                        int position;
+                       position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
 
-                        int position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
+
                         if(position>=0 &position<=WindowWidth){
                             g2d.drawLine(position, qryOffSetY, position, qryOffSetY + qryHeight);
                         }
@@ -538,34 +540,6 @@ public class SVView extends JPanel {
                 qryRegionend=qry.getLength();
             }
 
-        }
-        else if(regionView==true& qryViewSelect ==true){//if search query
-
-            Start=qryRegionstart+refx*scale;
-            End=qryRegionend+refx*scale;
-            //System.out.println("refx "+refx+" scale "+scale);
-            // System.out.println("qryStart "+qryRegionstart+" qryEnd "+qryRegionend);
-            // System.out.println("Start "+Start+" End "+End);
-
-            if(isFlipped){
-                if(qryRegionstart!=qry.getLength()){
-                    regionOffX= -qryRegionstart/scale;
-                    refx=refx-regionOffX;
-                }else{
-                    regionOffX=qry.getLength();
-                    refx=refx-regionOffX;
-                }
-            }else{
-                if(Integer.parseInt(regions[0])!=0){
-                    regionOffX= -Integer.parseInt(regions[0])/scale;
-                    refx=refx-regionOffX;
-                }else{
-                    regionOffX=0.0;
-                    refx=refx-regionOffX;
-                }
-
-
-            }
         }else{
             Start=0;
             End=ref.getLength();
