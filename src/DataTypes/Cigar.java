@@ -114,7 +114,6 @@ public class Cigar {
        }
 
 
-        System.out.println("qrySitesList"+qrySitesList);
         ListIterator<Integer> qryIter = qrySitesList.listIterator();
         while (cigIter.hasNext()) {
             String next = cigIter.next();
@@ -141,6 +140,7 @@ public class Cigar {
                 }
             }
         }
+        //reverse the site num for negative orientation
         if (orientation.equals("-")){
             List<Integer> revQrylist = new ArrayList<>(cigQrySites.keySet());
             Collections.sort(revQrylist);

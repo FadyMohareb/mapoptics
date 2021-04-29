@@ -304,6 +304,10 @@ public class QueryView extends JPanel {
                         int[] yval = {10,10,35,35};
                        g2d.setColor(Color.GREEN.darker());
                        g2d.fillPolygon(xval,yval,4);
+                        Font font = new Font("Tahoma", Font.ITALIC, 12);
+                        g2d.setFont(font);
+                        g2d.drawString("NEG", this.getWidth() - 155, 25);
+
                     }
 
                 } else {
