@@ -2973,7 +2973,7 @@ public class MapOptics extends JFrame {
                 repaint();
             }
         });
-// TODO: Check
+
         qryContigTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "qryDown");
         qryContigTable.getActionMap().put("qryDown", new AbstractAction() {
@@ -3490,8 +3490,6 @@ public class MapOptics extends JFrame {
         }
 
         fillQryTable(refId);
-        ReferenceView.setRefDataset(refDataset.getText());
-        ReferenceView.setQryDataset(qryDataset.getText());
         ReferenceView.setChosenRef(refId);
         referenceView.reCenter();
         ReferenceView.setChosenQry(EMPTY_STRING);
