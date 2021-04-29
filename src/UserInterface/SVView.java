@@ -174,7 +174,6 @@ public class SVView extends JPanel {
                         if (!isFlipped){
                             qry.reOrientate();
                             isFlipped = qry.isFlipped();
-                            // System.out.println("after flip "+isFlipped);
                             repaint();
                         }
                     }
@@ -247,11 +246,8 @@ public class SVView extends JPanel {
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
                             refSite -> refSite.stream().mapToInt(i -> i)).boxed().sorted().collect(Collectors.toList());
                     cigar.mapCigSites(refSites, qrySites, qryAlignments, qry.getOrientation());
-                    System.out.println("refSites  "+refSites.keySet());
                     Map<Integer, String> refCig = cigar.getCigRefSites();
                     Map<Integer, String> qryCig = cigar.getCigQrySites();
-                    System.out.println("refcig "+refCig.keySet());
-                    System.out.println("qrycig "+qryCig.keySet());
                     // For each query, draw sites and alignments
 
                     int qryOffSetY = (int) qryScaled.getY();
@@ -418,8 +414,15 @@ public class SVView extends JPanel {
                     double qrylength=qry.getLength();
                     drawScaleBar(g2d, refScaled,qrylength, true);
                     drawScaleBar(g2d, zoomQryRectangle(qryRect,regionOffX),qrylength, false);
-                    //display chosen label
-                    drawChosenLabel(g2d,qry,isFlipped);
+                    //display the icon
+                    if(isFlipped) {
+                        int[] xval = {this.getWidth()-130,this.getWidth()-110,this.getWidth()-130,this.getWidth()-110};
+                        int[] yval = {10,10,35,35};
+                        g2d.setColor(Color.GREEN.darker());
+                        g2d.fillPolygon(xval,yval,4);
+                    }
+
+
                 } else {
                     if (svList.isEmpty()) {
                         Font font = new Font("Tahoma", Font.ITALIC, 12);
@@ -586,7 +589,7 @@ public class SVView extends JPanel {
                 Start = 0.0;
                 End = reflen;
             }
-            // System.out.println("check flip in qrysearch "+isFlipped);
+
             if(isFlipped){
                 double flippedstart = qry.getLength()-qryRegionend;
                 double flippedend = qry.getLength()-qryRegionstart;
@@ -616,7 +619,6 @@ public class SVView extends JPanel {
             return refRectScaled;
         }else{
             if(Start!=0.0){ x=Start/scale-refx;
-                System.out.println(Start);
             }else{
                 x=-refx;
             }
@@ -684,7 +686,6 @@ public class SVView extends JPanel {
             if (numScales != 0) {
                 if(isFlipped){
                     count=(int)(qrylength-qryRegionstart);
-                    // System.out.println("count "+count+" region start "+qryRegionstart+" region end"+qryRegionend+ " length "+length);
                     for (int i = 0; i < numScales + 1; i++) {
                         g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 20, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMaxY() + this.getHeight() / 25);
                         g2d.drawString(String.format("%.2f", ((double) count) / 1000) + " kb", (int) (rect.getMinX() + ((rect.getWidth() / numScales) * i) - g2d.getFontMetrics().stringWidth(String.format("%.2f", ((double) count) / 1000) + " kb") / 2), (int) rect.getMaxY() + this.getHeight() / 20 + 14);
@@ -701,30 +702,7 @@ public class SVView extends JPanel {
         }
     }
 
-    private void drawChosenLabel(Graphics2D g2d,Query qry,Boolean isFlipped) {
-        if (!chosenLabel.equals("")&!regionView) {
-            // draw chosen label
-            Double labelpos = 0.0;
-            if (isFlipped == false) {//if it is reorientated
-                labelpos = qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
-                g2d.setColor(Color.red);
-                g2d.drawLine((int) ((int) (labelpos / scale )),
-                        230,
-                        (int) (labelpos / scale ),
-                        290);
-                g2d.drawString(String.format("%.1f", labelpos), (int) (labelpos / scale ), 290);
-            } else {
-                labelpos = qry.getLength() - qry.getSites().get(Integer.parseInt(chosenLabel)).get(0);//get label position
-                g2d.setColor(Color.red);
-                g2d.drawLine((int) ((int) (labelpos / scale )),
-                        230,
-                        (int) (labelpos / scale ),
-                        290);
-                g2d.drawString(String.format("%.1f", qry.getLength() -labelpos), (int) (labelpos / scale ), 290);
-            }
 
-        }
-    }
 
     public static void setRegionscale(String[] regions){
         SVView.regions=regions;

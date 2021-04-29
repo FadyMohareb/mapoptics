@@ -63,7 +63,7 @@ public class Cigar {
         // get list of queries that are matches
         List<Integer> alignedQrys = new ArrayList<>(qryAlignments.keySet());
         Collections.sort(alignedQrys);
-        System.out.println("qryalignments "+alignedQrys);
+
         List<Integer> revQryAligned = new ArrayList<>();
         // check orientation, if negative reverse
 
@@ -98,21 +98,24 @@ public class Cigar {
                 refSitesSub.add(site);
             }
         }
-        //get qrysites
-        System.out.println("refsitessub"+refSitesSub);
-
-
-
-
 
         // get refsites
         ListIterator<Integer> refIter = refSitesSub.listIterator();
         ListIterator<String> cigIter = parsedCigar.listIterator();
         List<Integer> qrySitesList = new ArrayList<>(qrySites.keySet());
+
+        int QrySiteEnd;
+        if (orientation.equals("-")){
+         Collections.reverse(qrySitesList);
+            QrySiteEnd=qrySitesList.get(0);
+      }else{
+        Collections.sort(qrySitesList);
+            QrySiteEnd=qrySitesList.get(qrySitesList.size()-1);
+       }
+
+
+        System.out.println("qrySitesList"+qrySitesList);
         ListIterator<Integer> qryIter = qrySitesList.listIterator();
-
-
-
         while (cigIter.hasNext()) {
             String next = cigIter.next();
             if ("M".equals(next)) {
@@ -120,7 +123,9 @@ public class Cigar {
                     int nextRef = refIter.next();
                     int nextQry = qryIter.next();
                     cigRefSites.put(nextRef, "M");
-                    cigQrySites.put(nextQry+qryStart-1, "M");
+                    if (orientation.equals("-")){
+                        cigQrySites.put(QrySiteEnd-nextQry+qryStart, "M");
+                    }else{cigQrySites.put(nextQry+qryStart-1, "M");}
                 }
             } else if ("D".equals(next)) {
                 if (refIter.hasNext()) {
@@ -130,13 +135,28 @@ public class Cigar {
             } else if ("I".equals(next)) {
                 if (qryIter.hasNext()) {
                     int nextQry = qryIter.next();
-                    if (orientation.equals("-")) {
-                        nextQry = qrySitesList.size()- qryIter.next();
-                    }
-                    cigQrySites.put(nextQry, "I");
+                    if (orientation.equals("-")){
+                        cigQrySites.put(QrySiteEnd-nextQry+qryStart, "I");
+                    }else{cigQrySites.put(nextQry+qryStart-1, "I"); }
                 }
             }
         }
+        if (orientation.equals("-")){
+            List<Integer> revQrylist = new ArrayList<>(cigQrySites.keySet());
+            Collections.sort(revQrylist);
+            int Minsite= revQrylist.get(0);
+            int Maxsite = revQrylist.get(revQrylist.size()-1);
+            for(int i :revQrylist){
+                if(cigQrySites.get(i).equals("I")){
+                    int site = Maxsite-(i-Minsite);
+                    String rev = cigQrySites.get(site);
+                    cigQrySites.replace(i,rev);
+                    cigQrySites.replace(site,"I");
+                }
+            }
+        }
+
+
         this.setCigRefSites(cigRefSites);
         this.setCigQrySites(cigQrySites);
     }
