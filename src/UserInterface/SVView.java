@@ -247,10 +247,11 @@ public class SVView extends JPanel {
                     List<Integer> qryRefSites = qryAlignments.values().stream().flatMapToInt(
                             refSite -> refSite.stream().mapToInt(i -> i)).boxed().sorted().collect(Collectors.toList());
                     cigar.mapCigSites(refSites, qrySites, qryAlignments, qry.getOrientation());
+                    System.out.println("refSites  "+refSites.keySet());
                     Map<Integer, String> refCig = cigar.getCigRefSites();
                     Map<Integer, String> qryCig = cigar.getCigQrySites();
-                    System.out.println(refCig.keySet());
-                    System.out.println(qryCig.keySet());
+                    System.out.println("refcig "+refCig.keySet());
+                    System.out.println("qrycig "+qryCig.keySet());
                     // For each query, draw sites and alignments
 
                     int qryOffSetY = (int) qryScaled.getY();

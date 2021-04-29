@@ -62,32 +62,57 @@ public class Cigar {
         List<Integer> refSitesSub = new ArrayList<>();
         // get list of queries that are matches
         List<Integer> alignedQrys = new ArrayList<>(qryAlignments.keySet());
+        Collections.sort(alignedQrys);
+        System.out.println("qryalignments "+alignedQrys);
         List<Integer> revQryAligned = new ArrayList<>();
         // check orientation, if negative reverse
-        if (orientation.equals("-")) {
-            Map<Integer, List<Integer>> revQryAlignment = changeOrientation(qryAlignments);
-            qryAlignments = revQryAlignment;
-            alignedQrys = new ArrayList<>(qryAlignments.keySet());
-        }
+
 
         int qryStart = alignedQrys.get(0);
         int qryEnd = alignedQrys.get(alignedQrys.size() - 1);
+
+        if(qryStart>alignedQrys.get(alignedQrys.size()-1) ){
+            qryStart = alignedQrys.get(alignedQrys.size()-1);
+            qryEnd = alignedQrys.get(0);
+
+        }
         int refStartSite = qryAlignments.get(qryStart).get(0);
+        int refEndSite = qryAlignments.get(qryEnd).get(0);
+
+
+
+
+
         // get the last ref site
-        List<Integer> refEndSites = qryAlignments.get(qryEnd);
-        int refEndSite = refEndSites.get(refEndSites.size() - 1);
+        //List<Integer> refEndSites = qryAlignments.get(qryEnd);
+        //int refEndSite = refEndSites.get(refEndSites.size() - 1);
+        //
+        if(refStartSite>refEndSite){
+            refStartSite=refEndSite;
+            refEndSite=qryAlignments.get(qryStart).get(0);
+        }
+
         // loop through refsites in alignment range
         for (int site : refSites.keySet()) {
             if (site >= refStartSite && site <= refEndSite) {
                 refSitesSub.add(site);
             }
         }
+        //get qrysites
+        System.out.println("refsitessub"+refSitesSub);
+
+
+
+
 
         // get refsites
         ListIterator<Integer> refIter = refSitesSub.listIterator();
         ListIterator<String> cigIter = parsedCigar.listIterator();
         List<Integer> qrySitesList = new ArrayList<>(qrySites.keySet());
         ListIterator<Integer> qryIter = qrySitesList.listIterator();
+
+
+
         while (cigIter.hasNext()) {
             String next = cigIter.next();
             if ("M".equals(next)) {
@@ -95,7 +120,7 @@ public class Cigar {
                     int nextRef = refIter.next();
                     int nextQry = qryIter.next();
                     cigRefSites.put(nextRef, "M");
-                    cigQrySites.put(nextQry, "M");
+                    cigQrySites.put(nextQry+qryStart-1, "M");
                 }
             } else if ("D".equals(next)) {
                 if (refIter.hasNext()) {
@@ -105,6 +130,9 @@ public class Cigar {
             } else if ("I".equals(next)) {
                 if (qryIter.hasNext()) {
                     int nextQry = qryIter.next();
+                    if (orientation.equals("-")) {
+                        nextQry = qrySitesList.size()- qryIter.next();
+                    }
                     cigQrySites.put(nextQry, "I");
                 }
             }
