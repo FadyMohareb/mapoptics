@@ -1,12 +1,20 @@
 package FileHandling;
 
+import DataTypes.ContigInfo;
+import DataTypes.Reference;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
+
+import java.awt.geom.Rectangle2D;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -56,8 +64,6 @@ public class FastaReader {
                 }
                 sequenceArray.clear();
             }
-
-
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,

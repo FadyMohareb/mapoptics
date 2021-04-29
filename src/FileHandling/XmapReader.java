@@ -243,6 +243,7 @@ public class XmapReader {
         }
         return null;
     }
+
     private static void setAlignmentSites(Reference selectedRef, Map<Integer, Query> queries, boolean isReversed) {
 
         Set<Integer> refAlignmentSiteIds = new HashSet<>();

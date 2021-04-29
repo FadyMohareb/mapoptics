@@ -3,6 +3,8 @@ package Datasets.UserEdited;
 import DataTypes.*;
 import Datasets.Default.QueryViewData;
 import UserInterface.QueryView;
+
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 /*
@@ -94,8 +96,8 @@ public class UserQryData {
             }
         }
     }
-
-    public static void addSequences(LinkedHashMap<String, String> names, LinkedHashMap<String, String> sequences, String refQry) {
+/*
+    public static void addSequences(LinkedHashMap<String, String> names, LinkedHashMap<String, ArrayList<Integer>> sequences, String refQry) {
         // adds sequence data from fasta file
         if (refQry.equals("ref")) {
             for (String refqryId : references.keySet()) {
@@ -118,7 +120,7 @@ public class UserQryData {
             }
         }
     }
-
+*/
     public static LinkedHashMap<String, QryContig> getQueries() {
         return queries;
     }

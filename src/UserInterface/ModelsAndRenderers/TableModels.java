@@ -84,6 +84,34 @@ public class TableModels {
         return QRY_MODEL;
     }
 
+    // Add SV Model table, setting column classes
+    private static final DefaultTableModel SV_MODEL = new DefaultTableModel() {
+        @Override
+        public Class getColumnClass(int column) {
+            switch (column) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 6:
+                    return Double.class;
+                default:
+                    return String.class;
+
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
+
+    public static DefaultTableModel getSVModel() {
+        return SV_MODEL;
+    }
+
+
     private static final DefaultTableModel REF_MODEL = new DefaultTableModel() {
         @Override
         public Class getColumnClass(int column) {

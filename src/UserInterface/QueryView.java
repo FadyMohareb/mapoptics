@@ -451,7 +451,9 @@ public class QueryView extends JPanel {
 
         }
     }
+
     private void setScaleParameters(Reference ref,Query qry,Rectangle2D refRect,Rectangle2D qryRect){
+
         //find the start and end pos of the alignment in ref contig
         double AlignStart= ref.getRefAlignPos(chosenQry)[0];
         double AlignEnd= ref.getRefAlignPos(chosenQry)[1];
