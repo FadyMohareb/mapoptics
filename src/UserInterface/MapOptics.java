@@ -3525,8 +3525,9 @@ public class MapOptics extends JFrame {
 
         SVView.setRefDataset(refDataset.getText());
         SVView.setQryDataset(qryDataset.getText());
-        SVView.setChosenQry(qryId);
         SVView.resetChosenSV();
+        SVView.setChosenQry(qryId);
+        SVView.setIndels(detectSV);
         repaint();
     }
 
