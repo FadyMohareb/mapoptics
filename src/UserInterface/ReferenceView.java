@@ -379,7 +379,6 @@ public class ReferenceView extends JPanel {
         g2d.drawLine((int) refRect.getMinX(), (int) refRect.getMinY() - 40, (int) (refRect.getMinX() + refRect.getWidth()), (int) refRect.getMinY() - 40);
         int count = 0;
         int numScales = (int) refRect.getWidth() / 100;
-//        double length = RawFileData.getRefContigs(chosenRef).getContigLen();
         double length = model.getSelectedRef().getLength();
         if (numScales != 0) {
             for (int i = 0; i < numScales + 1; i++) {

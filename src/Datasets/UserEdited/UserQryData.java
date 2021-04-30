@@ -1,10 +1,9 @@
 package Datasets.UserEdited;
 
-import DataTypes.*;
-import Datasets.Default.QueryViewData;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
 import UserInterface.QueryView;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 /*
@@ -12,6 +11,7 @@ import java.util.LinkedHashMap;
    Stores any changes made by the user to query view. Query view is displayed
    from data in this class
  */
+@Deprecated
 public class UserQryData {
 
     // Query alignment view data hashmaps set with those coordinates

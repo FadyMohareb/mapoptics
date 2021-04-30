@@ -46,30 +46,27 @@ public class MapOptics extends JFrame {
     private final JTable conflictsTable = new JTable();
     private final JTable imageTable = new JTable();
     private final JCheckBox selectAllImages = new JCheckBox();
-
-    private MapOpticsModel model;
-    private DetectSV detectSV;
+    private final MapOpticsModel model;
+    private final DetectSV detectSV;
 
     private String xmapPath, refPath, qryPath;
-
     private JDialog chimSettings, confidenceSettings, coverageSettings, fastaLoader, fileLoader, saveQueries;
     private JCheckBox confidenceSetting;
     private JButton exportQryButton, exportRefButton, exportSVButton;
     private JTextField fastaFile, keyFile, qryDataset, qryFileTextField, qryIdSearch, refDataset,
             refFileTextField, refIdSearch, regionSearch, xmapFileTextField;
-    private javax.swing.JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual, indelMinSize, indelMaxSize, flankSignal;
-    private javax.swing.JPanel labelDensityGraph, referencesGraph;
-    private javax.swing.JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
-    private javax.swing.JCheckBox overlapSetting;
-    private javax.swing.JComboBox<String> refOrQry, regionType;
-    private javax.swing.JRadioButton styleChim, styleCoverage, styleMatch, styleCigar, styleMatchSV;
-    private javax.swing.JTabbedPane tabPaneFiles, tabPaneFilesSV;
-    private javax.swing.JCheckBox allIndels;
+    private JSpinner highConf, highCov, highQual, lowConf, lowCov, lowQual, indelMinSize, indelMaxSize, flankSignal;
+    private JPanel labelDensityGraph, referencesGraph;
+    private JTable labelTable, qryContigTable, svTable, qryViewRefTable, refContigTable;
+    private JCheckBox overlapSetting;
+    private JComboBox<String> refOrQry, regionType;
+    private JRadioButton styleChim, styleCoverage, styleMatch, styleCigar, styleMatchSV;
+    private JTabbedPane tabPaneFiles;
+    private JCheckBox allIndels;
 
-    private UserInterface.QueryView queryView;
-    private UserInterface.ReferenceView referenceView;
-    private UserInterface.SummaryView summaryView;
-    private UserInterface.SVView svView;
+    private QueryView queryView;
+    private ReferenceView referenceView;
+    private SVView svView;
     private static final String EMPTY_STRING = "";
     private static final int DEFAULT = 0;
     private static final int LAST_SAVED = 1;
@@ -299,7 +296,6 @@ public class MapOptics extends JFrame {
         regionSearch = new javax.swing.JTextField();
         JLabel jLabel13 = new JLabel();
         regionType = new javax.swing.JComboBox<>();
-        //javax.swing.JButton qryorientate = new javax.swing.JButton();
         JScrollPane jScrollPane1 = new JScrollPane();
         qryViewRefTable = new javax.swing.JTable();
         JScrollPane queryViewTableScroll = new JScrollPane();
@@ -322,7 +318,7 @@ public class MapOptics extends JFrame {
         JPanel svPanel = new JPanel();
         svTable = new javax.swing.JTable();
         JLayeredPane svViewPane = new JLayeredPane();
-        tabPaneFilesSV = new javax.swing.JTabbedPane();
+        JTabbedPane tabPaneFilesSV = new JTabbedPane();
         indelMinSize = new javax.swing.JSpinner();
         indelMaxSize = new javax.swing.JSpinner();
         flankSignal = new javax.swing.JSpinner();
@@ -330,8 +326,6 @@ public class MapOptics extends JFrame {
         JLabel labelIndelMax = new JLabel();
         JLabel labelFlankSig = new JLabel();
         JButton saveSVSettings = new JButton();
-
-
         labelTable = new javax.swing.JTable();
         JMenuBar menuBar = new JMenuBar();
         JMenu jMenu1 = new JMenu();
@@ -1344,9 +1338,6 @@ public class MapOptics extends JFrame {
 
         regionType.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Reference", "Query" }));
 
-        //qryorientate.setText("re-orientate");
-        //qryorientate.addActionListener(this::qryorientateActionPerformed);
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -1409,13 +1400,9 @@ public class MapOptics extends JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(search)
-                                       // .addComponent(qryorientate)
                                         )
                                 .addContainerGap())
         );
-
-        //qryorientate.getAccessibleContext().setAccessibleName("");
-        //qryorientate.getAccessibleContext().setAccessibleDescription("");
 
         qryViewRefTable.setAutoCreateRowSorter(true);
         qryViewRefTable.setModel(new DefaultTableModel());
@@ -1594,10 +1581,6 @@ public class MapOptics extends JFrame {
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(svPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-//                                                .addGroup(jPanel3Layout.createSequentialGroup()
-//                                                        .addComponent(alignLeft)
-//                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-//                                                        .addComponent(alignRight))
                                                 .addComponent(labelStyleSV)
                                                 .addComponent(styleMatchSV)
                                                 .addComponent(styleCigar)
@@ -1687,17 +1670,7 @@ public class MapOptics extends JFrame {
         svSplitPlane.setLeftComponent(svLayeredPane);
 
         svTable.setAutoCreateRowSorter(true);
-        svTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null},
-                        {null, null, null, null}
-                },
-                new String [] {
-                        "Title 1", "Title 2", "Title 3", "Title 4"
-                }
-        ));
+        svTable.setModel(new DefaultTableModel());
         svTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         svTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -2048,7 +2021,6 @@ public class MapOptics extends JFrame {
         fileLoader.setVisible(false);
         // reset all data
         resetData();
-        XmapReader.setSwap(false);
         model.setReversed(false);
 
         String qryPath = qryFileTextField.getText();
@@ -2689,20 +2661,7 @@ public class MapOptics extends JFrame {
         // Open dialog for fasta loading
         fastaLoader.setVisible(true);
     }
-/*
-    private void qryorientateActionPerformed(java.awt.event.ActionEvent evt) {
-        // reorientate chosen contig
-        System.out.println("asdf");
-        if (!QueryView.getChosenRef().equals(EMPTY_STRING) && !QueryView.getChosenQry().equals(EMPTY_STRING)) {
-            for (Query qry : model.getSelectedRef().getQueries()) {
-                if (qry.getID().equals(ReferenceView.getChosenQry())) {
-                    qry.reOrientate();
-                }
-            }
-        }
-        repaint();
-    }
-*/
+
     private void closeActionPerformed(java.awt.event.ActionEvent evt) {
         // close program
         System.exit(0);
@@ -3058,7 +3017,7 @@ public class MapOptics extends JFrame {
                 // get selected contigs
                 String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
                 SVView.setChosenQry(chosenQry);
-                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
+                String chosenRef = model.getSelectedRefID();
                 SVView.setChosenRef(chosenRef);
                 svTableMouseClicked();
                 repaint();
@@ -3076,7 +3035,7 @@ public class MapOptics extends JFrame {
                 // get selected contigs
                 String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
                 SVView.setChosenQry(chosenQry);
-                String chosenRef = svTable.getValueAt(svTable.getSelectedRow(), 1).toString();
+                String chosenRef = model.getSelectedRefID();
                 SVView.setChosenRef(chosenRef);
                 svTableMouseClicked();
                 repaint();
@@ -3329,27 +3288,6 @@ public class MapOptics extends JFrame {
         }
     }
 
-
-
-    // TODO: Can possibly delete
-    private void fillRefTable(LinkedHashMap<String, Integer> numOverlaps) {
-        // Format table to list all contigs with matches
-        DefaultTableModel tmRefContigs = (DefaultTableModel) refContigTable.getModel();
-        // Empty table
-        tmRefContigs.setRowCount(0);
-        // Add rows to table
-        for (String refId : RawFileData.getReferences().keySet()) {
-            tmRefContigs.addRow(new Object[]{
-                    Integer.parseInt(refId),
-                    (int) RawFileData.getRefContigs(refId).getContigLen(),
-                    RawFileData.getRefContigs(refId).getLabelInfo().length - 1,
-                    ((RawFileData.getRefContigs(refId).getLabelInfo().length - 1) / RawFileData.getRefContigs(refId).getContigLen()) * 100000,
-                    RawFileData.getReferences(refId).getConnections().length,
-                    numOverlaps.get(refId)
-            });
-        }
-    }
-
     private void fillRefTable() {
         // Format table to list all contigs with matches
         DefaultTableModel tmRefContigs = (DefaultTableModel) refContigTable.getModel();
@@ -3502,12 +3440,6 @@ public class MapOptics extends JFrame {
         fillSVTable(refId, detectSV);
         SVView.setRefDataset(refDataset.getText());
         SVView.setChosenRef(refId);
-
-
-
-//        SummaryView.setChosenRef(refId); // probably not needed
-
-
 
         repaint();
     }

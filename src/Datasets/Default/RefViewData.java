@@ -33,6 +33,7 @@ public class RefViewData {
     private static LinkedHashMap<String, RefContig> references = new LinkedHashMap();
     private static LinkedHashMap<String, QryContig> queries = new LinkedHashMap();
 
+    @Deprecated
     public static void resetData() {
         RefViewData.references = new LinkedHashMap();
         RefViewData.queries = new LinkedHashMap();
@@ -149,6 +150,7 @@ public class RefViewData {
         model.setRectangleTotalHeight(highestOffsetY - refRect.getY());
     }
 
+    @Deprecated
     public static void setData() {
         // get data from overlap algorithm so queries don't overlap
        // LinkedHashMap<String, Rectangle2D> sortedRects = SortOverlap.getSortedRects();
@@ -185,6 +187,7 @@ public class RefViewData {
         }
 
 
+        @Deprecated
     private static void setScaleVariables(String refId, LinkedHashMap<String, Rectangle2D> sortedRects) {
         double minX = Double.POSITIVE_INFINITY;
         double maxX = Double.NEGATIVE_INFINITY;

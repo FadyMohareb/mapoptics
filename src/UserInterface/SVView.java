@@ -3,12 +3,10 @@ package UserInterface;
 import Algorithms.DetectSV;
 import DataTypes.*;
 import Datasets.Default.QueryViewData;
-import Datasets.Default.SVViewData;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.AlphaComposite;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +20,7 @@ import java.util.stream.Collectors;
  * */
 
 public class SVView extends JPanel {
-    public static List<Inversion> inversions;
     public static List<Indel> qryIndels;
-    public static List<Duplication> duplications;
-    public static List<Translocation> translocations;
     private static String chosenRef = "";
     private static String chosenQry = "";
     private static List<SV> svList;

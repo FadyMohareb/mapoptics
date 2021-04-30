@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
    stores all user changed data in reference view. This is what is displayed in
    the reference view panel
  */
+@Deprecated
 public class UserRefData {
 
     // scale variables

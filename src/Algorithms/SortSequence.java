@@ -6,6 +6,7 @@ import java.util.ArrayList;
 /*
  * @author Josie
  */
+@Deprecated
 public class SortSequence {
 
     public static Rectangle2D[] findGaps(String seq, double scale, Rectangle2D rect) {

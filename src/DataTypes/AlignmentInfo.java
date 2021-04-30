@@ -3,6 +3,7 @@ package DataTypes;
 /*
  * @author Josie
  */
+@Deprecated
 public class AlignmentInfo {
     private final String qryAlignStart;
     private final String qryAlignEnd ;

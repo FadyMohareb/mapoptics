@@ -48,6 +48,7 @@ public class QueryViewData {
         QueryViewData.sequences=new HashMap<>(sequences);
     }
 
+    @Deprecated
     public static HashMap<String, ArrayList<Integer>> setSequences() {
         return  sequences;
     }

@@ -9,6 +9,7 @@ import java.util.*;
  */
 public class CalculateOverlaps {
 
+    @Deprecated
     public static Map<Integer, Integer> countAllOverlaps(Map<Integer, List<Double>> refMap) {
 
         Map <Integer, Integer> counts = new HashMap<>();

@@ -1,20 +1,12 @@
 package FileHandling;
 
-import DataTypes.ContigInfo;
-import DataTypes.Reference;
-import UserInterface.ModelsAndRenderers.MapOpticsModel;
-
-import java.awt.geom.Rectangle2D;
 import UserInterface.ModelsAndRenderers.MapOpticsModel;
 
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -23,6 +15,7 @@ import javax.swing.JOptionPane;
 public class FastaReader {
 
 
+    @Deprecated
     public static LinkedHashMap<String, ArrayList<Integer>> readFasta(String filename, LinkedHashMap<String, String> contigNames) {
         ArrayList<String> sequenceArray = new ArrayList();
         LinkedHashMap<String, ArrayList<Integer>> sequences = new LinkedHashMap();

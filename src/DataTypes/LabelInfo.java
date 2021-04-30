@@ -3,6 +3,7 @@ package DataTypes;
 /*
  * @author Josie
  */
+@Deprecated
 public class LabelInfo {
 
     private String labelChannel ;

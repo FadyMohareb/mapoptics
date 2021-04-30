@@ -6,6 +6,7 @@ import java.util.ArrayList;
 /*
  * @author Josie
  */
+@Deprecated
 public class RefContig {
 
     private Rectangle2D rectangle;

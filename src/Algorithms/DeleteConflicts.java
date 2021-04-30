@@ -1,39 +1,26 @@
 package Algorithms;
 
-import UserInterface.ModelsAndRenderers.MapOpticsModel;
-import UserInterface.ReferenceView;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 
 /*
  * @author Josie
  */
+@Deprecated
 public class DeleteConflicts {
     // This class is no longer needed. Deleted contigs fuctionality has been moved to Reference class.
-
-    /*
-
-    public static void deleteOne(String refId, String qryId) {
-        // delete selected contig
-        String refqryId = refId + "-" + qryId;
-        UserRefData.getQueries().remove(refqryId);
-        UserQryData.getQueries().remove(refqryId);
-
-        RefContig ref = UserRefData.getReferences(ReferenceView.getChosenRef());
-        ArrayList<String> newConnections = new ArrayList<>();
-        for (String connection : ref.getConnections()) {
-            if (!ReferenceView.getChosenQry().equals(connection)) {
-                newConnections.add(connection);
-            }
-        }
-
-        ref.setConnections(newConnections.toArray(new String[newConnections.size()]));
-    }
-
-     */
-
+//    public static void deleteOne(String refId, String qryId) {
+//        // delete selected contig
+//        String refqryId = refId + "-" + qryId;
+//        UserRefData.getQueries().remove(refqryId);
+//        UserQryData.getQueries().remove(refqryId);
+//
+//        RefContig ref = UserRefData.getReferences(ReferenceView.getChosenRef());
+//        ArrayList<String> newConnections = new ArrayList<>();
+//        for (String connection : ref.getConnections()) {
+//            if (!ReferenceView.getChosenQry().equals(connection)) {
+//                newConnections.add(connection);
+//            }
+//        }
+//
+//        ref.setConnections(newConnections.toArray(new String[newConnections.size()]));
+//    }
 }

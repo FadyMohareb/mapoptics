@@ -9,6 +9,7 @@ import java.awt.geom.*;
    stores data on the contigs when a region is searched, these are rescaled
    to for the view
  */
+@Deprecated
 public class SearchRegionData {
 
     // Query alignment view data hashmaps set with those coordinates

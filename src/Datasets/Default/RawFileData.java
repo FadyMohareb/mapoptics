@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
     Class containing all hashmaps of untouched raw data - not to be altered by the user
     Used as a basis for the rest of the class calculations
  */
+@Deprecated
 public class RawFileData {
 
     // RawData datasets from file inputs

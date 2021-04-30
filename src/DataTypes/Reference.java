@@ -8,13 +8,14 @@ import java.util.*;
 public class Reference {
 
     private final String refID;
+    private final List<Double> regions;
+    private final List<Integer> queryIDs;
+    private final Map<Integer, Double> sites;
+    private final List<Integer> delQryIDs;
 
     private int overlaps;
     private int labels;
-    private List<Double> regions;
-    private List<Integer> queryIDs;
     private double length, density;
-    private Map<Integer, Double> sites;
     private List<Query> queries;
     private Rectangle2D rectangle;
     private Set<Integer> alignmentSiteIds;
@@ -22,8 +23,6 @@ public class Reference {
     private Rectangle2D qryViewRect = null;
     private double coverage;
     private double chimQual;
-
-    private List<Integer> delQryIDs;
     private List<Integer> savedDelQryIDs;
     private Map<Integer, String> refAlignRegion;
 
@@ -155,11 +154,6 @@ public class Reference {
         return refViewRect;
     }
 
-    public double getAlignmentLen(){
-        double AlignmentLen= regions.get(1)-regions.get(0);
-        return AlignmentLen;
-    }
-
     public void setQryViewRect(Rectangle2D qryViewRect) {
         this.qryViewRect = qryViewRect;
     }
@@ -189,15 +183,13 @@ public class Reference {
     public Double[] getRefAlignPos(String ChosenQry){
         int qry= Integer.parseInt(ChosenQry);
         String[] StartEnd = refAlignRegion.get(qry).split("-");
-        Double Start = Double.parseDouble(StartEnd[0]);
-        Double End = Double.parseDouble(StartEnd[1]);
+        double Start = Double.parseDouble(StartEnd[0]);
+        double End = Double.parseDouble(StartEnd[1]);
 
         if(Start>End){
-            Double[] RefAlignRegion={End,Start};
-            return RefAlignRegion;
+            return new Double[]{End,Start};
         }else{
-            Double[] RefAlignRegion={Start,End};
-            return RefAlignRegion;
+            return new Double[]{Start,End};
         }
     }
 
@@ -211,10 +203,6 @@ public class Reference {
 
     public double getCoverage() {
         return coverage;
-    }
-
-    public double getChimQual() {
-        return chimQual;
     }
 
     public List<Double> getRegions() {

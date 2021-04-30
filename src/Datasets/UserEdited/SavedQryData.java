@@ -1,13 +1,15 @@
 package Datasets.UserEdited;
 
-import DataTypes.*;
-import Datasets.Default.QueryViewData;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
+
 import java.util.LinkedHashMap;
 
 /*
  * @author Josie
    Stores all the saved data for query view
  */
+@Deprecated
 public class SavedQryData {
 
     // Query alignment view data hashmaps set with those coordinates

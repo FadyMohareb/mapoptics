@@ -3,6 +3,7 @@ package DataTypes;
 /*
  * @author Josie
  */
+@Deprecated
 public class ContigInfo {
     private final double contigLen ;
     private final LabelInfo[] labelInfo;

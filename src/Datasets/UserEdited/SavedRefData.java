@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
    stores all information from the user edited reference view when saved
    the summary view panel reads from this class
  */
+@Deprecated
 public class SavedRefData {
 
     // RefAlignData hashmaps scaled and overlaps sorted
