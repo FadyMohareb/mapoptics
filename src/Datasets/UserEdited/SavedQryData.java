@@ -1,13 +1,15 @@
 package Datasets.UserEdited;
 
-import DataTypes.*;
-import Datasets.Default.QueryViewData;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
+
 import java.util.LinkedHashMap;
 
 /*
  * @author Josie
    Stores all the saved data for query view
  */
+@Deprecated
 public class SavedQryData {
 
     // Query alignment view data hashmaps set with those coordinates
@@ -20,43 +22,7 @@ public class SavedQryData {
         SavedQryData.queries = new LinkedHashMap();
         SavedQryData.qryConnections = new LinkedHashMap();
     }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static void setQueries(LinkedHashMap<String, QryContig> queries) {
-        SavedQryData.queries = queries;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static RefContig getReferences(String refqryId) {
-        return references.get(refqryId);
-    }
-
-    public static void setReferences(LinkedHashMap<String, RefContig> references) {
-        SavedQryData.references = references;
-    }
-
-    public static LinkedHashMap<String, String[]> getQryConnections() {
-        return qryConnections;
-    }
-
-    public static String[] getQryConnections(String qryId) {
-        return qryConnections.get(qryId);
-    }
-
-    public static void setQryConnections(LinkedHashMap<String, String[]> qryConnections) {
-        SavedQryData.qryConnections = qryConnections;
-    }
-
+/*
     public static void setData() {
         // set all references to equal the default
         for (String refqryId : QueryViewData.getReferences().keySet()) {
@@ -77,7 +43,7 @@ public class SavedQryData {
             qryConnections.put(qryId, refIds);
         }
     }
-
+*/
     public static void saveAllData() {
         for (String refqryId : references.keySet()) {
             saveOneData(refqryId.split("-")[0]);
@@ -108,4 +74,33 @@ public class SavedQryData {
             }
         }
     }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static void setQueries(LinkedHashMap<String, QryContig> queries) {
+        SavedQryData.queries = queries;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static RefContig getReferences(String refqryId) {
+        return references.get(refqryId);
+    }
+
+    public static void setReferences(LinkedHashMap<String, RefContig> references) {
+        SavedQryData.references = references;
+    }
+
+    public static String[] getQryConnections(String qryId) {
+        return qryConnections.get(qryId);
+    }
+
 }

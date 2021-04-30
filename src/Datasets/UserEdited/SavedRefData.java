@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
    stores all information from the user edited reference view when saved
    the summary view panel reads from this class
  */
+@Deprecated
 public class SavedRefData {
 
     // RefAlignData hashmaps scaled and overlaps sorted
@@ -24,34 +25,6 @@ public class SavedRefData {
     public static void resetData() {
         SavedRefData.references = new LinkedHashMap();
         SavedRefData.queries = new LinkedHashMap();
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static RefContig getReferences(String refId) {
-        return references.get(refId);
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static void setQueries(LinkedHashMap<String, QryContig> usrRefQueries) {
-        SavedRefData.queries = usrRefQueries;
-    }
-
-    public static void setHorZoom(double horZoom) {
-        SavedRefData.horZoom = horZoom;
-    }
-
-    public static void setVertZoom(double vertZoom) {
-        SavedRefData.vertZoom = vertZoom;
     }
 
     public static void setData() {
@@ -106,5 +79,33 @@ public class SavedRefData {
         AffineTransform at2 = AffineTransform.getScaleInstance(horZoom, vertZoom);
         rect = at2.createTransformedShape(rect).getBounds2D();
         return rect;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static RefContig getReferences(String refId) {
+        return references.get(refId);
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static void setQueries(LinkedHashMap<String, QryContig> usrRefQueries) {
+        SavedRefData.queries = usrRefQueries;
+    }
+
+    public static void setHorZoom(double horZoom) {
+        SavedRefData.horZoom = horZoom;
+    }
+
+    public static void setVertZoom(double vertZoom) {
+        SavedRefData.vertZoom = vertZoom;
     }
 }

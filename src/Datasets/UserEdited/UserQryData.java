@@ -1,8 +1,9 @@
 package Datasets.UserEdited;
 
-import DataTypes.*;
-import Datasets.Default.QueryViewData;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
 import UserInterface.QueryView;
+
 import java.util.LinkedHashMap;
 
 /*
@@ -10,6 +11,7 @@ import java.util.LinkedHashMap;
    Stores any changes made by the user to query view. Query view is displayed
    from data in this class
  */
+@Deprecated
 public class UserQryData {
 
     // Query alignment view data hashmaps set with those coordinates
@@ -22,43 +24,7 @@ public class UserQryData {
         UserQryData.queries = new LinkedHashMap();
         UserQryData.qryConnections = new LinkedHashMap();
     }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
-    }
-
-    public static void setQueries(LinkedHashMap<String, QryContig> queries) {
-        UserQryData.queries = queries;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static RefContig getReferences(String refqryId) {
-        return references.get(refqryId);
-    }
-
-    public static void setReferences(LinkedHashMap<String, RefContig> references) {
-        UserQryData.references = references;
-    }
-
-    public static LinkedHashMap<String, String[]> getQryConnections() {
-        return qryConnections;
-    }
-
-    public static String[] getQryConnections(String qryId) {
-        return qryConnections.get(qryId);
-    }
-
-    public static void setQryConnections(LinkedHashMap<String, String[]> qryConnections) {
-        UserQryData.qryConnections = qryConnections;
-    }
-
+/*
     public static void setData() {
         // set all references from default dataset
         for (String refqryId : QueryViewData.getReferences().keySet()) {
@@ -105,7 +71,7 @@ public class UserQryData {
             }
         }
     }
-
+*/
     public static void resetDataToLastSaved() {
         String chosenRef = QueryView.getChosenRef();
         String[] connections;
@@ -130,8 +96,8 @@ public class UserQryData {
             }
         }
     }
-
-    public static void addSequences(LinkedHashMap<String, String> names, LinkedHashMap<String, String> sequences, String refQry) {
+/*
+    public static void addSequences(LinkedHashMap<String, String> names, LinkedHashMap<String, ArrayList<Integer>> sequences, String refQry) {
         // adds sequence data from fasta file
         if (refQry.equals("ref")) {
             for (String refqryId : references.keySet()) {
@@ -154,4 +120,33 @@ public class UserQryData {
             }
         }
     }
+*/
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
+    }
+
+    public static void setQueries(LinkedHashMap<String, QryContig> queries) {
+        UserQryData.queries = queries;
+    }
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static RefContig getReferences(String refqryId) {
+        return references.get(refqryId);
+    }
+
+    public static void setReferences(LinkedHashMap<String, RefContig> references) {
+        UserQryData.references = references;
+    }
+
+    public static String[] getQryConnections(String qryId) {
+        return qryConnections.get(qryId);
+    }
+
 }

@@ -1,14 +1,5 @@
-## MapOptics has been upgraded and is now available in Beta form as follows:
-
-# MapOptics Beta is available: 
-https://github.com/FadyMohareb/mapoptics/tree/MapOptics_Beta - download the MapOptics_2020_GP.jar file for the Beta Version
-Release notes for this Beta can be found here: https://github.com/FadyMohareb/mapoptics/releases
-
-
 # MapOptics
 MapOptics is a lightweight cross-platform tool that enables the user to visualise and interact with the alignment of Bionano optical mapping data and can be used for in depth exploration of hybrid scaffolding alignments.
-
-
 
 # How to install MapOptics
 #### 1. Through the Java JAR executable:

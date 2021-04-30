@@ -5,22 +5,20 @@ https://stackoverflow.com/questions/7137786/how-can-i-put-a-control-in-the-jtabl
 
 package UserInterface.ModelsAndRenderers;
 
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.JComponent;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class EditableHeaderRenderer implements TableCellRenderer {
 
+    private final JComponent editor;
+
     private JTable table = null;
     private MouseEventReposter reporter = null;
-    private JComponent editor;
+
 
     public EditableHeaderRenderer(JComponent editor) {
         this.editor = editor;
@@ -46,12 +44,13 @@ public class EditableHeaderRenderer implements TableCellRenderer {
         return this.editor;
     }
 
-    static public class MouseEventReposter extends MouseAdapter {
+    public static class MouseEventReposter extends MouseAdapter {
 
         private Component dispatchComponent;
-        private JTableHeader header;
-        private int column  = -1;
-        private Component editor;
+        private final Component editor;
+        private final JTableHeader header;
+
+        private int column;
 
         public MouseEventReposter(JTableHeader header, int column, Component editor) {
             this.header = header;
@@ -61,24 +60,6 @@ public class EditableHeaderRenderer implements TableCellRenderer {
 
         public void setColumn(int column) {
             this.column = column;
-        }
-
-        private void setDispatchComponent(MouseEvent e) {
-            int col = header.getTable().columnAtPoint(e.getPoint());
-            if (col != column || col == -1) return;
-
-            Point p = e.getPoint();
-            Point p2 = SwingUtilities.convertPoint(header, p, editor);
-            dispatchComponent = SwingUtilities.getDeepestComponentAt(editor, p2.x, p2.y);
-        }
-
-        private boolean repostEvent(MouseEvent e) {
-            if (dispatchComponent == null) {
-                return false;
-            }
-            MouseEvent e2 = SwingUtilities.convertMouseEvent(header, e, dispatchComponent);
-            dispatchComponent.dispatchEvent(e2);
-            return true;
         }
 
         @Override
@@ -105,6 +86,23 @@ public class EditableHeaderRenderer implements TableCellRenderer {
             repostEvent(e);
             dispatchComponent = null;
             header.remove(editor);
+        }
+
+        private void setDispatchComponent(MouseEvent e) {
+            int col = header.getTable().columnAtPoint(e.getPoint());
+            if (col != column || col == -1) return;
+
+            Point p = e.getPoint();
+            Point p2 = SwingUtilities.convertPoint(header, p, editor);
+            dispatchComponent = SwingUtilities.getDeepestComponentAt(editor, p2.x, p2.y);
+        }
+
+        private void repostEvent(MouseEvent e) {
+            if (dispatchComponent == null) {
+                return;
+            }
+            MouseEvent e2 = SwingUtilities.convertMouseEvent(header, e, dispatchComponent);
+            dispatchComponent.dispatchEvent(e2);
         }
     }
 }

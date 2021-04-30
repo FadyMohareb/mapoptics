@@ -6,10 +6,11 @@ import java.util.ArrayList;
 /*
  * @author Josie
  */
+@Deprecated
 public class SortSequence {
 
     public static Rectangle2D[] findGaps(String seq, double scale, Rectangle2D rect) {
-        ArrayList<Rectangle2D> gaps = new ArrayList();
+        ArrayList<Rectangle2D> gaps = new ArrayList<>();
         String match = "N";
         int index1 = seq.indexOf(match);
         int index2;
@@ -22,9 +23,12 @@ public class SortSequence {
                 count++;
             } else {
                     if (count * scale < 1) {
-                        gap = new Rectangle2D.Double(rect.getMinX() + (index1 - count) * scale, rect.getMinY(), 1, rect.getHeight());
+                        gap = new Rectangle2D.Double(
+                                rect.getMinX() + (index1 - count) * scale, rect.getMinY(), 1, rect.getHeight());
                     } else {
-                        gap = new Rectangle2D.Double(rect.getMinX() + (index1 - count) * scale, rect.getMinY(), count * scale, rect.getHeight());
+                        gap = new Rectangle2D.Double(
+                                rect.getMinX() + (index1 - count) * scale, rect.getMinY(),
+                                count * scale, rect.getHeight());
                     }
                     gaps.add(gap);
                 count = 0;
@@ -34,7 +38,6 @@ public class SortSequence {
         }
         gap = new Rectangle2D.Double((index1 - count) * scale, rect.getMinY(), count * scale, rect.getHeight());
         gaps.add(gap);
-        Rectangle2D[] allGaps = gaps.toArray(new Rectangle2D[gaps.size()]);
-        return allGaps;
+        return gaps.toArray(new Rectangle2D[0]);
     }
 }

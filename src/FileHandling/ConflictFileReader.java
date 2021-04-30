@@ -13,11 +13,7 @@ public class ConflictFileReader {
     
     private static String[] firstRows = new String[2];
 
-    public static String[] getFirstRows() {
-        return firstRows;
-    }
-
-    static public String[] readConflictFile(JTable conflictsTable, String filename) {
+    public static String[] readConflictFile(JTable conflictsTable, String filename) {
         try {
             firstRows = new String[2];
             int count = 0;
@@ -72,6 +68,10 @@ public class ConflictFileReader {
                     JOptionPane.ERROR_MESSAGE);
         }
 
+        return firstRows;
+    }
+
+    public static String[] getFirstRows() {
         return firstRows;
     }
 }

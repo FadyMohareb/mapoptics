@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
     Class containing all hashmaps of untouched raw data - not to be altered by the user
     Used as a basis for the rest of the class calculations
  */
+@Deprecated
 public class RawFileData {
 
     // RawData datasets from file inputs
@@ -62,40 +63,8 @@ public class RawFileData {
         RawFileData.refContigs = refContigs;
     }
 
-    public static LinkedHashMap<String, AlignmentInfo> getAlignmentInfo() {
-        return alignmentInfo;
-    }
-
     public static void setAlignmentInfo(LinkedHashMap<String, AlignmentInfo> alignmentInfo) {
         RawFileData.alignmentInfo = alignmentInfo;
-    }
-
-    public static LinkedHashMap<String, RefContig> getReferences() {
-        return references;
-    }
-
-    public static LinkedHashMap<String, QryContig> getQueries() {
-        return queries;
-    }
-
-    public static ContigInfo getQryContigs(String qryId) {
-        return qryContigs.get(qryId);
-    }
-
-    public static ContigInfo getRefContigs(String refId) {
-        return refContigs.get(refId);
-    }
-
-    public static AlignmentInfo getAlignmentInfo(String refqryId) {
-        return alignmentInfo.get(refqryId);
-    }
-
-    public static RefContig getReferences(String refId) {
-        return references.get(refId);
-    }
-
-    public static QryContig getQueries(String refqryId) {
-        return queries.get(refqryId);
     }
 
     public static void setData() {
@@ -146,10 +115,9 @@ public class RawFileData {
             label = new Rectangle2D.Double(refRect.getMinX() + refLabelPos, refRect.getMinY(), 1, refRect.getHeight());
             labels.add(label);
         }
-        RefContig refContig = new RefContig(refRect,
+        return new RefContig(refRect,
                 labels.toArray(new Rectangle2D[labels.size()]),
                 qryList);
-        return refContig;
     }
 
     private static QryContig setQryData(String refId, String qryId) {
@@ -192,7 +160,7 @@ public class RawFileData {
             label = new Rectangle2D.Double(qryRect.getMinX() + labelPos, qryRect.getMinY(), 1, qryRect.getHeight());
             labels.add(label);
         }
-        QryContig qryContig = new QryContig(qryRect,
+        return new QryContig(qryRect,
                 labels.toArray(new Rectangle2D[labels.size()]),
                 alignments.toArray(new String[alignments.size()][]),
                 qryStart,
@@ -200,6 +168,63 @@ public class RawFileData {
                 refStart,
                 refEnd,
                 alignInfo.getOrientation());
-        return qryContig;
+    }
+
+
+    public static RefContig setnewRefData(String refqryId) {
+        // set reference contig length
+        //-------------------------new-----------------------------------------
+        String refId = refqryId.split("-")[0];
+        String qryId = refqryId.split("-")[1];
+        String[]qryList= {qryId};
+        String refstart= RawFileData.getAlignmentInfo(refqryId).getRefAlignStart();
+        String refend = RawFileData.getAlignmentInfo(refqryId).getRefAlignEnd();
+        Double length= Double.parseDouble(refend)-Double.parseDouble(refstart);
+
+        Rectangle2D refRect = new Rectangle2D.Double(0, 6, length, 1);
+        // set reference contig labels
+        ArrayList<Rectangle2D> labels = new ArrayList();
+        Rectangle2D label;
+        double refLabelPos;
+        for (int i = 0; i < refContigs.get(refId).getLabelInfo().length - 1; i++) {
+
+            refLabelPos = Double.parseDouble(refContigs.get(refId).getLabelInfo()[i].getLabelPos());
+            if (refLabelPos>=Double.parseDouble(refend)& refLabelPos<= Double.parseDouble(refend)){
+                label = new Rectangle2D.Double(refRect.getMinX() + refLabelPos, refRect.getMinY(), 1, refRect.getHeight());
+                labels.add(label);
+            }
+        }
+        return new RefContig(refRect,
+                labels.toArray(new Rectangle2D[labels.size()]),
+                qryList);
+    }
+
+
+    public static LinkedHashMap<String, RefContig> getReferences() {
+        return references;
+    }
+
+    public static LinkedHashMap<String, QryContig> getQueries() {
+        return queries;
+    }
+
+    public static ContigInfo getQryContigs(String qryId) {
+        return qryContigs.get(qryId);
+    }
+
+    public static ContigInfo getRefContigs(String refId) {
+        return refContigs.get(refId);
+    }
+
+    public static AlignmentInfo getAlignmentInfo(String refqryId) {
+        return alignmentInfo.get(refqryId);
+    }
+
+    public static RefContig getReferences(String refId) {
+        return references.get(refId);
+    }
+
+    public static QryContig getQueries(String refqryId) {
+        return queries.get(refqryId);
     }
 }

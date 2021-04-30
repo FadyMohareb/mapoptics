@@ -1,7 +1,12 @@
 package Datasets.Default;
 
-import DataTypes.*;
-import java.awt.geom.*;
+import DataTypes.QryContig;
+import DataTypes.RefContig;
+import DataTypes.Reference;
+import FileHandling.CmapReader;
+import FileHandling.XmapReader;
+import UserInterface.ModelsAndRenderers.MapOpticsModel;
+
 import java.util.*;
 
 /*
@@ -19,9 +24,32 @@ public class SummaryViewData {
     private static LinkedHashMap<String, RefContig> references = new LinkedHashMap();
     private static LinkedHashMap<String, QryContig> queries = new LinkedHashMap();
 
+    @Deprecated
     public static void resetData() {
         SummaryViewData.references = new LinkedHashMap();
         SummaryViewData.queries = new LinkedHashMap();
+    }
+
+    public static void setSummaryData(MapOpticsModel model) {
+
+        Map<Integer, Reference> referenceMap = XmapReader.getSummaryData(model.getXmapFile(), model.isReversed());
+        List<Reference> references = new ArrayList<>(referenceMap.values());
+        CmapReader.getSummaryData(model.getRefFile(), referenceMap);
+
+        List<Double> lengths = new ArrayList<>();
+        List<Double> densities = new ArrayList<>();
+
+        for (Reference ref : references) {
+            lengths.add(ref.getLength());
+            densities.add(ref.getDensity());
+        }
+
+        Collections.sort(lengths);
+        Collections.sort(densities);
+
+        model.setLengths(lengths);
+        model.setDensities(densities);
+        model.setReferences(references);
     }
 
     public static LinkedHashMap<String, RefContig> getReferences() {
@@ -38,49 +66,6 @@ public class SummaryViewData {
 
     public static QryContig getQueries(String refqryId) {
         return queries.get(refqryId);
-    }
-
-    public static void setHorZoom(double horZoom) {
-        SummaryViewData.horZoom = horZoom;
-    }
-
-    public static void setVertZoom(double vertZoom) {
-        SummaryViewData.vertZoom = vertZoom;
-    }
-
-    public static void setData() {
-        
-       // loop through reference view data and rescale to fit the summary view panel
-        for (String refId : RefViewData.getReferences().keySet()) {
-            RefContig ref1 = RefViewData.getReferences(refId);
-            RefContig ref2 = ref1.copy();
-            ref2.setRectangle(resizeRect(ref1.getRectangle().getBounds2D()));
-            Rectangle2D[] labels = new Rectangle2D[ref1.getLabels().length];
-            for (int j = 0; j < ref1.getLabels().length; j++) {
-                labels[j] = resizeRect(ref1.getLabels()[j].getBounds2D());
-            }
-            ref2.setLabels(labels);
-            references.put(refId, ref2);
-
-            // resize all queries
-            for (String qryId : ref1.getConnections()) {
-                QryContig qry1 = RefViewData.getQueries(refId + "-" + qryId);
-                QryContig qry2 = qry1.copy();
-                qry2.setRectangle(resizeRect(qry1.getRectangle().getBounds2D()));
-                labels = new Rectangle2D[qry1.getLabels().length];
-                for (int j = 0; j < qry1.getLabels().length; j++) {
-                    labels[j] = resizeRect(qry1.getLabels()[j].getBounds2D());
-                }
-                qry2.setLabels(labels);
-                queries.put(refId + "-" + qryId, qry2);
-            }
-        }
-    }
-
-    private static Rectangle2D resizeRect(Rectangle2D rect) {
-        AffineTransform at2 = AffineTransform.getScaleInstance(horZoom, vertZoom);
-        rect = at2.createTransformedShape(rect).getBounds2D();
-        return rect;
     }
 
 }

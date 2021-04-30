@@ -3,30 +3,31 @@ package DataTypes;
 /*
  * @author Josie
  */
+@Deprecated
 public class ContigInfo {
-    
-    private double contigLen ;
-    private LabelInfo[] labelInfo;
+    private final double contigLen ;
+    private final LabelInfo[] labelInfo;
 
+    public ContigInfo(double contigLen, LabelInfo[] labelInfo) {
+        this.contigLen = contigLen;
+        this.labelInfo = labelInfo;
+    }
     public double getContigLen() {
         return contigLen;
-    }
-
-    public void setContigLen(double contigLen) {
-        this.contigLen = contigLen;
     }
 
     public LabelInfo[] getLabelInfo() {
         return labelInfo;
     }
 
+    /*
     public void setLabelInfo(LabelInfo[] labelInfo) {
-        this.labelInfo = labelInfo;
+       this.labelInfo = labelInfo;
     }
 
-    public ContigInfo(double contigLen, LabelInfo[] labelInfo) {
+    public void setContigLen(double contigLen) {
         this.contigLen = contigLen;
-        this.labelInfo = labelInfo;
     }
-    
+    */
+
 }

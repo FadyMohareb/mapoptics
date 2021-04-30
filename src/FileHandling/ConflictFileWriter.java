@@ -1,7 +1,7 @@
 package FileHandling;
 
+import javax.swing.*;
 import java.io.PrintWriter;
-import javax.swing.JTable;
 
 /*
  * @author Josie
@@ -29,6 +29,7 @@ public class ConflictFileWriter {
             }
             writer.close();
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

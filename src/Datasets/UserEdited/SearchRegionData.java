@@ -9,6 +9,7 @@ import java.awt.geom.*;
    stores data on the contigs when a region is searched, these are rescaled
    to for the view
  */
+@Deprecated
 public class SearchRegionData {
 
     // Query alignment view data hashmaps set with those coordinates
@@ -19,15 +20,7 @@ public class SearchRegionData {
         SearchRegionData.ref = new RefContig();
         SearchRegionData.qry = new QryContig();
     }
-
-    public static QryContig getQry() {
-        return qry;
-    }
-
-    public static RefContig getRef() {
-        return ref;
-    }
-
+     // To do: can probably delete
     public static void setRegion(double shift, double zoom) {
         AffineTransform at = AffineTransform.getTranslateInstance(-shift, 0);
         AffineTransform at2 = AffineTransform.getScaleInstance(zoom, 1);
@@ -71,5 +64,13 @@ public class SearchRegionData {
     private static Rectangle2D resize(Rectangle2D rect) {
         rect.setRect(rect.getMinX(), rect.getMinY(), 1, rect.getHeight());
         return rect;
+    }
+
+    public static QryContig getQry() {
+        return qry;
+    }
+
+    public static RefContig getRef() {
+        return ref;
     }
 }
