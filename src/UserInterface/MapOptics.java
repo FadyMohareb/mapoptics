@@ -2443,7 +2443,7 @@ public class MapOptics extends JFrame {
                     //check if is negative orientated
                    boolean isFlipped= model.getSelectedRef().getQuery(qryId).isFlipped();
 
-                    if(isFlipped=true){
+                    if(isFlipped){
                         // display position
                         positionScale = QueryViewData.gethScale();
                         position = String.format("%.2f", ((this.getWidth()- evt.getPoint().getX()) - (this.getWidth()- qryRect.getMaxX()))* positionScale);
@@ -2497,6 +2497,8 @@ public class MapOptics extends JFrame {
         // save all thresholds set in confidence settings
         ReferenceView.setLowConf((int) lowConf.getValue());
         ReferenceView.setHighConf((int) highConf.getValue());
+        QueryView.setQryHighConf((int) highConf.getValue());
+        QueryView.setQryLowConf((int) lowConf.getValue());
         confidenceSettings.setVisible(false);
         repaint();
     }
@@ -2505,6 +2507,8 @@ public class MapOptics extends JFrame {
         // save all thresholds in coverage settings
         ReferenceView.setLowCov((int) lowCov.getValue());
         ReferenceView.setHighCov((int) highCov.getValue());
+        QueryView.setQryLowCov((int) lowCov.getValue());
+        QueryView.setQryHighCov((int) highCov.getValue());
         coverageSettings.setVisible(false);
         repaint();
     }
@@ -2513,6 +2517,8 @@ public class MapOptics extends JFrame {
         // save all thresholds in chim quality settings
         ReferenceView.setLowQual((int) lowQual.getValue());
         ReferenceView.setHighQual((int) highQual.getValue());
+        QueryView.setQryLowQual((int) lowQual.getValue());
+        QueryView.setQryHighQual((int) highQual.getValue());
         chimSettings.setVisible(false);
         repaint();
     }

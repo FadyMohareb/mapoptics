@@ -29,6 +29,19 @@ public class QueryView extends JPanel {
     private static final Color DARK_GREY = new Color(80, 80, 80);
     private static final Color BLACK = new Color(30, 30, 30);
     private static final Color GREEN = new Color(97, 204, 10);
+    private static final Color AMBER = new Color(255, 204, 0);
+    private static final Color RED = new Color(204, 0, 0);
+    private static final Color YELLOW = new Color(255, 255, 0, 80);
+    private static final Stroke DASHED = new BasicStroke(1, BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_BEVEL, 0, new float[]{6, 2}, 2);
+    private static final Stroke DOTTED = new BasicStroke(1, BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER, 1, new float[]{1, 2}, 2);
+    private static int lowConf = 20;
+    private static int highConf = 40;
+    private static int lowCov = 20;
+    private static int highCov = 50;
+    private static int lowQual = 20;
+    private static int highQual = 90;
     private static String chosenRef = "";
     private static String chosenQry = "";
     private static String chosenLabel = "";
@@ -85,6 +98,30 @@ public class QueryView extends JPanel {
     public static void setStyle(String style) {
         QueryView.labelStyle = style;
     }
+    public static void setQryLowConf(int lowConf) {
+        QueryView.lowConf = lowConf;
+    }
+
+    public static void setQryHighConf(int highConf) {
+        QueryView.highConf = highConf;
+    }
+
+    public static void setQryLowCov(int lowCov) {
+        QueryView.lowCov = lowCov;
+    }
+
+    public static void setQryHighCov(int highCov) {
+        QueryView.highCov = highCov;
+    }
+
+    public static void setQryLowQual(int lowQual) {
+        QueryView.lowQual = lowQual;
+    }
+
+    public static void setQryHighQual(int highQual) {
+        QueryView.highQual = highQual;
+    }
+
 
     public static void setConfidenceView(boolean confidenceView) {
         QueryView.confidenceView = confidenceView;
@@ -246,6 +283,7 @@ public class QueryView extends JPanel {
 
                     //draw reference labels
                     int WindowWidth = this.getWidth();
+
                     for (int site : refSites.keySet()) {
 
                         g2d.setColor(Color.black);
@@ -271,10 +309,32 @@ public class QueryView extends JPanel {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
-                            g2d.setColor(GREEN);
+                            if (labelStyle.equals("match")) {
+                                g2d.setColor(GREEN);
+                            }
 
                         } else {
                             g2d.setColor(BLACK);
+                        }
+                        if (labelStyle.equals("coverage")) {
+                            Double coverage = qry.getSites().get(site).get(2);
+                            if (coverage < lowCov) {
+                                g2d.setColor(RED);
+                            } else if (lowCov <= coverage && coverage <= highCov) {
+                                g2d.setColor(AMBER);
+                            } else if (coverage > highCov){
+                                g2d.setColor(GREEN);
+                            }
+
+                        } else if (labelStyle.equals("chimQual")) {
+                            Double chimQual = qry.getSites().get(site).get(4);
+                            if (chimQual < lowQual) {
+                                g2d.setColor(RED);
+                            } else if (lowQual <= chimQual && chimQual <= highQual) {
+                                g2d.setColor(AMBER);
+                            } else if (chimQual > highQual){
+                                g2d.setColor(GREEN);
+                            }
                         }
 
                         int position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
@@ -285,6 +345,15 @@ public class QueryView extends JPanel {
                         g2d.setColor(BLACK);
                         // Draw alignment
                         if (match) {
+                            if (confidenceView) {
+                                double confidence = qry.getConfidence();
+                                if (confidence < lowConf) {
+                                    g2d.setStroke(DOTTED);
+                                } else if (lowConf <= confidence && confidence <= highConf) {
+                                    g2d.setStroke(DASHED);
+                                } else {
+                                    g2d.setStroke(defaultStroke);
+                                }}
                             for (int i : qryAlignments.get(site)) {
                                 int refPositionX = (int) (((refSites.get(i)) / scale) + refOffX - refx);
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
