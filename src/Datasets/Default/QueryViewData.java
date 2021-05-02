@@ -27,6 +27,7 @@ public class QueryViewData {
     private static double RefStart;
     private static double QryLen;
     private static double QryStart;
+    private static double qryviewscale;
     //get query and ref connection
 
     public static void setQueryData(MapOpticsModel model,String qryID){
@@ -60,6 +61,7 @@ public class QueryViewData {
     public static void resetData(){
         List<String> refIDs=new ArrayList<>();
         Map<String,String[]> refData= new HashMap<>();
+        qryviewscale=0;
     }
 
     public static void setSelectedRefLen(double reflen){
@@ -86,4 +88,6 @@ public class QueryViewData {
     public static double getQryStart(){
         return QryStart;
     }
+    public static void setScale(double scale){qryviewscale=scale;}
+    public static double gethScale(){return qryviewscale;}
 }

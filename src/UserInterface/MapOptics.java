@@ -2326,6 +2326,8 @@ public class MapOptics extends JFrame {
 
             if(region.equals("")){
                 QueryView.setRegionView(false);
+                QueryView.setReferenceViewSelect(false);
+                QueryView.setQryViewSelect(false);
                 changeRef(refSearch);
                 changeQry(qrySearch);
                 repaint();
@@ -2427,7 +2429,7 @@ public class MapOptics extends JFrame {
                 Rectangle2D ref = model.getSelectedRef().getQryViewRect();
                 if (ref.contains(evt.getPoint())) {
                     //get the information of the displayed region from QueryViewData
-                    positionScale =QueryViewData.getRefLen() / ref.getWidth();
+                    positionScale =QueryViewData.gethScale();
                     // display position
                     position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale+refstart);
                 }
@@ -2438,10 +2440,20 @@ public class MapOptics extends JFrame {
                 qryRect = qry.getQryViewRect();
 
                 if (qryRect.contains(evt.getPoint())) {
-                    // display position
-                    positionScale = qry.getLength() / qryRect.getWidth();
-                    position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                    //check if is negative orientated
+                   boolean isFlipped= model.getSelectedRef().getQuery(qryId).isFlipped();
+
+                    if(isFlipped=true){
+                        // display position
+                        positionScale = QueryViewData.gethScale();
+                        position = String.format("%.2f", ((this.getWidth()- evt.getPoint().getX()) - (this.getWidth()- qryRect.getMaxX()))* positionScale);
+                    }else{
+                        // display position
+                        positionScale = QueryViewData.gethScale();
+                        position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                    }
                 }
+
 
                 QueryView.setPosition(position);
                 QueryView.setMouseX(evt.getX());

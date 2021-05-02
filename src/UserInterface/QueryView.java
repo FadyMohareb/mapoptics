@@ -198,6 +198,7 @@ public class QueryView extends JPanel {
                     refScaled = zoomRectangle(refRect);
                     QueryViewData.setRefStart(Start);
                     QueryViewData.setQryStart(regionOffX);
+                    QueryViewData.setScale(scale);
 
                     // draw query contig
                     qry.setQryViewRect(new Rectangle2D.Double(refOffX+regionOffX, 230, qryRect.getWidth()/ scale, qryRect.getHeight()));
@@ -209,6 +210,7 @@ public class QueryView extends JPanel {
                     }else{
                         ref.setQryViewRect(new Rectangle2D.Double(refOffX-refx, 90, (End-Start)/scale, refRect.getHeight()));
                     }
+
                     drawContig(g2d, refScaled, chosenRef);
 
                     // view gap
@@ -463,20 +465,13 @@ public class QueryView extends JPanel {
         double AlignEnd= ref.getRefAlignPos(chosenQry)[1];
         alignlen = AlignEnd - AlignStart;
         regionOffX=0.0;
+        Start=0.0;
+        End=0.0;
+        qryRegionstart=0.0;
+        qryRegionend=0.0;
         Double reflen = ref.getLength();
         if(regionView==false) {
             scale = qryRect.getWidth() / (this.getWidth() );
-            //Start=AlignStart;
-            //End=AlignEnd;
-            Start = 0.0;
-            End = reflen;
-            qryRegionstart=0.0;
-            qryRegionend=qry.getLength();
-        }
-        else if(regions[0].equals("")){
-            scale = qryRect.getWidth() / (this.getWidth() );
-            //Start=AlignStart;
-            //End=AlignEnd;
             Start = 0.0;
             End = reflen;
             qryRegionstart=0.0;
@@ -567,9 +562,14 @@ public class QueryView extends JPanel {
         g2d.setColor(Color.black);
         if (ref) {
             g2d.drawLine((int) rect.getMinX(), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25);
+
             int count = (int)Start;
             int numScales = (int) rect.getWidth() / 100;
             double length = End-Start;
+            if(!referenceViewSelect){
+                count= (int)((rect.getMinX()-model.getSelectedRef().getQryViewRect().getMinX())* scale+Start);
+                length = (rect.getMaxX()-rect.getMinX())*scale;
+            }
             if (numScales != 0) {
                 for (int i = 0; i < numScales + 1; i++) {
                     g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMinY() - this.getHeight() / 20);
@@ -577,6 +577,7 @@ public class QueryView extends JPanel {
                     count = (int) (count + length / numScales);
                 }
             } else {
+
                 g2d.drawLine((int) (rect.getMinX()), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX()), (int) rect.getMinY() - this.getHeight() / 20);
                 g2d.drawString(String.format("%.2f", (double) 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) 0.0) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
                 g2d.drawLine((int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 20);
