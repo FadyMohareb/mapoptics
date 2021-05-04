@@ -2326,6 +2326,8 @@ public class MapOptics extends JFrame {
 
             if(region.equals("")){
                 QueryView.setRegionView(false);
+                QueryView.setReferenceViewSelect(false);
+                QueryView.setQryViewSelect(false);
                 changeRef(refSearch);
                 changeQry(qrySearch);
                 repaint();
@@ -2427,7 +2429,7 @@ public class MapOptics extends JFrame {
                 Rectangle2D ref = model.getSelectedRef().getQryViewRect();
                 if (ref.contains(evt.getPoint())) {
                     //get the information of the displayed region from QueryViewData
-                    positionScale =QueryViewData.getRefLen() / ref.getWidth();
+                    positionScale =QueryViewData.gethScale();
                     // display position
                     position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale+refstart);
                 }
@@ -2438,10 +2440,20 @@ public class MapOptics extends JFrame {
                 qryRect = qry.getQryViewRect();
 
                 if (qryRect.contains(evt.getPoint())) {
-                    // display position
-                    positionScale = qry.getLength() / qryRect.getWidth();
-                    position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                    //check if is negative orientated
+                   boolean isFlipped= model.getSelectedRef().getQuery(qryId).isFlipped();
+
+                    if(isFlipped){
+                        // display position
+                        positionScale = QueryViewData.gethScale();
+                        position = String.format("%.2f", ((this.getWidth()- evt.getPoint().getX()) - (this.getWidth()- qryRect.getMaxX()))* positionScale);
+                    }else{
+                        // display position
+                        positionScale = QueryViewData.gethScale();
+                        position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                    }
                 }
+
 
                 QueryView.setPosition(position);
                 QueryView.setMouseX(evt.getX());
@@ -2485,6 +2497,8 @@ public class MapOptics extends JFrame {
         // save all thresholds set in confidence settings
         ReferenceView.setLowConf((int) lowConf.getValue());
         ReferenceView.setHighConf((int) highConf.getValue());
+        QueryView.setQryHighConf((int) highConf.getValue());
+        QueryView.setQryLowConf((int) lowConf.getValue());
         confidenceSettings.setVisible(false);
         repaint();
     }
@@ -2493,6 +2507,8 @@ public class MapOptics extends JFrame {
         // save all thresholds in coverage settings
         ReferenceView.setLowCov((int) lowCov.getValue());
         ReferenceView.setHighCov((int) highCov.getValue());
+        QueryView.setQryLowCov((int) lowCov.getValue());
+        QueryView.setQryHighCov((int) highCov.getValue());
         coverageSettings.setVisible(false);
         repaint();
     }
@@ -2501,6 +2517,8 @@ public class MapOptics extends JFrame {
         // save all thresholds in chim quality settings
         ReferenceView.setLowQual((int) lowQual.getValue());
         ReferenceView.setHighQual((int) highQual.getValue());
+        QueryView.setQryLowQual((int) lowQual.getValue());
+        QueryView.setQryHighQual((int) highQual.getValue());
         chimSettings.setVisible(false);
         repaint();
     }

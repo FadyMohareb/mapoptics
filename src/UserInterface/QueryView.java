@@ -29,6 +29,19 @@ public class QueryView extends JPanel {
     private static final Color DARK_GREY = new Color(80, 80, 80);
     private static final Color BLACK = new Color(30, 30, 30);
     private static final Color GREEN = new Color(97, 204, 10);
+    private static final Color AMBER = new Color(255, 204, 0);
+    private static final Color RED = new Color(204, 0, 0);
+    private static final Color YELLOW = new Color(255, 255, 0, 80);
+    private static final Stroke DASHED = new BasicStroke(1, BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_BEVEL, 0, new float[]{6, 2}, 2);
+    private static final Stroke DOTTED = new BasicStroke(1, BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER, 1, new float[]{1, 2}, 2);
+    private static int lowConf = 20;
+    private static int highConf = 40;
+    private static int lowCov = 20;
+    private static int highCov = 50;
+    private static int lowQual = 20;
+    private static int highQual = 90;
     private static String chosenRef = "";
     private static String chosenQry = "";
     private static String chosenLabel = "";
@@ -85,6 +98,30 @@ public class QueryView extends JPanel {
     public static void setStyle(String style) {
         QueryView.labelStyle = style;
     }
+    public static void setQryLowConf(int lowConf) {
+        QueryView.lowConf = lowConf;
+    }
+
+    public static void setQryHighConf(int highConf) {
+        QueryView.highConf = highConf;
+    }
+
+    public static void setQryLowCov(int lowCov) {
+        QueryView.lowCov = lowCov;
+    }
+
+    public static void setQryHighCov(int highCov) {
+        QueryView.highCov = highCov;
+    }
+
+    public static void setQryLowQual(int lowQual) {
+        QueryView.lowQual = lowQual;
+    }
+
+    public static void setQryHighQual(int highQual) {
+        QueryView.highQual = highQual;
+    }
+
 
     public static void setConfidenceView(boolean confidenceView) {
         QueryView.confidenceView = confidenceView;
@@ -198,6 +235,7 @@ public class QueryView extends JPanel {
                     refScaled = zoomRectangle(refRect);
                     QueryViewData.setRefStart(Start);
                     QueryViewData.setQryStart(regionOffX);
+                    QueryViewData.setScale(scale);
 
                     // draw query contig
                     qry.setQryViewRect(new Rectangle2D.Double(refOffX+regionOffX, 230, qryRect.getWidth()/ scale, qryRect.getHeight()));
@@ -209,6 +247,7 @@ public class QueryView extends JPanel {
                     }else{
                         ref.setQryViewRect(new Rectangle2D.Double(refOffX-refx, 90, (End-Start)/scale, refRect.getHeight()));
                     }
+
                     drawContig(g2d, refScaled, chosenRef);
 
                     // view gap
@@ -244,6 +283,7 @@ public class QueryView extends JPanel {
 
                     //draw reference labels
                     int WindowWidth = this.getWidth();
+
                     for (int site : refSites.keySet()) {
 
                         g2d.setColor(Color.black);
@@ -269,10 +309,32 @@ public class QueryView extends JPanel {
                         boolean match = false;
                         if (qryAlignments.containsKey(site)) {
                             match = true;
-                            g2d.setColor(GREEN);
+                            if (labelStyle.equals("match")) {
+                                g2d.setColor(GREEN);
+                            }
 
                         } else {
                             g2d.setColor(BLACK);
+                        }
+                        if (labelStyle.equals("coverage")) {
+                            Double coverage = qry.getSites().get(site).get(2);
+                            if (coverage < lowCov) {
+                                g2d.setColor(RED);
+                            } else if (lowCov <= coverage && coverage <= highCov) {
+                                g2d.setColor(AMBER);
+                            } else if (coverage > highCov){
+                                g2d.setColor(GREEN);
+                            }
+
+                        } else if (labelStyle.equals("chimQual")) {
+                            Double chimQual = qry.getSites().get(site).get(4);
+                            if (chimQual < lowQual) {
+                                g2d.setColor(RED);
+                            } else if (lowQual <= chimQual && chimQual <= highQual) {
+                                g2d.setColor(AMBER);
+                            } else if (chimQual > highQual){
+                                g2d.setColor(GREEN);
+                            }
                         }
 
                         int position = (int) ((qrySites.get(site) / scale) + refOffX+ regionOffX);
@@ -283,6 +345,15 @@ public class QueryView extends JPanel {
                         g2d.setColor(BLACK);
                         // Draw alignment
                         if (match) {
+                            if (confidenceView) {
+                                double confidence = qry.getConfidence();
+                                if (confidence < lowConf) {
+                                    g2d.setStroke(DOTTED);
+                                } else if (lowConf <= confidence && confidence <= highConf) {
+                                    g2d.setStroke(DASHED);
+                                } else {
+                                    g2d.setStroke(defaultStroke);
+                                }}
                             for (int i : qryAlignments.get(site)) {
                                 int refPositionX = (int) (((refSites.get(i)) / scale) + refOffX - refx);
                                 int refPositionY = (int) (refScaled.getY() + refScaled.getHeight());
@@ -463,20 +534,13 @@ public class QueryView extends JPanel {
         double AlignEnd= ref.getRefAlignPos(chosenQry)[1];
         alignlen = AlignEnd - AlignStart;
         regionOffX=0.0;
+        Start=0.0;
+        End=0.0;
+        qryRegionstart=0.0;
+        qryRegionend=0.0;
         Double reflen = ref.getLength();
         if(regionView==false) {
             scale = qryRect.getWidth() / (this.getWidth() );
-            //Start=AlignStart;
-            //End=AlignEnd;
-            Start = 0.0;
-            End = reflen;
-            qryRegionstart=0.0;
-            qryRegionend=qry.getLength();
-        }
-        else if(regions[0].equals("")){
-            scale = qryRect.getWidth() / (this.getWidth() );
-            //Start=AlignStart;
-            //End=AlignEnd;
             Start = 0.0;
             End = reflen;
             qryRegionstart=0.0;
@@ -567,9 +631,14 @@ public class QueryView extends JPanel {
         g2d.setColor(Color.black);
         if (ref) {
             g2d.drawLine((int) rect.getMinX(), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25);
+
             int count = (int)Start;
             int numScales = (int) rect.getWidth() / 100;
             double length = End-Start;
+            if(!referenceViewSelect){
+                count= (int)((rect.getMinX()-model.getSelectedRef().getQryViewRect().getMinX())* scale+Start);
+                length = (rect.getMaxX()-rect.getMinX())*scale;
+            }
             if (numScales != 0) {
                 for (int i = 0; i < numScales + 1; i++) {
                     g2d.drawLine((int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + (rect.getWidth() / numScales) * i), (int) rect.getMinY() - this.getHeight() / 20);
@@ -577,6 +646,7 @@ public class QueryView extends JPanel {
                     count = (int) (count + length / numScales);
                 }
             } else {
+
                 g2d.drawLine((int) (rect.getMinX()), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX()), (int) rect.getMinY() - this.getHeight() / 20);
                 g2d.drawString(String.format("%.2f", (double) 0.0) + " kb", (int) (rect.getMinX() - g2d.getFontMetrics().stringWidth(String.format("%.2f", (double) 0.0) + " kb") / 2), (int) rect.getMinY() - this.getHeight() / 20 - 2);
                 g2d.drawLine((int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 25, (int) (rect.getMinX() + rect.getWidth()), (int) rect.getMinY() - this.getHeight() / 20);
