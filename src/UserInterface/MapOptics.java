@@ -1806,6 +1806,7 @@ public class MapOptics extends JFrame {
 
         pack();
     }
+<<<<<<< HEAD
 
     private void allIndelsActionPerformed(ActionEvent actionEvent) {
         if(allIndels.isSelected()){
@@ -1873,6 +1874,75 @@ public class MapOptics extends JFrame {
     }
 
 
+=======
+
+    private void allIndelsActionPerformed(ActionEvent actionEvent) {
+        if(allIndels.isSelected()){
+            SVView.setIndels(detectSV);
+            SVView.setAllIndels(true);
+        } else if (!allIndels.isSelected()){
+            SVView.setAllIndels(false);
+        }
+        repaint();
+    }
+
+    private void styleMatchSVActionPerformed(ActionEvent actionEvent) {
+        if (styleMatch.isSelected()) {
+            SVView.setStyle("match");
+            repaint();
+        }
+    }
+
+    private void svViewMouseClicked(java.awt.event.MouseEvent evt) {
+    }
+
+    private void svViewMouseMoved(java.awt.event.MouseEvent evt) {
+
+    }
+
+    private void exportSVButtonActionPerformed(ActionEvent actionEvent) {
+        // export chosen image into chosen directory
+        // Opens a dialog box for user to choose directory of file
+        FileDialog fileBox;
+        fileBox = new FileDialog(this, "Save PDF of reference alignment view", FileDialog.SAVE);
+        fileBox.setVisible(true);
+
+        if (fileBox.getFile() != null) {
+            String chosenPath = fileBox.getDirectory();
+            String chosenFile = fileBox.getFile();
+
+            exportSVButton.setVisible(false);
+            try {
+                PDFDocument doc = new PDFDocument ();
+
+                // Use a Paper instance to change page dimensions, some plots can be long
+                Paper p = new Paper();
+                p.setSize(svView.getWidth(), svView.getHeight());
+                p.setImageableArea(0, 0, svView.getWidth(), svView.getHeight());
+                PageFormat pf = new PageFormat ();
+                pf.setPaper(p);
+
+                PDFPage page = doc.createPage(pf);
+                doc.addPage(page);
+
+                // Directly paint the panel to the pdf page
+                Graphics2D g2d = page.createGraphics();
+                svView.paint(g2d);
+
+                doc.saveDocument(chosenPath + chosenFile + ".pdf");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error saving image to pdf file", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            exportSVButton.setVisible(true);
+
+        } else {
+            JOptionPane.showMessageDialog(null, "No filename given", "Invalid input", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+>>>>>>> mapOpticsv2/master
     private void svTableMouseClicked() {
         if (svTable.getRowCount() != 0) {
             String chosenQry = svTable.getValueAt(svTable.getSelectedRow(), 0).toString();
@@ -1899,6 +1969,7 @@ public class MapOptics extends JFrame {
             String chosenQry = qryContigTable.getValueAt(qryContigTable.getSelectedRow(), 0).toString();
             changeQry(chosenQry);
 
+<<<<<<< HEAD
         }
     }
 
@@ -1960,6 +2031,69 @@ public class MapOptics extends JFrame {
         }
     }
 
+=======
+        }
+    }
+
+
+    private void exportTables (JTable saveTable) {
+        // Table to be exported to CSV
+        if (saveTable.getRowCount() != 0) {
+            // Saves Query Contig table from Reference View to CSV output
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Enter File Name");
+
+            int userSelection = fileChooser.showSaveDialog(this);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+
+                // Uses CSV Writer class to write to user defined file
+                CSVWriter qryContigsOut;
+                try {
+                    if (fileToSave.getPath().endsWith(".csv")) {
+                        qryContigsOut = new CSVWriter(new FileWriter(fileToSave));
+                    } else {
+                        qryContigsOut = new CSVWriter(new FileWriter(fileToSave + ".csv"));
+                    }
+
+                    // A string array for table headers
+                    String[] header = new String[saveTable.getColumnCount()];
+
+                    // A string array for table output
+                    String[] qryOut = new String[saveTable.getColumnCount()];
+                    // Check that table is populated
+
+                    // Get column names and add as CSV header
+                    for (int name = 0; name < saveTable.getColumnCount(); name++) {
+                        header[name] = saveTable.getColumnName(name);
+                    }
+                    qryContigsOut.writeNext(header);
+
+                    for (int i = 0; i < saveTable.getRowCount(); i++) {
+                        // Nest for loops to take values from table and add to CSV file
+                        for (int j = 0; j < saveTable.getColumnCount(); j++) {
+
+                            qryOut[j] = saveTable.getValueAt(i, j).toString();
+
+                        }
+
+                        qryContigsOut.writeNext(qryOut);
+                    }
+                    // Close CSV file
+                    qryContigsOut.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else {
+            JOptionPane.showMessageDialog(this, "Table is not populated please select " +
+                    "a reference", "Error in Export Table", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+>>>>>>> mapOpticsv2/master
     private void orientateContigsActionPerformed(java.awt.event.ActionEvent evt) {
         // orientates all query contigs that are negatively oriented
         if (!model.getSelectedRefID().isEmpty()) {
@@ -2022,6 +2156,7 @@ public class MapOptics extends JFrame {
         // reset all data
         resetData();
         model.setReversed(false);
+<<<<<<< HEAD
 
         String qryPath = qryFileTextField.getText();
         String refPath = refFileTextField.getText();
@@ -2049,6 +2184,35 @@ public class MapOptics extends JFrame {
                 refDataset.setText(refCmapDataset);
                 qryDataset.setText(qryCmapDataset);
 
+=======
+
+        String qryPath = qryFileTextField.getText();
+        String refPath = refFileTextField.getText();
+        String xmapPath = xmapFileTextField.getText();
+
+        if (!(qryPath + refPath + xmapPath).equals(EMPTY_STRING)) {
+
+            this.refPath = refPath;
+            this.qryPath = qryPath;
+            this.xmapPath = xmapPath;
+
+            boolean validFiles = CmapReader.validateCmap(refPath) &&
+                    CmapReader.validateCmap(qryPath) &&
+                    XmapReader.validateXmap(xmapPath);
+
+            if (validFiles) {
+                model.setQryFile(new File(qryPath));
+                model.setRefFile(new File(refPath));
+                model.setXmapFile(new File(xmapPath));
+
+                refDataset.setVisible(true);
+                qryDataset.setVisible(true);
+                String refCmapDataset = FilenameUtils.getName(refPath);
+                String qryCmapDataset = FilenameUtils.getName(qryPath);
+                refDataset.setText(refCmapDataset);
+                qryDataset.setText(qryCmapDataset);
+
+>>>>>>> mapOpticsv2/master
                 setAllData();
             }
 
@@ -2323,6 +2487,7 @@ public class MapOptics extends JFrame {
         }
         //then display the qryview
         if(refMatch&qryMatch) {
+<<<<<<< HEAD
 
             if(region.equals("")){
                 QueryView.setRegionView(false);
@@ -2330,6 +2495,17 @@ public class MapOptics extends JFrame {
                 changeQry(qrySearch);
                 repaint();
 
+=======
+
+            if(region.equals("")){
+                QueryView.setRegionView(false);
+                QueryView.setReferenceViewSelect(false);
+                QueryView.setQryViewSelect(false);
+                changeRef(refSearch);
+                changeQry(qrySearch);
+                repaint();
+
+>>>>>>> mapOpticsv2/master
             }else{
                 String[] regions = region.split("-");
                 int regionstart = Integer.parseInt(regions[0]);
@@ -2427,7 +2603,11 @@ public class MapOptics extends JFrame {
                 Rectangle2D ref = model.getSelectedRef().getQryViewRect();
                 if (ref.contains(evt.getPoint())) {
                     //get the information of the displayed region from QueryViewData
+<<<<<<< HEAD
                     positionScale =QueryViewData.getRefLen() / ref.getWidth();
+=======
+                    positionScale =QueryViewData.gethScale();
+>>>>>>> mapOpticsv2/master
                     // display position
                     position = String.format("%.2f", (evt.getPoint().getX() - ref.getMinX()) * positionScale+refstart);
                 }
@@ -2438,11 +2618,29 @@ public class MapOptics extends JFrame {
                 qryRect = qry.getQryViewRect();
 
                 if (qryRect.contains(evt.getPoint())) {
+<<<<<<< HEAD
                     // display position
                     positionScale = qry.getLength() / qryRect.getWidth();
                     position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
                 }
 
+=======
+                    //check if is negative orientated
+                   boolean isFlipped= model.getSelectedRef().getQuery(qryId).isFlipped();
+
+                    if(isFlipped){
+                        // display position
+                        positionScale = QueryViewData.gethScale();
+                        position = String.format("%.2f", ((this.getWidth()- evt.getPoint().getX()) - (this.getWidth()- qryRect.getMaxX()))* positionScale);
+                    }else{
+                        // display position
+                        positionScale = QueryViewData.gethScale();
+                        position = String.format("%.2f", (evt.getPoint().getX() - qryRect.getMinX()) * positionScale);
+                    }
+                }
+
+
+>>>>>>> mapOpticsv2/master
                 QueryView.setPosition(position);
                 QueryView.setMouseX(evt.getX());
                 QueryView.setMouseY(evt.getY());
@@ -2485,6 +2683,8 @@ public class MapOptics extends JFrame {
         // save all thresholds set in confidence settings
         ReferenceView.setLowConf((int) lowConf.getValue());
         ReferenceView.setHighConf((int) highConf.getValue());
+        QueryView.setQryHighConf((int) highConf.getValue());
+        QueryView.setQryLowConf((int) lowConf.getValue());
         confidenceSettings.setVisible(false);
         repaint();
     }
@@ -2493,6 +2693,8 @@ public class MapOptics extends JFrame {
         // save all thresholds in coverage settings
         ReferenceView.setLowCov((int) lowCov.getValue());
         ReferenceView.setHighCov((int) highCov.getValue());
+        QueryView.setQryLowCov((int) lowCov.getValue());
+        QueryView.setQryHighCov((int) highCov.getValue());
         coverageSettings.setVisible(false);
         repaint();
     }
@@ -2501,6 +2703,8 @@ public class MapOptics extends JFrame {
         // save all thresholds in chim quality settings
         ReferenceView.setLowQual((int) lowQual.getValue());
         ReferenceView.setHighQual((int) highQual.getValue());
+        QueryView.setQryLowQual((int) lowQual.getValue());
+        QueryView.setQryHighQual((int) highQual.getValue());
         chimSettings.setVisible(false);
         repaint();
     }

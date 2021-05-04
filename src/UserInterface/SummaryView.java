@@ -93,9 +93,12 @@ public class SummaryView extends JPanel {
                 // For each query, draw rectangle, sites and alignments
                 for (Query qry : ref.getQueries()) {
                     // if there are saved deleted query contigs then don't draw them in the summary view
+<<<<<<< HEAD
                     if (!ref.getSavedDelQryIDs().isEmpty()) {
                         continue;
                     }
+=======
+>>>>>>> mapOpticsv2/master
                     Rectangle2D qryRectRaw = qry.getRectangle();
                     Rectangle2D qryRectScaled = new Rectangle2D.Double(
                             (qryRectRaw.getX()  / scaleX ) + this.getWidth() / 20.0,
