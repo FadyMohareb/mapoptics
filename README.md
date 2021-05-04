@@ -9,10 +9,11 @@ Alternatively, you can clone the git repository:
 
 ```
 git clone https://github.com/FadyMohareb/mapoptics
-cd mapoptics/dist/
+cd mapoptics/
 java -jar MapOptics.jar
 ```
 
+*MapOptics is designed to run on any release later than Java 1.8, but for best perfromance - particularly on Linux - use an SDK of Java 11 or above.*
 
 # Loading maps
 Maps can be loaded under File > Load Maps. Here, the program asks for an “XMAP file”, “Reference CMAP file” and “Query CMAP file”. These files are outputted at various stages of hybrid scaffolding to store information about alignment. As long as the three maps are within the same dataset, they should be visualised with ease. This could be for the display of alignment between your assembly to optical maps, or your assembly to hybrid scaffolds for example. 
@@ -23,8 +24,8 @@ If you are using Bionano’s HybridScaffold pipeline from the IrysSolve package 
 Here are some examples of alignments you can display:
 
 Bionano maps against draft assembly     --->	   BNGcontigs_NGScontigs
-Draft assembly against super-scaffolds  --->	   NGScontigs_HYBRID_SCAFFOLD
-Bionano maps against super-scaffolds    --->	   BNGcontigs_HYBRID_SCAFFOLD
+<br>Draft assembly against super-scaffolds  --->	   NGScontigs_HYBRID_SCAFFOLD
+<br>Bionano maps against super-scaffolds    --->	   BNGcontigs_HYBRID_SCAFFOLD
 
 * XMAP file: this file contains the alignment information and finishes with an “.xmap” file extension.
 * Reference CMAP file: this contains all the contigs for the “reference” dataset, (those which the queries have been aligned to). This is often noted by the “_r.cmap” file extension.
@@ -71,13 +72,24 @@ Query View shows the most in detail view of one alignment. Here the user can see
 
 ![alt text](https://github.com/FadyMohareb/mapoptics/blob/master/UserGuide/Fig3.png "Query View")
 
-(A)	The display generated for Query View is not as interactive as Reference View. By default, the query contig is oriented positively and positioned to match the leftmost alignment. The display settings match those set in Reference View (e.g. label style).
+(A)	The display generated for Query View is not as interactive as Reference View. By default, the query contig is oriented positively and positioned to match the leftmost alignment. The display settings match those set in Reference View (e.g. label style). If a contig is naturally negatively orientated, a green inversion icon in the top left of the screen will alert the user.
 
 (B)	This table allows the user to navigate and highlight the labels on the query contig. This table contains information of the label’s position, coverage, occurrence, chimeric quality and standard deviation.
 
 (C)	This additional table shows if the query contig has been aligned to other references in addition to the one displayed. These can be navigated through and all the equivalent views will be updated to match this reference (including Summary View and Reference View).
 
 (D)	In this view, the user can search for any reference or query to be displayed (a message will be displayed of there is no alignment found between the two). There is also the option to zoom into a region of choice in either the reference or query contig. This can be of use when using a small screen, working with very long contigs or when FASTA file information is loaded and you would like to explore the position of the gaps in more detail.
+
+# SV View
+SV View is a new feature to MapOptics 2.0 that gives the user the ability to search for certain structural variants across a reference and query contig. Currently, it is possible to view Insertions and Deletions, with more SVs planned soon.
+![alt text](https://github.com/FadyMohareb/mapoptics/blob/master/UserGuide/Fig4.png "SV View")
+
+(A) A table of all the strucutral variants found with respect to the selected reference contig. This shows the Query ID, start and stop positions on both the reference and query contig, the type of variant and its size. SVs can be switched through with ease.
+
+(B) The display generated for SV view highlights regions where an SV has been detected. For Insertions, this is show in red, whilst deletions will be shown in blue.
+
+(C) The display tools panel allows fine tuning for SV detection. The user is able to set parameters for SV size and flank signals. Also available are the options to view CIGAR string labelling and display all InDels for the selected query contig.
+
 
 ----
 
@@ -90,8 +102,10 @@ Some quick tools are available under Tools in the top toolbar.
 |Function|Action|
 | ------------- |:-------------:|
 | Tools > Orientate all contigs     | Orientates the display of all contigs to be positive. |
-| Tools > Save view of all contigs      | Saves any changes performed in Reference View to Summary View.      |
+| Tools > Save view of all contigs      | Saves any changes performed in Reference View.      |
 | Tools >  Swap query and reference | Swaps the two datasets so the query dataset becomes the reference dataset and the reference dataset becomes the query dataset.      |
+| Export Tables | Save tabular data from reference and query views to a csv.    |
+
 
 # Loading a FASTA file
 To explore the alignment of the maps in more detail, a FASTA file can be loaded to display the gaps in the sequence in Query View- this can help you recognise if what appear to be misalignments are actually caused by regions of unknown sequence.
