@@ -23,7 +23,7 @@ If you are using Bionano’s HybridScaffold pipeline from the IrysSolve package 
 
 Here are some examples of alignments you can display:
 
-Bionano maps against draft assembly     --->	   BNGcontigs_NGScontigs
+Bionano maps against draft (sequencing) assembly     --->	   BNGcontigs_NGScontigs
 <br>Draft assembly against super-scaffolds  --->	   NGScontigs_HYBRID_SCAFFOLD
 <br>Bionano maps against super-scaffolds    --->	   BNGcontigs_HYBRID_SCAFFOLD
 
